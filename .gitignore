@@ -26,3 +26,6 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+# Blasted Mac files
+.DS_Store
