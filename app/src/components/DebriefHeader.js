@@ -1,9 +1,11 @@
 var React = require('react');
 var Header = require('components/Header');
+var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
 
 var moment = require('moment');
 
+require('3rdparty/bootstrap/css/bootstrap.css');
 require('./DebriefHeader.css');
 
 function getLinearInterpolation(inx, in1, in2, out1, out2) {
@@ -88,8 +90,8 @@ var DebriefHeader = React.createClass({
                 style={{opacity: contentOpacity}}>
                 <div ref="content">
                   <div className="DebriefHeader-join pull-right">
-                    <a 
-                      href="#" 
+                    <Link
+                      to="paid" 
                       role="button" 
                       className="btn btn-success btn-lg JoinButton">
                       <span className="JoinButton-major">
@@ -98,7 +100,7 @@ var DebriefHeader = React.createClass({
                       <span className="JoinButton-cost">
                         $1.99
                       </span>
-                    </a>
+                    </Link>
                   </div>
 
                   <h1>{this.props.title}</h1>

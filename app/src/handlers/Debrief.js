@@ -1,6 +1,7 @@
 var React = require('react');
 var {RouteHandler} = require('react-router');
 var DebriefHeader = require('components/DebriefHeader');
+var DebriefSpeakerPanel = require('components/DebriefSpeakerPanel');
 var Footer = require('components/Footer');
 
 var moment = require('moment');
@@ -18,8 +19,16 @@ var Debrief = React.createClass({
           end={moment().add(1, 'h')}
         />
 
-        <div className="Debrief-main">
-          <RouteHandler/>
+        <div className="container Debrief-container">
+          <div className="row">
+            <div className="col-sm-5 col-md-4">
+              <DebriefSpeakerPanel/>
+            </div>
+
+            <div className="col-sm-7 col-md-8">
+              <RouteHandler/>
+            </div>
+          </div>
         </div>
 
         <Footer />

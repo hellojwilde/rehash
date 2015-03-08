@@ -1,5 +1,6 @@
 var React = require('react');
 
+require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Footer.css');
 
 var Footer = React.createClass({
