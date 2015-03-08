@@ -1,0 +1,22 @@
+.DebriefAgendaHeader {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+.DebriefAgendaHeader-title {
+  margin: 0;
+  padding: 6px 0 14px;
+  font-size: 20px;
+}
+
+.DebriefAgendaHeader-online-title {
+  font-size: 14px;
+  float: left;
+  margin: 12px 10px;
+  font-weight: normal;
+  color: #ccc;
+}
+
+.DebriefAgendaHeader-online-thumbnail {
+  margin-left: 2px;
+}

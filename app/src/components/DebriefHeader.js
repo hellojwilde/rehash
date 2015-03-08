@@ -1,5 +1,6 @@
 var React = require('react');
 var Header = require('components/Header');
+var DebriefJoinButton = require('components/DebriefJoinButton');
 var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
 
@@ -25,7 +26,9 @@ var DebriefHeader = React.createClass({
   propTypes: {
     title: React.PropTypes.string,
     start: React.PropTypes.object,
-    end: React.PropTypes.object
+    end: React.PropTypes.object,
+    isJoined: React.PropTypes.bool,
+    cost: React.PropTypes.string
   },
 
   getInitialState: function() {
@@ -90,17 +93,10 @@ var DebriefHeader = React.createClass({
                 style={{opacity: contentOpacity}}>
                 <div ref="content">
                   <div className="DebriefHeader-join pull-right">
-                    <Link
-                      to="paid" 
-                      role="button" 
-                      className="btn btn-success btn-lg JoinButton">
-                      <span className="JoinButton-major">
-                        <span className="glyphicon glyphicon-plus"></span> Join
-                      </span>
-                      <span className="JoinButton-cost">
-                        $1.99
-                      </span>
-                    </Link>
+                    <DebriefJoinButton 
+                      isJoined={this.props.isJoined}
+                      cost={this.props.cost}
+                    />
                   </div>
 
                   <h1>{this.props.title}</h1>
