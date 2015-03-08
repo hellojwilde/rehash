@@ -1,0 +1,46 @@
+.SpeakerPanel {
+  border-color: #232323;
+}
+
+.SpeakerPanel > .panel-heading {
+  color: #fff;
+  background: #333;
+  border-color: #232323;
+}
+
+.Attendee {
+  margin: 5px 0;
+}
+
+.Attendee-info {
+  padding: 8px 0;
+}
+
+.Attendee-thumbnail {
+  margin-right: 10px;
+}
+
+.Attendee-name {
+  margin: 0;
+}
+
+.Attendee-affiliation {
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.JoinOption-join {
+  margin-right: 10px;
+}
+
+.JoinOption-details {
+  padding: 7px 0;
+  margin-bottom: 0;
+}
+
+.JoinOption-cost {
+  padding: 7px 0;
+  font-weight: bold;
+}

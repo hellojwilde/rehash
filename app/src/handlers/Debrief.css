@@ -1,0 +1,7 @@
+.Debrief-main {
+  margin: 30px 0;
+}
+
+.Debrief .panel-body p:last-child {
+  margin-bottom: 0;
+}
