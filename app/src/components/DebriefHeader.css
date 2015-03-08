@@ -1,0 +1,45 @@
+.DebriefHeader {
+  color: white;
+  text-shadow: black 0px 1px 2px;
+}
+
+.DebriefHeader-live {
+  margin: 0 12px;
+  position: relative;
+  top: -0.1em;
+}
+
+.DebriefHeader-header {
+  overflow: hidden;
+}
+
+.DebriefHeader-title {
+  font-size: 18px;
+  margin: 12px 0;
+  position: relative;
+}
+
+.DebriefHeader-preview {
+  background-image: url(./IMG_0467.jpg);
+  background-size: cover;
+  background-position: center bottom;
+  box-shadow: 
+    0 -70px 150px rgba(0,0,0,0.8) inset,
+    0 -1px 0 black inset;
+}
+
+.DebriefHeader-content {
+  display: table;
+  height: 300px;
+  width: 100%;
+}
+
+.DebriefHeader-content-inner {
+  display: table-cell;
+  vertical-align: bottom;
+  padding: 50px 0 30px;
+}
+
+.DebriefHeader-content {
+
+}
