@@ -28,8 +28,8 @@ var DebriefHeader = React.createClass({
 
   getInitialState: function() {
     return {
-      transitionStart: -Math.Infinity,
-      transitionEnd: Math.Infinity,
+      transitionStart: 0,
+      transitionEnd: Infinity,
       transitionScale: 1
     };
   },
@@ -61,7 +61,6 @@ var DebriefHeader = React.createClass({
       40,
       0
     );
-
     var contentOpacity = getLinearInterpolation(
       this.state.scrollTop,
       this.state.transitionStart,
