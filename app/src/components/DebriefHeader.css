@@ -1,8 +1,3 @@
-.DebriefHeader {
-  color: white;
-  text-shadow: black 0px 1px 2px;
-}
-
 .DebriefHeader-live {
   margin: 0 12px;
   position: relative;
@@ -32,14 +27,12 @@
   display: table;
   height: 300px;
   width: 100%;
+  color: white;
+  text-shadow: black 0px 1px 2px;
 }
 
 .DebriefHeader-content-inner {
   display: table-cell;
   vertical-align: bottom;
   padding: 50px 0 30px;
-}
-
-.DebriefHeader-content {
-
 }
