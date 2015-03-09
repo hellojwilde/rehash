@@ -1,4 +1,5 @@
 var React = require('react');
+var DebriefBroadcast = require('components/DebriefBroadcast');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./DebriefPaid.css');
@@ -28,6 +29,8 @@ var DebriefPaid = React.createClass({
 
           <h2 className="DebriefAgendaHeader-title">Agenda</h2>
         </div>
+
+        <DebriefBroadcast/>
 
         <div className="panel panel-default">
           <div className="panel-body">
