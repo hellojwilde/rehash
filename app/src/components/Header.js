@@ -1,4 +1,5 @@
 var React = require('react');
+var Logo = require('components/Logo');
 
 var joinClasses = require('react/lib/joinClasses');
 

@@ -1,6 +1,7 @@
 var React = require('react');
 var {Link} = require('react-router');
 
+require('3rdparty/bootstrap/css/bootstrap.css');
 require('./DebriefJoinButton.css');
 
 var DebriefJoinButton = React.createClass({
@@ -20,7 +21,7 @@ var DebriefJoinButton = React.createClass({
   render: function() {
     if (this.props.isJoined) {
       return (
-        <Link 
+        <Link
           role="button"
           className="btn btn-success btn-lg DebriefJoinButton"
           disabled={true}>
