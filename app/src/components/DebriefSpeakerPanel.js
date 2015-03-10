@@ -10,6 +10,8 @@ var DebriefSpeakerPanel = React.createClass({
       <div className="panel panel-default DebriefSpeakerPanel">
         <div className="panel-heading DebriefSpeakerPanel-heading">
           Michael Evans
+
+          {' '}<span className="label label-danger">Live</span>
         </div>
 
         <div className="panel-body" id="container">
@@ -17,20 +19,7 @@ var DebriefSpeakerPanel = React.createClass({
             <video id="localVideo" muted="true"/>
           </div>   
         </div>
-        
-        <div className="panel-body">
-          <p>
-            Mike is a developer and previous Code for America captain 
-            with development interests firmly in the civic sphere. 
-            Founder of PishPosh.tv, he has worked with several startups 
-            including Forrst, Creative Market and Loveland Technologies 
-            developing products enabling people to learn new skills, and 
-            about the world around them.
-          </p>
-        </div>
-
-
-
+      
         <div id="infoDiv"></div>
         <div className="panel-body" id="">
           <div id="remote">

@@ -10,7 +10,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "flux": "^2.0.1",
+    "keymirror": "^0.1.1",
     "moment": "^2.9.0",
+    "object-assign": "^2.0.0",
     "react": "^0.12.2",
     "react-router": "^0.12.4",
     "react-scroll-components": "^0.1.0"

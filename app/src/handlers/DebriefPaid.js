@@ -1,10 +1,36 @@
 var React = require('react');
 var DebriefBroadcast = require('components/DebriefBroadcast');
+var DebriefPaidTopic = require('components/DebriefPaidTopic');
+var TopicStore = require('stores/TopicStore');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./DebriefPaid.css');
 
+function getStoreState() {
+  return {
+    topics: TopicStore.get()
+  };
+}
+
 var DebriefPaid = React.createClass({
+
+  getInitialState: function() {
+    console.log(getStoreState());
+
+    return getStoreState();
+  },
+
+  componentDidMount: function() {
+    TopicStore.on(TopicStore.CHANGE_EVENT, this.handleStoreChange);
+  },
+
+  componentWillUnmount: function() {
+    TopicStore.off(TopicStore.CHANGE_EVENT, this.handleStoreChange);
+  },
+
+  handleStoreChange: function() {
+    this.setState(getStoreState());
+  },
 
   render: function() {
     return (
@@ -28,48 +54,16 @@ var DebriefPaid = React.createClass({
           </div>
 
           <h2 className="DebriefAgendaHeader-title">Agenda</h2>
-        </div>
 
-        <div className="panel panel-default">
-          <div className="panel-body">
-            <p className="lead">
-              Challenges with data analysis at Forrst. 
-              Discussion of how to balance quantitative and
-              qualitative data in understanding audiences.
-            </p>
-
-            <h4>Questions</h4>
-
-            <div className="media">
-              <div className="media-left">
-                <img 
-                  src="http://placehold.it/50x50" 
-                  className="img-thumbnail"
-                />
-              </div>
-
-              <div className="media-body">
-                <p>What are the most common pitfalls with data-driven policy?</p>
-              </div>
-            </div>
-
-            <div className="media">
-              <div className="media-left">
-                <img 
-                  src="http://placehold.it/50x50" 
-                  className="img-thumbnail"
-                />
-              </div>
-
-              <div className="media-body">
-                <p>
-                  Why is it so important to use both quanitative and 
-                  qualitative measurement in developing policy? Why not just 
-                  use one?
-                </p>
-              </div>
-            </div>
-          </div>
+          {this.state.topics.map(function(topic) {
+            return (
+              <DebriefPaidTopic 
+                key={topic.topicID}
+                topicID={topic.topicID}
+                text={topic.text}
+              />
+            );
+          })}
         </div>
       </div>
     );
