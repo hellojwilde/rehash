@@ -12,11 +12,13 @@ var DebriefSpeakerPanel = React.createClass({
           Michael Evans
         </div>
 
-        <img
-          className="img-responsive"
-          src="http://placehold.it/300x200"
-        />
+        <div className="panel-body" id="container">
+          <div id="local">
+            <video id="localVideo" autoplay="autoplay" muted="true"/>
+          </div>   
 
+        </div>
+        
         <div className="panel-body">
           <p>
             Mike is a developer and previous Code for America captain 
@@ -27,10 +29,19 @@ var DebriefSpeakerPanel = React.createClass({
             about the world around them.
           </p>
         </div>
+
+        <div id="remote">
+          <video id="remoteVideo" autoplay="autoplay">
+          </video>
+          <div id="mini">
+            <video id="miniVideo" autoplay="autoplay" muted="true"/>
+          </div>   
+        </div>
+        <div id="infoDiv"></div>
+        <div id="status"></div>
       </div>
     );
   }
-
 });
 
 module.exports = DebriefSpeakerPanel;

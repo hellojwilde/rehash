@@ -30,8 +30,6 @@ var DebriefPaid = React.createClass({
           <h2 className="DebriefAgendaHeader-title">Agenda</h2>
         </div>
 
-        <DebriefBroadcast/>
-
         <div className="panel panel-default">
           <div className="panel-body">
             <p className="lead">

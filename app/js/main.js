@@ -37,8 +37,8 @@ function initialize() {
   card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo display to center.
-  localVideo.addEventListener('loadedmetadata', function(){
-    window.onresize();});
+  //localVideo.addEventListener('loadedmetadata', function(){
+  //  window.onresize();});
   miniVideo = document.getElementById('miniVideo');
   remoteVideo = document.getElementById('remoteVideo');
   resetStatus();
@@ -139,12 +139,12 @@ function resetStatus() {
 
 function doGetUserMedia() {
   // Call into getUserMedia via the polyfill (adapter.js).
-  navigator.getUserMedia  = navigator.getUserMedia ||
-                      navigator.webkitGetUserMedia ||
-                      navigator.mozGetUserMedia ||
-                      navigator.msGetUserMedia;
-  window.AudioContext = window.AudioContext ||
-                      window.webkitAudioContext;                    
+  // navigator.getUserMedia  = navigator.getUserMedia ||
+  //                     navigator.webkitGetUserMedia ||
+  //                     navigator.mozGetUserMedia ||
+  //                     navigator.msGetUserMedia;
+  // window.AudioContext = window.AudioContext ||
+  //                     window.webkitAudioContext;                    
   try {
     getUserMedia({audio: true, video: true}, onUserMediaSuccess, onUserMediaError);
     //getUserMedia(mediaConstraints, onUserMediaSuccess,

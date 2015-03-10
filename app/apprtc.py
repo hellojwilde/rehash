@@ -369,6 +369,9 @@ class MainPage(webapp2.RequestHandler):
     base_url = self.request.path_url
     user_agent = self.request.headers['User-Agent']
     room_key = sanitize(self.request.get('r'))
+    ### 
+    room_key = re.sub(r'[^a-zA-Z0-9\[\]]','', room_key)
+    ###
     stun_server = self.request.get('ss')
     if not stun_server:
       stun_server = get_default_stun_server(user_agent)
@@ -521,7 +524,8 @@ class MainPage(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/', HomePage),
+    ('/', MainPage),
+    ('/paid', MainPage),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)
