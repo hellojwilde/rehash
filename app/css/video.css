@@ -4,6 +4,8 @@
 }
 
 #remoteVideo {
+  width: 260px;
+  opacity: 1;
   display: none;
 }
 
@@ -12,5 +14,9 @@
 }
 
 #status {
-  visibility: hidden;
+  display: none;
+}
+
+#infoDiv {
+  display: none;
 }

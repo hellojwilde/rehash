@@ -34,11 +34,11 @@ function initialize() {
   }
 
   console.log('Initializing; room=' + roomKey + '.');
-  card = document.getElementById('card');
+  //card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo display to center.
-  //localVideo.addEventListener('loadedmetadata', function(){
-  //  window.onresize();});
+  localVideo.addEventListener('loadedmetadata', function(){
+    window.onresize();});
   miniVideo = document.getElementById('miniVideo');
   remoteVideo = document.getElementById('remoteVideo');
   resetStatus();
@@ -359,9 +359,13 @@ function onUserMediaSuccess(stream) {
   console.log('User has granted access to local media.');
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(localVideo, stream);
+  //// important to play it! 
+  localVideo.play();
   //////allow audio to be played
   //////attachMediaStream(localAudio, stream);
   localVideo.style.opacity = 1;
+  remoteVideo.style.opacity = 1;
+
   localStream = stream;
   // Caller creates PeerConnection.
   maybeStart();
@@ -414,7 +418,10 @@ function onIceCandidate(event) {
 function onRemoteStreamAdded(event) {
   console.log('Remote stream added.');
   attachMediaStream(remoteVideo, event.stream);
+  attachMediaStream(localVideo, event.stream);
   remoteStream = event.stream;
+  remoteVideo.play();
+  localVideo.play();
 }
 
 function onRemoteStreamRemoved(event) {
@@ -477,20 +484,37 @@ function waitForRemoteVideo() {
 //   }
 // }
 
+// function transitionToActive() {
+//   reattachMediaStream(miniVideo, localVideo);
+//   remoteVideo.style.opacity = 1;
+//   // card.style.webkitTransform = 'rotateY(-30deg)';
+//   setTimeout(function() { localVideo.src = remoteVideo.src; }, 500);
+//   localVideo.play();
+//   setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
+//   // Reset window display according to the asperio of remote video.
+//   // window.onresize();
+//   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
+//             onclick=\'onHangup()\' />');
+// }
+
 function transitionToActive() {
-  reattachMediaStream(miniVideo, localVideo);
+  //reattachMediaStream(miniVideo, localVideo);
   remoteVideo.style.opacity = 1;
   // card.style.webkitTransform = 'rotateY(-30deg)';
-  setTimeout(function() { localVideo.src = ''; }, 500);
-  setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
+  
+  //setTimeout(function() { localVideo.src = ''; }, 500);
+  reattachMediaStream(localVideo, remoteVideo);
+
+  localVideo.play();
+  //setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
   // Reset window display according to the asperio of remote video.
-  // window.onresize();
+  window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
             onclick=\'onHangup()\' />');
 }
 
 function transitionToWaiting() {
-  card.style.webkitTransform = 'rotateY(0deg)';
+  //card.style.webkitTransform = 'rotateY(0deg)';
   setTimeout(function() {
                localVideo.src = miniVideo.src;
                miniVideo.src = '';
@@ -782,26 +806,26 @@ window.onbeforeunload = function() {
 
 // Set the video diplaying in the center of window.
 window.onresize = function(){
-  var aspectRatio;
-  if (remoteVideo.style.opacity === '1') {
-    aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
-  } else if (localVideo.style.opacity === '1') {
-    aspectRatio = localVideo.videoWidth/localVideo.videoHeight;
-  } else {
-    return;
-  }
+  // var aspectRatio;
+  // if (remoteVideo.style.opacity === '1') {
+  //   aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
+  // } else if (localVideo.style.opacity === '1') {
+  //   aspectRatio = localVideo.videoWidth/localVideo.videoHeight;
+  // } else {
+  //   return;
+  // }
 
-  var innerHeight = this.innerHeight;
-  var innerWidth = this.innerWidth;
-  var videoWidth = innerWidth < aspectRatio * window.innerHeight ?
-                   innerWidth : aspectRatio * window.innerHeight;
-  var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
-                    innerHeight : window.innerWidth / aspectRatio;
-  containerDiv = document.getElementById('container');
-  containerDiv.style.width = videoWidth + 'px';
-  containerDiv.style.height = videoHeight + 'px';
-  containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';
-  containerDiv.style.top = (innerHeight - videoHeight) / 2 + 'px';
+  // var innerHeight = this.innerHeight;
+  // var innerWidth = this.innerWidth;
+  // var videoWidth = innerWidth < aspectRatio * window.innerHeight ?
+  //                  innerWidth : aspectRatio * window.innerHeight;
+  // var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
+  //                   innerHeight : window.innerWidth / aspectRatio;
+  // containerDiv = document.getElementById('container');
+  // containerDiv.style.width = videoWidth + 'px';
+  // containerDiv.style.height = videoHeight + 'px';
+  // containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';
+  // containerDiv.style.top = (innerHeight - videoHeight) / 2 + 'px';
 };
 
 $("#chat_input_submit").click(function(){

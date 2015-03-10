@@ -14,9 +14,8 @@ var DebriefSpeakerPanel = React.createClass({
 
         <div className="panel-body" id="container">
           <div id="local">
-            <video id="localVideo" autoplay="autoplay" muted="true"/>
+            <video id="localVideo" muted="true"/>
           </div>   
-
         </div>
         
         <div className="panel-body">
@@ -30,14 +29,17 @@ var DebriefSpeakerPanel = React.createClass({
           </p>
         </div>
 
-        <div id="remote">
-          <video id="remoteVideo" autoplay="autoplay">
-          </video>
-          <div id="mini">
-            <video id="miniVideo" autoplay="autoplay" muted="true"/>
-          </div>   
-        </div>
+
+
         <div id="infoDiv"></div>
+        <div className="panel-body" id="">
+          <div id="remote">
+            <video id="remoteVideo" muted="true"/>
+          </div>
+          <div id="mini">
+            <video id="miniVideo" muted="true"/>
+          </div>  
+        </div>
         <div id="status"></div>
       </div>
     );
