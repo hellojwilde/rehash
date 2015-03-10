@@ -358,9 +358,12 @@ function messageError(msg) {
 function onUserMediaSuccess(stream) {
   console.log('User has granted access to local media.');
   // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(localVideo, stream);
+  
+  ////// instead of cameraing here, we serve a picture first
+  localVideo.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
+  //attachMediaStream(localVideo, stream);
   //// important to play it! 
-  localVideo.play();
+  //localVideo.play();
   //////allow audio to be played
   //////attachMediaStream(localAudio, stream);
   localVideo.style.opacity = 1;
@@ -521,6 +524,8 @@ function transitionToWaiting() {
                remoteVideo.src = '' }, 500);
   miniVideo.style.opacity = 0;
   remoteVideo.style.opacity = 0;
+
+  localVideo
   resetStatus();
 }
 
