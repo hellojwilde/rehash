@@ -1,14 +1,14 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefSpeakerPanel.css');
+require('./SpeakerOverview.css');
 
-var DebriefSpeakerPanel = React.createClass({
+var SpeakerOverview = React.createClass({
 
   render: function() {
     return (
-      <div className="panel panel-default DebriefSpeakerPanel">
-        <div className="panel-heading DebriefSpeakerPanel-heading">
+      <div className="panel panel-default SpeakerOverview`">
+        <div className="panel-heading SpeakerOverview`-heading">
           Michael Evans
 
           {' '}<span className="label label-danger">Live</span>
@@ -35,4 +35,4 @@ var DebriefSpeakerPanel = React.createClass({
   }
 });
 
-module.exports = DebriefSpeakerPanel;
+module.exports = SpeakerOverview;

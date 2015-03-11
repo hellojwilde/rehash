@@ -2,9 +2,9 @@ var React = require('react');
 var {Link} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefAttendeesPanel.css');
+require('./AttendeesOverview.css');
 
-var DebriefAttendeesPanel = React.createClass({
+var AttendeesOverview = React.createClass({
 
   render: function() {
     return (
@@ -86,4 +86,4 @@ var DebriefAttendeesPanel = React.createClass({
 
 });
 
-module.exports = DebriefAttendeesPanel;
+module.exports = AttendeesOverview;
