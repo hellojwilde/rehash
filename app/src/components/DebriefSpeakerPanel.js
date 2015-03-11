@@ -10,27 +10,29 @@ var DebriefSpeakerPanel = React.createClass({
       <div className="panel panel-default DebriefSpeakerPanel">
         <div className="panel-heading DebriefSpeakerPanel-heading">
           Michael Evans
+
+          {' '}<span className="label label-danger">Live</span>
         </div>
 
-        <img
-          className="img-responsive"
-          src="http://placehold.it/300x200"
-        />
-
-        <div className="panel-body">
-          <p>
-            Mike is a developer and previous Code for America captain 
-            with development interests firmly in the civic sphere. 
-            Founder of PishPosh.tv, he has worked with several startups 
-            including Forrst, Creative Market and Loveland Technologies 
-            developing products enabling people to learn new skills, and 
-            about the world around them.
-          </p>
+        <div className="panel-body" id="container">
+          <div id="local">
+            <video id="localVideo" muted="true"/>
+          </div>   
         </div>
+      
+        <div id="infoDiv"></div>
+        <div className="panel-body" id="">
+          <div id="remote">
+            <video id="remoteVideo" muted="true"/>
+          </div>
+          <div id="mini">
+            <video id="miniVideo" muted="true"/>
+          </div>  
+        </div>
+        <div id="status"></div>
       </div>
     );
   }
-
 });
 
 module.exports = DebriefSpeakerPanel;

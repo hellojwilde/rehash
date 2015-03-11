@@ -29,3 +29,5 @@ node_modules
 
 # Blasted Mac files
 .DS_Store
+
+*.pyc

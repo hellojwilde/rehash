@@ -1,0 +1,22 @@
+#localVideo {
+  width: 260px;
+  opacity: 1;
+}
+
+#remoteVideo {
+  width: 260px;
+  opacity: 1;
+  display: none;
+}
+
+#miniVideo {
+  display: none;
+}
+
+#status {
+  display: none;
+}
+
+#infoDiv {
+  display: none;
+}
