@@ -22,6 +22,7 @@ var DebriefJoinButton = React.createClass({
     if (this.props.isJoined) {
       return (
         <Link
+          to="unpaid"
           role="button"
           className="btn btn-success btn-lg DebriefJoinButton"
           disabled={true}>

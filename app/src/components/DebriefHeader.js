@@ -94,7 +94,7 @@ var DebriefHeader = React.createClass({
                 <div ref="content">
                   <div className="DebriefHeader-join pull-right">
                     <DebriefJoinButton 
-                      isJoined={this.props.isJoined}
+                      isJoined={true}
                       cost={this.props.cost}
                     />
                   </div>

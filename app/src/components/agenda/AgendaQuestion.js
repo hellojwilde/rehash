@@ -1,6 +1,8 @@
 var React = require('react');
 
-var DebriefQuestion = React.createClass({
+require('3rdparty/bootstrap/css/bootstrap.css');
+
+var AgendaQuestion = React.createClass({
 
   propTypes: {
     text: React.PropTypes.string
@@ -22,4 +24,4 @@ var DebriefQuestion = React.createClass({
 
 });
 
-module.exports = DebriefQuestion;
+module.exports = AgendaQuestion;

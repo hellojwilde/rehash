@@ -1,9 +1,11 @@
 var React = require('react/addons');
 var QuestionActionCreators = require('actions/QuestionActionCreators');
 
-var LinkedStateMixin = React.addons.LinkedStateMixin;
+var {LinkedStateMixin} = React.addons;
 
-var DebriefQuestionComposer = React.createClass({
+require('3rdparty/bootstrap/css/bootstrap.css');
+
+var AgendaQuestionComposer = React.createClass({
 
   mixins: [LinkedStateMixin],
 
@@ -45,4 +47,4 @@ var DebriefQuestionComposer = React.createClass({
 
 });
 
-module.exports = DebriefQuestionComposer;
+module.exports = AgendaQuestionComposer;

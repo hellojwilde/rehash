@@ -1,7 +1,9 @@
-var React = require('react');
+var AgendaQuestion = require('components/agenda/AgendaQuestion');
+var AgendaQuestionComposer = require('components/agenda/AgendaQuestionComposer');
 var QuestionStore = require('stores/QuestionStore');
-var DebriefQuestion = require('components/DebriefQuestion');
-var DebriefQuestionComposer = require('components/DebriefQuestionComposer');
+var React = require('react');
+
+require('3rdparty/bootstrap/css/bootstrap.css');
 
 function getStoreState(topicID) {
   return {
@@ -9,7 +11,7 @@ function getStoreState(topicID) {
   };
 }
 
-var DebriefPaidTopic = React.createClass({
+var AgendaTopic = React.createClass({
 
   propTypes: {
     topicID: React.PropTypes.number.isRequired,
@@ -43,10 +45,10 @@ var DebriefPaidTopic = React.createClass({
           <h4>Questions</h4>
 
           {this.state.questions.map(function(question, idx) {
-            return <DebriefQuestion key={idx} text={question.text} />;
+            return <AgendaQuestion key={idx} text={question.text} />;
           })}
 
-          <DebriefQuestionComposer topicID={this.props.topicID}/>
+          <AgendaQuestionComposer topicID={this.props.topicID}/>
         </div>
       </div>
     );
@@ -54,4 +56,4 @@ var DebriefPaidTopic = React.createClass({
 
 });
 
-module.exports = DebriefPaidTopic;
+module.exports = AgendaTopic;

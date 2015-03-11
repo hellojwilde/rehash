@@ -9,10 +9,9 @@ var {Route, DefaultRoute} = Router;
 
 var Routes = (
   <Route>
-    <Route handler={Home} name="home" path="/" />
     <Route handler={Debrief}>
-      <Route handler={DebriefUnpaid} name="unpaid" path="/d/experts"/>
-      <Route handler={DebriefPaid} name="paid" path="/d/experts/paid"/>
+      <Route handler={DebriefUnpaid} name="unpaid" path="/"/>
+      <Route handler={DebriefPaid} name="paid" path="/paid"/>
     </Route>
   </Route>
 );
