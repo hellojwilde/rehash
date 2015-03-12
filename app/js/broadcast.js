@@ -36,12 +36,11 @@ function initialize() {
   console.log('Initializing; room=' + roomKey + '.');
   //card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
-  localVideo.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
-  
   // Reset localVideo display to center.
   localVideo.addEventListener('loadedmetadata', function(){
     window.onresize();});
-
+  miniVideo = document.getElementById('miniVideo');
+  remoteVideo = document.getElementById('remoteVideo');
   resetStatus();
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
@@ -51,8 +50,8 @@ function initialize() {
   // Caller is always ready to create peerConnection.
   signalingReady = initiator;
 
-  if ((mediaConstraints.audio === false &&
-      mediaConstraints.video === false) || initiator) {
+  if (mediaConstraints.audio === false &&
+      mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -358,14 +357,19 @@ function messageError(msg) {
 
 function onUserMediaSuccess(stream) {
   console.log('User has granted access to local media.');
-
-  attachMediaStream(localVideo, stream);
+  // Call the polyfill wrapper to attach the media stream to this element.
+  
+  ////// instead of cameraing here, we serve a picture first
+  localVideo.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
+  //attachMediaStream(localVideo, stream);
   //// important to play it! 
-  localVideo.play();
+  //localVideo.play();
+  //////allow audio to be played
+  //////attachMediaStream(localAudio, stream);
   localVideo.style.opacity = 1;
+  remoteVideo.style.opacity = 1;
+
   localStream = stream;
-
-
   // Caller creates PeerConnection.
   maybeStart();
 }
@@ -416,8 +420,10 @@ function onIceCandidate(event) {
 
 function onRemoteStreamAdded(event) {
   console.log('Remote stream added.');
+  attachMediaStream(remoteVideo, event.stream);
   attachMediaStream(localVideo, event.stream);
   remoteStream = event.stream;
+  remoteVideo.play();
   localVideo.play();
 }
 
@@ -497,16 +503,15 @@ function waitForRemoteVideo() {
 function transitionToActive() {
   //reattachMediaStream(miniVideo, localVideo);
   remoteVideo.style.opacity = 1;
-  // if initiator, retain the local video
-  if(!initiator) {
-    reattachMediaStream(localVideo, remoteVideo);
-  }
-  setStatus('Broadcasting Started');
+  // card.style.webkitTransform = 'rotateY(-30deg)';
+  
+  //setTimeout(function() { localVideo.src = ''; }, 500);
+  reattachMediaStream(localVideo, remoteVideo);
 
   localVideo.play();
   //setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
   // Reset window display according to the asperio of remote video.
-  //window.onresize();
+  window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
             onclick=\'onHangup()\' />');
 }

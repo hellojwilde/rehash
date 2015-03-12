@@ -18,6 +18,11 @@ var SpeakerOverview = React.createClass({
           <div id="local">
             <video id="localVideo" muted="true"/>
           </div>   
+
+          <div className="buttons">
+            <button className="btn btn-primary btn-create">CREATE</button>
+            <button className="btn btn-success btn-attend">ATTEND</button>
+          </div>
         </div>
       
         <div id="infoDiv"></div>

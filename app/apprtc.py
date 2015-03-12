@@ -323,36 +323,6 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
-class HomePage(webapp2.RequestHandler):
-  def get(self):
-    target_page = 'index.html'
-
-    # room_link = base_url + '?r=' + room_key
-    # room_link = append_url_arguments(self.request, room_link)
-    # token = create_channel(room, user, token_timeout)
-    # pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
-    # pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-    # offer_constraints = make_offer_constraints()
-    # media_constraints = make_media_stream_constraints(audio, video)
-    # template_values = {'error_messages': error_messages,
-    #                'token': token,
-    #                'me': user,
-    #                'room_key': room_key,
-    #                'room_link': room_link,
-    #                'initiator': initiator,
-    #                'pc_config': json.dumps(pc_config),
-    #                'pc_constraints': json.dumps(pc_constraints),
-    #                'offer_constraints': json.dumps(offer_constraints),
-    #                'media_constraints': json.dumps(media_constraints),
-    #                'turn_url': turn_url,
-    #                'stereo': stereo,
-    #                'audio_send_codec': audio_send_codec,
-    #                'audio_receive_codec': audio_receive_codec
-    #               }
-    template_values = {}
-    template = jinja_environment.get_template(target_page)
-    self.response.out.write(template.render(template_values))
-    #self.response.out.write(target_page)
 
 ### ?? self.request.get, those methods, how they retrieve the staff?
 ### are they inherent staff of webrtc?
@@ -449,6 +419,7 @@ class MainPage(webapp2.RequestHandler):
       # Always create a new room for the unit tests.
       room_key = generate_random(8)
 
+    ### CHANGE: users will only be redirected upon user r
     if not room_key:
       room_key = generate_random(8)
       redirect = '/?r=' + room_key

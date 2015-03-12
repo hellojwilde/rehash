@@ -16,7 +16,9 @@
     "object-assign": "^2.0.0",
     "react": "^0.12.2",
     "react-router": "^0.12.4",
-    "react-scroll-components": "^0.1.0"
+    "react-scroll-components": "^0.1.0",
+    "key": "^0.1.11",
+    "mirror": "^0.3.3"
   },
   "devDependencies": {
     "css-loader": "^0.9.1",

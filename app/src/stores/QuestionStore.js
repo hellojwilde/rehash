@@ -2,7 +2,7 @@ var EventEmitter = require('events').EventEmitter;
 var Dispatcher = require('Dispatcher');
 var ActionTypes = require('constants/ActionTypes');
 
-var assign = require('object-assign')
+var assign = require('keymirror')
 
 var _questions = [];
 
