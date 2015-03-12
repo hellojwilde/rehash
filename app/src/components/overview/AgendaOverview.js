@@ -2,7 +2,7 @@ var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 
-var DebriefAgendaPanel = React.createClass({
+var AgendaOverview = React.createClass({
 
   render: function() {
     return (
@@ -28,4 +28,4 @@ var DebriefAgendaPanel = React.createClass({
 
 });
 
-module.exports = DebriefAgendaPanel;
+module.exports = AgendaOverview;

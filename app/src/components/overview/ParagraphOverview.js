@@ -1,13 +1,13 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefDescriptionPanel.css');
+require('./ParagraphOverview.css');
 
-var DebriefDescriptionPanel = React.createClass({
+var ParagraphOverview = React.createClass({
 
   render: function() {
     return (
-      <div className="panel panel-default DebriefDescriptionPanel">
+      <div className="panel panel-default ParagraphOverview">
         <div className="panel-body">
           <p className="lead">
             Michael Evans will discuss how enabling policy makers and 
@@ -21,4 +21,4 @@ var DebriefDescriptionPanel = React.createClass({
 
 });
 
-module.exports = DebriefDescriptionPanel;
+module.exports = ParagraphOverview;

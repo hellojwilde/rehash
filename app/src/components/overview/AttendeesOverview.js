@@ -1,9 +1,10 @@
 var React = require('react');
+var {Link} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefAttendeesPanel.css');
+require('./AttendeesOverview.css');
 
-var DebriefAttendeesPanel = React.createClass({
+var AttendeesOverview = React.createClass({
 
   render: function() {
     return (
@@ -62,12 +63,12 @@ var DebriefAttendeesPanel = React.createClass({
         <ul className="list-group">
           <li className="list-group-item">
             <div className="JoinOption">
-              <a 
-                href="#" 
+              <Link
+                to="paid"
                 role="button" 
                 className="btn btn-success pull-left JoinOption-join">
                 <span className="glyphicon glyphicon-plus"></span> Join
-              </a>
+              </Link>
 
               <p className="JoinOption-cost pull-right">
                 $1.99
@@ -85,4 +86,4 @@ var DebriefAttendeesPanel = React.createClass({
 
 });
 
-module.exports = DebriefAttendeesPanel;
+module.exports = AttendeesOverview;
