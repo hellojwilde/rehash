@@ -20,17 +20,3 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.JoinOption-join {
-  margin-right: 10px;
-}
-
-.JoinOption-details {
-  padding: 7px 0;
-  margin-bottom: 0;
-}
-
-.JoinOption-cost {
-  padding: 7px 0;
-  font-weight: bold;
-}

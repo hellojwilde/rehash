@@ -1,7 +1,6 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefDescriptionPanel.css');
 
 var DebriefBroadcast = React.createClass({
   render: function() {

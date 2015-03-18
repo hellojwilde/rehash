@@ -1,18 +1,31 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./ParagraphOverview.css');
+require('./OverviewDescription.css');
 
-var ParagraphOverview = React.createClass({
+const DEMO_DESCRIPTION = 
+  'Coleen Jose will discuss the process of reporting on the rapid increase \
+  in outsourcing operations in the Philippines and the impacts on \
+  Philippine youth.';
+
+var OverviewDescription = React.createClass({
+
+  propTypes: {
+    description: React.PropTypes.string
+  },
+
+  getDefaultProps: function() {
+    return {
+      description: DEMO_DESCRIPTION
+    };
+  },
 
   render: function() {
     return (
-      <div className="panel panel-default ParagraphOverview">
+      <div className="panel panel-default OverviewDescription">
         <div className="panel-body">
           <p className="lead">
-            Michael Evans will discuss how enabling policy makers and 
-            regular people to parse tough data allows for better 
-            decisions and informed communities.
+            {this.props.description}
           </p>
         </div>
       </div>
@@ -21,4 +34,4 @@ var ParagraphOverview = React.createClass({
 
 });
 
-module.exports = ParagraphOverview;
+module.exports = OverviewDescription;
