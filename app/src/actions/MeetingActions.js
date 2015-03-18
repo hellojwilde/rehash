@@ -5,8 +5,8 @@ class MeetingActions extends Actions {
 
   }
 
-  fetchSummary(meetingId) {
-
+  join(meetingId) {
+    
   }
 }
 

@@ -14,7 +14,15 @@ class CurrentUserStore extends Store {
     };
   }
 
-  handleCurrentUserLogin(user) {
+  getCurrentUserId() {
+    return this.state.userId;
+  }
+
+  getCurrentUser() {
+    
+  }
+
+  handleCurrentUserLogin(user, joined) {
     this.setState({userId: user.userId});
   }
 

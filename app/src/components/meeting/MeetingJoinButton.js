@@ -2,11 +2,12 @@ var React = require('react');
 var {Link} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefJoinButton.css');
+require('./MeetingJoinButton.css');
 
-var DebriefJoinButton = React.createClass({
+var MeetingJoinButton = React.createClass({
 
   propTypes: {
+    id: React.PropTypes.number,
     isJoined: React.PropTypes.bool,
     cost: React.PropTypes.string
   },
@@ -14,40 +15,42 @@ var DebriefJoinButton = React.createClass({
   getDefaultProps: function() {
     return {
       isJoined: false,
-      cost: '$1.99'
+      cost: 'FREE'
     };
+  },
+
+  handleClick: function() {
+    this.context.flux.getActions('meeting')
+      .join(this.props.id);
   },
 
   render: function() {
     if (this.props.isJoined) {
       return (
-        <Link
-          to="unpaid"
-          role="button"
-          className="btn btn-success btn-lg DebriefJoinButton"
+        <button
+          className="btn btn-success btn-lg MeetingJoinButton"
           disabled={true}>
-          <span className="DebriefJoinButton-major">
+          <span className="MeetingJoinButton-major">
             <span className="glyphicon glyphicon-ok"></span> Joined
           </span>
-        </Link>
+        </button>
       );
     }
 
     return (
-      <Link
-        to="paid" 
-        role="button" 
-        className="btn btn-success btn-lg DebriefJoinButton">
-        <span className="DebriefJoinButton-major">
+      <button
+        className="btn btn-success btn-lg MeetingJoinButton"
+        onClick={this.handleClick}>
+        <span className="MeetingJoinButton-major">
           <span className="glyphicon glyphicon-plus"></span> Join
         </span>
-        <span className="DebriefJoinButton-cost">
-          $1.99
+        <span className="MeetingJoinButton-cost">
+          {this.props.cost}
         </span>
-      </Link>
+      </button>
     );
   }
 
 });
 
-module.exports = DebriefJoinButton;
+module.exports = MeetingJoinButton;

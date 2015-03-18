@@ -1,6 +1,6 @@
-var React = require('react');
 var Header = require('components/Header');
-var DebriefJoinButton = require('components/DebriefJoinButton');
+var MeetingJoinButton = require('components/MeetingJoinButton');
+var React = require('react');
 var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
 
@@ -19,16 +19,15 @@ function getLinearInterpolation(inx, in1, in2, out1, out2) {
   }
 }
 
-var DebriefHeader = React.createClass({
+var MeetingHeader = React.createClass({
 
   mixins: [ScrollListenerMixin],
 
   propTypes: {
+    id: React.PropTypes.number,
     title: React.PropTypes.string,
     start: React.PropTypes.object,
-    end: React.PropTypes.object,
-    isJoined: React.PropTypes.bool,
-    cost: React.PropTypes.string
+    end: React.PropTypes.object
   },
 
   getInitialState: function() {
@@ -54,7 +53,7 @@ var DebriefHeader = React.createClass({
   render: function() {
     var isLiveNow = moment().isBetween(this.props.start, this.props.end);
     var liveNowBadge = (
-      <span className="label label-danger DebriefHeader-live">
+      <span className="label label-danger MeetingHeader-live">
         Live Now
       </span>
     );
@@ -75,28 +74,25 @@ var DebriefHeader = React.createClass({
     ); 
 
     return (
-      <div className="DebriefHeader">
-        <Header ref="header" className="DebriefHeader-header">
+      <div className="MeetingHeader">
+        <Header ref="header" className="MeetingHeader-header">
           <p 
-            className="navbar-text DebriefHeader-title"
+            className="navbar-text MeetingHeader-title"
             style={{top: headerTextTop}}>
             {this.props.title}
             {liveNowBadge}
           </p>
         </Header>
 
-        <div className="DebriefHeader-preview">
+        <div className="MeetingHeader-preview">
           <div className="container">
-            <div className="DebriefHeader-content">
+            <div className="MeetingHeader-content">
               <div 
-                className="DebriefHeader-content-inner"
+                className="MeetingHeader-content-inner"
                 style={{opacity: contentOpacity}}>
                 <div ref="content">
-                  <div className="DebriefHeader-join pull-right">
-                    <DebriefJoinButton 
-                      isJoined={true}
-                      cost={this.props.cost}
-                    />
+                  <div className="MeetingHeader-join pull-right">
+                    <MeetingJoinButton isJoined={true}/>
                   </div>
 
                   <h1>{this.props.title}</h1>
@@ -115,4 +111,4 @@ var DebriefHeader = React.createClass({
 
 });
 
-module.exports = DebriefHeader;
+module.exports = MeetingHeader;

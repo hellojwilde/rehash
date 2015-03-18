@@ -13,7 +13,7 @@ class UserStore extends Store {
     this.state = {};
   }
 
-  handleCurrentUserLogin(user) {
+  handleCurrentUserLogin(user, joined) {
 
   }
 

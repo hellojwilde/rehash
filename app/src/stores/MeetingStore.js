@@ -7,17 +7,12 @@ class MeetingStore extends Store {
     var meetingActions = flux.getActions('meeting');
 
     this.register(meetingActions.fetch, this.handleMeetingFetch);
-    this.register(meetingActions.fetchSummary, this.handleMeetingFetchSummary);
 
     this.state = {};
   }
 
   handleMeetingFetch() {
     
-  }
-
-  handleMeetingFetchSummary() {
-
   }
 }
 
