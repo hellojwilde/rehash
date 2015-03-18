@@ -7,7 +7,7 @@ var {ScrollListenerMixin} = require('react-scroll-components');
 var moment = require('moment');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./DebriefHeader.css');
+require('./MeetingHeader.css');
 
 function getLinearInterpolation(inx, in1, in2, out1, out2) {
   var outx = out1 + ((out2 - out1) * ((inx - in1) / (in2 - in1)));
