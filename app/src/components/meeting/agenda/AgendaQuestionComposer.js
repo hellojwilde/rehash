@@ -1,16 +1,18 @@
 var React = require('react/addons');
-var QuestionActionCreators = require('actions/QuestionActionCreators');
-
 var {LinkedStateMixin} = React.addons;
 
 require('3rdparty/bootstrap/css/bootstrap.css');
+
+const ENTER_KEY = 13;
+const MIN_POST_LENGTH = 1;
 
 var AgendaQuestionComposer = React.createClass({
 
   mixins: [LinkedStateMixin],
 
   propTypes: {
-    topicID: React.PropTypes.number
+    topicId: React.PropTypes.number,
+    userId: React.PropTypes.number
   },
 
   getInitialState: function() {
@@ -19,12 +21,16 @@ var AgendaQuestionComposer = React.createClass({
     };
   },
 
-  handleKeyPress: function(e) {
-    if (e.keyCode === 13 && this.state.text.length > 5) {
-      QuestionActionCreators.createQuestion(
-        this.props.topicID,
+  handleKeyUp: function(e) {
+    var QuestionActions = this.context.flux.getActions('question');
+
+    if (e.keyCode === ENTER_KEY && this.state.text.length > MIN_POST_LENGTH) {
+      QuestionActions.create(
+        this.props.topicId,
+        this.props.userId,
         this.state.text
       );
+
       this.setState({text: ''});
     }
   },
@@ -38,7 +44,7 @@ var AgendaQuestionComposer = React.createClass({
             className="form-control" 
             placeholder="Type a question..."
             valueLink={this.linkState('text')}
-            onKeyUp={this.handleKeyPress}
+            onKeyUp={this.handleKeyUp}
           />
         </div>
       </div>

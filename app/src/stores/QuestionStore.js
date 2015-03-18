@@ -1,42 +1,34 @@
-var EventEmitter = require('events').EventEmitter;
-var Dispatcher = require('Dispatcher');
-var ActionTypes = require('constants/ActionTypes');
+var {Store} = require('flummox');
 
-var assign = require('object-assign')
+class QuestionStore extends Store {
+  constructor(flux) {
+    super();
 
-var _questions = [];
+    var meetingActions = flux.getActions('meeting'),
+        questionActions = flux.getActions('question');
 
-var QuestionStore = assign({}, EventEmitter.prototype, {
+    this.register(meetingActions.fetch, this.handleMeetingFetch);
+    this.register(questionActions.create, this.handleQuestionCreate);
 
-  CHANGE_EVENT: 'change',
-
-  emitChange: function() {
-    this.emit(this.CHANGE_EVENT);
-  },
-
-  getAllForTopic: function(topicID) {
-    return _questions.filter((question) => question.topicID === topicID);
+    this.state = {};
   }
 
-});
+  getAllForTopic(topicId) {
+    return this.state[topicId] || [];
+  }
 
-QuestionStore.dispatchToken = Dispatcher.register(function(action) {
-
-  switch(action.type) {
-
-    case ActionTypes.CREATE_QUESTION:
-      _questions.push({
-        topicID: action.topicID,
-        text: action.text
-      });
-      QuestionStore.emitChange();
-      break;
-
-    default:
-      // Do nothing.
+  handleMeetingFetch(meeting) {
 
   }
 
-});
+  handleQuestionCreate(question) {
+    var questions = this.getAllForTopic(question.topicId);
+
+    this.setState({
+      [question.topicId]: questions.concat(question)
+    });
+  }
+}
 
 module.exports = QuestionStore;
+

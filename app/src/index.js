@@ -1,7 +1,12 @@
 var React = require('react');
 var Router = require('react-router');
-var Routes = require('Routes');
+var Routes = require('./Routes');
+var Flux = require('./Flux');
+
+var flux = new Flux();
 
 Router.run(Routes, Router.HistoryLocation, function(Handler) {
-  React.render(<Handler/>, document.body);
+  React.withContext({flux}, function() {
+    React.render(<Handler/>, document.body);
+  });
 });

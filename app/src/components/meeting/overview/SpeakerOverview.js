@@ -7,8 +7,8 @@ var SpeakerOverview = React.createClass({
 
   render: function() {
     return (
-      <div className="panel panel-default SpeakerOverview`">
-        <div className="panel-heading SpeakerOverview`-heading">
+      <div className="panel panel-default SpeakerOverview">
+        <div className="panel-heading SpeakerOverview-heading">
           Michael Evans
 
           {' '}<span className="label label-danger">Live</span>

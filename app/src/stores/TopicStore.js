@@ -1,43 +1,35 @@
-var EventEmitter = require('events').EventEmitter;
-var Dispatcher = require('Dispatcher');
-var ActionTypes = require('constants/ActionTypes');
+var {Store} = require('flummox');
 
-var assign = require('object-assign')
+class TopicStore extends Store {
+  constructor(flux) {
+    super();
 
-var _topics = [
-  {
-    topicID: 1,
-    text: 'Challenges with data analysis at Forrst. '
-  },
-  {
-    topicID: 2,
-    text: 'Discussion of how to balance quantitative and qualitative data.'
-  },
-  {
-    topicID: 3,
-    text: 'Building citizens engaged with data.'
-  }
-];
+    var meetingActions = flux.getActions('meeting'),
+        topicActions = flux.getActions('topic');
 
-var TopicStore = assign({}, EventEmitter.prototype, {
+    this.register(meetingActions.fetch, this.handleMeetingFetch);
+    this.register(topicActions.create, this.handleTopicCreate);
 
-  CHANGE_EVENT: 'change',
-
-  get: function() {
-    return _topics;
+    this.state = {};
   }
 
-});
-
-TopicStore.dispatchToken = Dispatcher.register(function(action) {
-
-  switch(action.type) {
-
-    default:
-      // Do nothing.
-  
+  getAllForDiscussion(meetingId) {
+    return this.state[meetingId] || [];
   }
 
-});
+  handleMeetingFetch(meeting) {
+    this.setState({
+      [meeting.id]: meeting.topics
+    });
+  }
+
+  handleTopicCreate(topic) {
+    var topics = this.getAllForMeeting(topic.meetingId);
+
+    this.setState({
+      [topic.meetingId]: topics.concat(topic)  
+    });
+  }
+}
 
 module.exports = TopicStore;
