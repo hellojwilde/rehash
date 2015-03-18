@@ -11,7 +11,7 @@ var TopicStore = require('stores/TopicStore');
 var UserActions = require('actions/UserActions');
 var UserStore = require('stores/UserStore');
 
-class Flux extends Flummox {
+class FluxRegistry extends Flummox {
   constructor() {
     super();
 
@@ -29,4 +29,4 @@ class Flux extends Flummox {
   }
 }
 
-module.exports = Flux;
+module.exports = FluxRegistry;
