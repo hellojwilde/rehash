@@ -2,20 +2,6 @@ var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 
-const DEMO_HIGHLIGHTS = [
-  {
-    type: 'TOPIC',
-    content: 'Challenges with competition for an outsourcing job'
-  },
-  {
-    type: 'QUESTION',
-    content: 'What sorts of ethical challenges were there in reporting on this?'
-  },
-  {
-    type: 'QUESTION',
-    content: 'What changes need to happen to the outsourcing industry?'
-  }
-];
 
 var OverviewHighlights = React.createClass({
 
@@ -23,13 +9,7 @@ var OverviewHighlights = React.createClass({
     highlights: React.PropTypes.arrayOf(React.PropTypes.shape({
       type: React.PropTypes.oneOf(['TOPIC', 'QUESTION']).isRequired,
       content: React.PropTypes.string.isRequired
-    }))
-  },
-
-  getDefaultProps: function() {
-    return {
-      highlights: DEMO_HIGHLIGHTS
-    };
+    })).isRequired
   },
 
   render: function() {
@@ -43,10 +23,10 @@ var OverviewHighlights = React.createClass({
           {this.props.highlights.map(function(highlight, idx) {
             return (
               <li key={idx} className="list-group-item">
-                {highlight}
+                {highlight.content}
               </li>
             );
-          });
+          })}
         </ul>
       </div>
     );

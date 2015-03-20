@@ -2,7 +2,7 @@ var React = require('react');
 var {Link} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./AttendeesOverview.css');
+require('./OverviewAttendees.css');
 
 var OverviewAttendees = React.createClass({
 
@@ -12,13 +12,7 @@ var OverviewAttendees = React.createClass({
       photoThumbnailUrl: React.PropTypes.string.isRequired,
       name: React.PropTypes.string.isRequired,
       affiliation: React.PropTypes.string
-    }))
-  },
-
-  getDefaultProps: function() {
-    return {
-      attendees: DEMO_ATTENDEES
-    };
+    })).isRequired
   },
 
   render: function() {
@@ -29,11 +23,13 @@ var OverviewAttendees = React.createClass({
         </div>
 
         <div className="panel-body row">
-          {this.attendees.map(function(attendee) {
+          {this.props.attendees.map(function(attendee) {
             return (
               <div key={attendee.id} className="col-sm-6 col-md-4 Attendee">
                 <img 
                   src={attendee.photoThumbnailUrl} 
+                  width={60}
+                  height={60}
                   className="pull-left img-thumbnail Attendee-thumbnail"
                 />
 
@@ -51,4 +47,4 @@ var OverviewAttendees = React.createClass({
 
 });
 
-module.exports = AttendeesOverview;
+module.exports = OverviewAttendees;

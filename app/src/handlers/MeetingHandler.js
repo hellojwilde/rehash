@@ -1,6 +1,8 @@
 var DocumentTitle = require('react-document-title');
 var MeetingHeader = require('components/meeting/MeetingHeader');
+var MeetingOverview = require('components/meeting/MeetingOverview');
 var React = require('react');
+var Footer = require('components/Footer');
 var {State} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
@@ -64,18 +66,11 @@ var MeetingHandler = React.createClass({
             {...this.state.meeting}
             isJoined={this.state.isJoined}
           />
-
-          <div className="container MeetingHandler-content">
-            <div className="row">
-              <div className="col-sm-5 col-md-4">
-
-              </div>
-
-              <div className="col-sm-7 col-md-8">
-
-              </div>
-            </div>
-          </div>
+          <MeetingOverview 
+            {...this.state.meeting}
+            className="MeetingHandler-content"
+          />
+          <Footer/>
         </div>
       </DocumentTitle>
     );
