@@ -1,33 +1,33 @@
 var Header = require('components/Header');
-var MeetingJoinButton = require('components/MeetingJoinButton');
+var MeetingJoinButton = require('components/meeting/MeetingJoinButton');
 var React = require('react');
 var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
 
 var moment = require('moment');
+var getLinearInterpolation = require('helpers/getLinearInterpolation');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./MeetingHeader.css');
-
-function getLinearInterpolation(inx, in1, in2, out1, out2) {
-  var outx = out1 + ((out2 - out1) * ((inx - in1) / (in2 - in1)));
-
-  if (out1 > out2) {
-    return Math.min(Math.max(outx, out2), out1);
-  } else {
-    return Math.min(Math.max(outx, out1), out2);
-  }
-}
 
 var MeetingHeader = React.createClass({
 
   mixins: [ScrollListenerMixin],
 
   propTypes: {
-    id: React.PropTypes.number,
-    title: React.PropTypes.string,
-    start: React.PropTypes.object,
-    end: React.PropTypes.object
+    id: React.PropTypes.number.isRequired,
+    title: React.PropTypes.string.isRequired,
+    start: React.PropTypes.object.isRequired,
+    end: React.PropTypes.object.isRequired,
+    isJoined: React.PropTypes.bool.isRequired,
+    // TODO: This should get isRequired as soon as the stores is wired up.
+    isLiveNow: React.PropTypes.bool
+  },
+
+  getDefaultProps: function() {
+    return {
+      isLiveNow: false
+    };
   },
 
   getInitialState: function() {
@@ -51,7 +51,6 @@ var MeetingHeader = React.createClass({
   },
 
   render: function() {
-    var isLiveNow = moment().isBetween(this.props.start, this.props.end);
     var liveNowBadge = (
       <span className="label label-danger MeetingHeader-live">
         Live Now
@@ -80,7 +79,7 @@ var MeetingHeader = React.createClass({
             className="navbar-text MeetingHeader-title"
             style={{top: headerTextTop}}>
             {this.props.title}
-            {liveNowBadge}
+            {this.props.isLiveNow && liveNowBadge}
           </p>
         </Header>
 
@@ -92,13 +91,16 @@ var MeetingHeader = React.createClass({
                 style={{opacity: contentOpacity}}>
                 <div ref="content">
                   <div className="MeetingHeader-join pull-right">
-                    <MeetingJoinButton isJoined={true}/>
+                    <MeetingJoinButton 
+                      id={this.props.id}
+                      isJoined={this.props.isJoined}
+                    />
                   </div>
 
                   <h1>{this.props.title}</h1>
                   <p className="lead">
                     {this.props.start.calendar()}
-                    {liveNowBadge}
+                    {this.props.isLiveNow && liveNowBadge}
                   </p>
                 </div>
               </div>

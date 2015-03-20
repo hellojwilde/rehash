@@ -4,33 +4,6 @@ var {Link} = require('react-router');
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./AttendeesOverview.css');
 
-const DEMO_ATTENDEES = [
-  {
-    id: 0,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Andreas Moser',
-    affiliation: 'MIT Media Lab'
-  },
-  {
-    id: 1,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Silya Mezyan',
-    affiliation: 'Al Akhawayn University'
-  },
-  {
-    id: 2,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Karina Wójcik',
-    affiliation: 'Harvard School of Public Health'
-  },
-  {
-    id: 3,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Biel Pérez',
-    affiliation: 'University of Barcelona'
-  }
-];
-
 var OverviewAttendees = React.createClass({
 
   propTypes: {

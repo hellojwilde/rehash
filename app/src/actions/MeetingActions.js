@@ -1,12 +1,17 @@
 var {Actions} = require('flummox');
 
 class MeetingActions extends Actions {
-  fetch(meetingId) {
+  constructor(api) {
+    super();
+    this.api = api;
+  }
 
+  fetch(meetingId) {
+    return this.api.meetingFetch(meetingId);
   }
 
   join(meetingId) {
-    
+    alert('join')
   }
 }
 

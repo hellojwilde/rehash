@@ -1,31 +1,21 @@
-var {Flummox} = require('flummox');
-
 var CurrentUserActions = require('actions/CurrentUserActions');
 var CurrentUserStore = require('stores/CurrentUserStore');
+var ExampleAPI = require('apis/ExampleAPI');
 var MeetingActions = require('actions/MeetingActions');
 var MeetingStore = require('stores/MeetingStore');
-var QuestionActions = require('actions/QuestionActions');
-var QuestionStore = require('stores/QuestionStore');
-var TopicActions = require('actions/TopicActions');
-var TopicStore = require('stores/TopicStore');
-var UserActions = require('actions/UserActions');
-var UserStore = require('stores/UserStore');
+var {Flummox} = require('flummox');
 
 class FluxRegistry extends Flummox {
   constructor() {
     super();
 
-    this.createActions('currentUser', CurrentUserActions);
-    this.createActions('question', QuestionActions);
-    this.createActions('meeting', MeetingActions);
-    this.createActions('topic', TopicActions);
-    this.createActions('user', UserActions);
+    var api = new ExampleAPI(this);
 
-    this.createStore('currentUser', CurrentUserStore);
-    this.createStore('question', QuestionStore);
-    this.createStore('meeting', MeetingStore);
-    this.createStore('topic', TopicStore);
-    this.createStore('user', UserStore);
+    this.createActions('currentUser', CurrentUserActions, api);
+    this.createActions('meeting', MeetingActions, api);
+
+    this.createStore('currentUser', CurrentUserStore, this);
+    this.createStore('meeting', MeetingStore, this);
   }
 }
 

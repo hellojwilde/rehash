@@ -4,11 +4,11 @@ class QuestionStore extends Store {
   constructor(flux) {
     super();
 
-    var meetingActions = flux.getActions('meeting'),
-        questionActions = flux.getActions('question');
+    var meetingActionIds = flux.getActionIds('meeting'),
+        questionActionIds = flux.getActionIds('question');
 
-    this.register(meetingActions.fetch, this.handleMeetingFetch);
-    this.register(questionActions.create, this.handleQuestionCreate);
+    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
+    this.register(questionActionIds.create, this.handleQuestionCreate);
 
     this.state = {};
   }

@@ -4,16 +4,16 @@ class TopicStore extends Store {
   constructor(flux) {
     super();
 
-    var meetingActions = flux.getActions('meeting'),
-        topicActions = flux.getActions('topic');
+    var meetingActionIds = flux.getActionIds('meeting'),
+        topicActionIds = flux.getActionIds('topic');
 
-    this.register(meetingActions.fetch, this.handleMeetingFetch);
-    this.register(topicActions.create, this.handleTopicCreate);
+    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
+    this.register(topicActionIds.create, this.handleTopicCreate);
 
     this.state = {};
   }
 
-  getAllForDiscussion(meetingId) {
+  getAllForMeeting(meetingId) {
     return this.state[meetingId] || [];
   }
 

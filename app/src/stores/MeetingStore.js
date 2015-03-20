@@ -4,15 +4,21 @@ class MeetingStore extends Store {
   constructor(flux) {
     super();
 
-    var meetingActions = flux.getActions('meeting');
+    var meetingActionIds = flux.getActionIds('meeting');
 
-    this.register(meetingActions.fetch, this.handleMeetingFetch);
+    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
 
     this.state = {};
   }
 
-  handleMeetingFetch() {
-    
+  getById(meetingId) {
+    return this.state[meetingId];
+  }
+
+  handleMeetingFetch(meeting) {
+    this.setState({
+      [meeting.id]: meeting
+    });
   }
 }
 

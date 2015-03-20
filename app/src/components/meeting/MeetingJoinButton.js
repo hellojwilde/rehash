@@ -6,22 +6,18 @@ require('./MeetingJoinButton.css');
 
 var MeetingJoinButton = React.createClass({
 
-  propTypes: {
-    id: React.PropTypes.number,
-    isJoined: React.PropTypes.bool,
-    cost: React.PropTypes.string
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
   },
 
-  getDefaultProps: function() {
-    return {
-      isJoined: false,
-      cost: 'FREE'
-    };
+  propTypes: {
+    id: React.PropTypes.number.isRequired,
+    isJoined: React.PropTypes.bool.isRequired
   },
 
   handleClick: function() {
-    this.context.flux.getActions('meeting')
-      .join(this.props.id);
+    var meetingActions = this.context.flux.getActions('meeting');
+    meetingActions.join(this.props.id);
   },
 
   render: function() {
@@ -30,9 +26,7 @@ var MeetingJoinButton = React.createClass({
         <button
           className="btn btn-success btn-lg MeetingJoinButton"
           disabled={true}>
-          <span className="MeetingJoinButton-major">
-            <span className="glyphicon glyphicon-ok"></span> Joined
-          </span>
+          <span className="glyphicon glyphicon-ok"></span> Joined
         </button>
       );
     }
@@ -41,12 +35,7 @@ var MeetingJoinButton = React.createClass({
       <button
         className="btn btn-success btn-lg MeetingJoinButton"
         onClick={this.handleClick}>
-        <span className="MeetingJoinButton-major">
-          <span className="glyphicon glyphicon-plus"></span> Join
-        </span>
-        <span className="MeetingJoinButton-cost">
-          {this.props.cost}
-        </span>
+        <span className="glyphicon glyphicon-plus"></span> Join
       </button>
     );
   }

@@ -4,30 +4,45 @@ class CurrentUserStore extends Store {
   constructor(flux) {
     super();
 
-    var currentUserActions = flux.getActions('currentUser');
+    var currentUserActionIds = flux.getActionIds('currentUser'),
+        meetingActionIds = flux.getActionIds('meeting');
 
-    this.register(currentUserActions.login, this.handleCurrentUserLogin);
-    this.register(currentUserActions.logout, this.handleCurrentUserLogout);
+    this.register(currentUserActionIds.login, this.handleCurrentUserLogin);
+    this.register(currentUserActionIds.logout, this.handleCurrentUserLogout);
+    this.register(meetingActionIds.join, this.handleMeetingJoin);
 
     this.state = {
-      userId: null
+      user: null,
+      joinedMeetingIds: {}
     };
   }
 
-  getCurrentUserId() {
-    return this.state.userId;
-  }
-
   getCurrentUser() {
-    
+    return this.state.user;
   }
 
-  handleCurrentUserLogin(user, joined) {
-    this.setState({userId: user.userId});
+  isJoined(meetingId) {
+    return !!this.state.joinedMeetingIds[meetingId];
+  }
+
+  handleCurrentUserLogin(user, joinedMeetingIds) {
+    this.setState({
+      user: user,
+      joinedMeetingIds: joinedMeetingIds.reduce(function(set, meetingId) {
+        set[meetingId] = true;
+        return set;
+      }, {})
+    });
   }
 
   handleCurrentUserLogout() {
-    this.setState({userId: null});
+    this.setState({user: null, joined: {}});
+  }
+
+  handleMeetingJoin(meetingId) {
+    var joined = this.state.joined;
+    joined[meetingId] = true;
+    this.setState({joined: joined});
   }
 }
 
