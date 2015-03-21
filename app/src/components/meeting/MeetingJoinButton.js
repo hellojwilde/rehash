@@ -20,8 +20,10 @@ var MeetingJoinButton = React.createClass({
   handleJoinClick: function() {
     var meetingActions = this.context.flux.getActions('meeting');
 
-    ensureCurrentUser(this.context.flux)
-      .then(() => meetingActions.join(this.props.id));
+    ensureCurrentUser(
+      this.context.flux,
+      'In order to join an event, we need to you to be logged in.'
+    ).then(() => meetingActions.join(this.props.id));
   },
 
   render: function() {

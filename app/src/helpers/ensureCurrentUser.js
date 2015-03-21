@@ -1,6 +1,6 @@
 var LoginModal = require('components/modals/LoginModal');
 
-function ensureCurrentUser(flux) {
+function ensureCurrentUser(flux, message) {
   var modalActions = flux.getActions('modal'),
       currentUserStore = flux.getStore('currentUser');
 
@@ -14,8 +14,11 @@ function ensureCurrentUser(flux) {
 
     modalActions.push(
       LoginModal,
-      () => resolve(currentUserStore.getCurrentUser()),
-      () => reject(null)
+      {
+        message: message,
+        onComplete: () => resolve(currentUserStore.getCurrentUser()),
+        onCancel: () => reject(null)
+      }
     );
   });
 }

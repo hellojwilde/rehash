@@ -1,11 +1,10 @@
 var {Actions} = require('flummox');
 
 class ModalActions extends Actions {
-  push(component, onComplete, onCancel) {
+  push(component, props) {
     return {
       component: component,
-      onComplete: onComplete,
-      onCancel: onCancel
+      props: props
     };
   }
 

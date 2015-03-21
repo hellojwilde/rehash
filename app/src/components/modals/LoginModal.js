@@ -9,12 +9,14 @@ var LoginModal = React.createClass({
   },
 
   propTypes: {
+    message: React.PropTypes.string,
     onComplete: React.PropTypes.func,
     onCancel: React.PropTypes.func
   },
 
   getDefaultProps: function() {
     return {
+      message: null,
       onComplete: function() {},
       onCancel: function() {}
     };
@@ -42,6 +44,10 @@ var LoginModal = React.createClass({
             </div>
 
             <div className="modal-body">
+              {this.props.message && (
+                <p>{this.props.message}</p>
+              )}
+
               <button 
                 onClick={this.handleLoginClick}
                 className="btn btn-primary btn-lg btn-block">

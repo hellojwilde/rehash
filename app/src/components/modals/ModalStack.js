@@ -9,8 +9,11 @@ var ModalStack = React.createClass({
   propTypes: {
     stack: React.PropTypes.arrayOf(React.PropTypes.shape({
       component: React.PropTypes.func.isRequired,
-      onCancel: React.PropTypes.func,
-      onComplete: React.PropTypes.func
+      props: React.PropTypes.shape({
+        message: React.PropTypes.string,
+        onCancel: React.PropTypes.func,
+        onComplete: React.PropTypes.func
+      }).isRequired
     })).isRequired
   },
 
@@ -29,11 +32,12 @@ var ModalStack = React.createClass({
       <div className="ModalStack">
         {this.props.stack.map((modal, idx) => {
           var Component = modal.component;
-          var {onCancel, onComplete} = modal;
+          var {message, onCancel, onComplete} = modal.props;
 
           return (
             <Component 
               key={idx}
+              message={message || null}
               onCancel={this.handleModalCancel.bind(this, onCancel)}
               onComplete={this.handleModalComplete.bind(this, onComplete)}
             />
