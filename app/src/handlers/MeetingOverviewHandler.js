@@ -1,5 +1,5 @@
 var FluxComponent = require('flummox/component');
-var MeetingOverview = require('components/meeting/MeetingOverview');
+var MeetingOverviewView = require('components/meeting/MeetingOverviewView');
 var React = require('react');
 
 var MeetingOverviewHandler = React.createClass({
@@ -15,7 +15,7 @@ var MeetingOverviewHandler = React.createClass({
     return (
       <FluxComponent 
         connectToStores={{meeting: (store) => store.getById(meetingId)}}>
-        <MeetingOverview/>
+        <MeetingOverviewView/>
       </FluxComponent>
     );
   }

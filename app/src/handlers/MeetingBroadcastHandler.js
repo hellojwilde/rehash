@@ -1,4 +1,5 @@
 var React = require('react');
+var MeetingBroadcastView = require('components/meeting/MeetingBroadcastView');
 
 var MeetingBroadcastHandler = React.createClass({
 
