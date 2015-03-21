@@ -13,7 +13,7 @@ class CurrentUserStore extends Store {
 
     this.state = {
       user: null,
-      joinedMeetingIds: {}
+      joined: {}
     };
   }
 
@@ -22,7 +22,7 @@ class CurrentUserStore extends Store {
   }
 
   isJoined(meetingId) {
-    return !!this.state.joinedMeetingIds[meetingId];
+    return !!this.state.joined[meetingId];
   }
 
   handleCurrentUserLogin(login) {
@@ -30,7 +30,7 @@ class CurrentUserStore extends Store {
 
     this.setState({
       user: user,
-      joinedMeetingIds: joinedMeetingIds.reduce(function(set, meetingId) {
+      joined: joinedMeetingIds.reduce(function(set, meetingId) {
         set[meetingId] = true;
         return set;
       }, {})

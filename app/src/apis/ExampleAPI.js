@@ -116,6 +116,10 @@ class ExampleAPI {
     return Promise.resolve(EXAMPLE_MEETINGS[meetingId]);
   }
 
+  meetingJoin(meetingId) {
+    return Promise.resolve(meetingId);
+  }
+
   agendaFetch(meetingId) {
     return Promise.resolve(EXAMPLE_AGENDAS[meetingId]);
   }

@@ -1,6 +1,8 @@
 var React = require('react');
 var {Link} = require('react-router');
 
+var ensureCurrentUser = require('helpers/ensureCurrentUser');
+
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./MeetingJoinButton.css');
 
@@ -15,9 +17,11 @@ var MeetingJoinButton = React.createClass({
     isJoined: React.PropTypes.bool.isRequired
   },
 
-  handleClick: function() {
+  handleJoinClick: function() {
     var meetingActions = this.context.flux.getActions('meeting');
-    meetingActions.join(this.props.id);
+
+    ensureCurrentUser(this.context.flux)
+      .then(() => meetingActions.join(this.props.id));
   },
 
   render: function() {
@@ -34,7 +38,7 @@ var MeetingJoinButton = React.createClass({
     return (
       <button
         className="btn btn-success btn-lg MeetingJoinButton"
-        onClick={this.handleClick}>
+        onClick={this.handleJoinClick}>
         <span className="glyphicon glyphicon-plus"></span> Join
       </button>
     );

@@ -11,7 +11,7 @@ class MeetingActions extends Actions {
   }
 
   join(meetingId) {
-    alert('join')
+    return this.api.meetingJoin(meetingId);
   }
 }
 
