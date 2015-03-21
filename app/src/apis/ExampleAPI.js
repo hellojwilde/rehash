@@ -97,14 +97,14 @@ class ExampleAPI {
   }
 
   // TODO: Figure out a credential to support here.
-  userLogin() {
+  currentUserLogin() {
     return Promise.resolve({
       user: EXAMPLE_USERS[0],
-      joined: []
+      joinedMeetingIds: []
     });
   }
 
-  userLogout() {
+  currentUserLogout() {
     return Promise.resolve({});
   }
 

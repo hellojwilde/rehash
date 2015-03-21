@@ -1,7 +1,8 @@
 var DocumentTitle = require('react-document-title');
 var FluxComponent = require('flummox/component');
-var MeetingOverview = require('components/meeting/MeetingOverview');
+var MeetingHeader = require('components/meeting/MeetingHeader');
 var React = require('react');
+var {RouteHandler} = require('react-router');
 
 var MeetingHandler = React.createClass({
 
@@ -16,23 +17,32 @@ var MeetingHandler = React.createClass({
 
   contextTypes: {
     flux: React.PropTypes.object.isRequired,
-    router: React.PropTypes.object.isRequired
+    router: React.PropTypes.func.isRequired
   },
 
   render: function() {
     var {meetingId} = this.context.router.getCurrentParams();
 
     return (
-      <DocumentTitle title="Meeting">
-        <FluxComponent 
-          connectToStores={['meeting', 'currentUser']}
-          stateGetter={([meetingStore, currentUserStore]) => ({
-            meeting: meetingStore.getById(meetingId),
-            isJoined: currentUserStore.isJoined(meetingId)
-          })}>
-          <MeetingOverview/>
-        </FluxComponent>
-      </DocumentTitle>
+      <FluxComponent 
+        connectToStores={['meeting', 'currentUser']}
+        stateGetter={([meetingStore, currentUserStore]) => ({
+          meeting: meetingStore.getById(meetingId),
+          isJoined: currentUserStore.isJoined(meetingId)
+        })}
+        render={(storeState) => {
+          var {meeting, isJoined} = storeState;
+
+          return (
+            <DocumentTitle title={meeting.title}>
+              <div className="MeetingHandler">
+                <MeetingHeader {...meeting} isJoined={isJoined} />
+                <RouteHandler/>
+              </div>
+            </DocumentTitle>
+          );
+        }}
+      />
     );
   }
 

@@ -25,7 +25,9 @@ class CurrentUserStore extends Store {
     return !!this.state.joinedMeetingIds[meetingId];
   }
 
-  handleCurrentUserLogin(user, joinedMeetingIds) {
+  handleCurrentUserLogin(login) {
+    var {user, joinedMeetingIds} = login;
+
     this.setState({
       user: user,
       joinedMeetingIds: joinedMeetingIds.reduce(function(set, meetingId) {

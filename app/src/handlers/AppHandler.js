@@ -1,22 +1,19 @@
-var React = require('react');
-var LoginModal = require('components/login/LoginModal');
+var FluxComponent = require('flummox/component');
 var Footer = require('components/Footer');
+var ModalStack = require('components/modals/ModalStack');
+var React = require('react');
 var {RouteHandler} = require('react-router');
 
 var AppHandler = React.createClass({
 
-  contextTypes: {
-    router: React.PropTypes.object
-  },
-
   render: function() {
-    var {isLoginVisible} = this.context.router.getCurrentQuery();
-
     return (
       <div className="AppHandler">
         <RouteHandler/>
         <Footer/>
-        <LoginModal isVisible={!!isLoginVisible} />
+        <FluxComponent connectToStores={['modal']}>
+          <ModalStack/>
+        </FluxComponent>
       </div>
     );
   }

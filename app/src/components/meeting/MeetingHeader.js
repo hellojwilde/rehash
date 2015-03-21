@@ -20,14 +20,6 @@ var MeetingHeader = React.createClass({
     start: React.PropTypes.object.isRequired,
     end: React.PropTypes.object.isRequired,
     isJoined: React.PropTypes.bool.isRequired,
-    // TODO: This should get isRequired as soon as the stores is wired up.
-    isLiveNow: React.PropTypes.bool
-  },
-
-  getDefaultProps: function() {
-    return {
-      isLiveNow: false
-    };
   },
 
   getInitialState: function() {
@@ -51,12 +43,6 @@ var MeetingHeader = React.createClass({
   },
 
   render: function() {
-    var liveNowBadge = (
-      <span className="label label-danger MeetingHeader-live">
-        Live Now
-      </span>
-    );
-
     var headerTextTop = getLinearInterpolation(
       this.state.scrollTop, 
       this.state.transitionStart,
@@ -79,7 +65,6 @@ var MeetingHeader = React.createClass({
             className="navbar-text MeetingHeader-title"
             style={{top: headerTextTop}}>
             {this.props.title}
-            {this.props.isLiveNow && liveNowBadge}
           </p>
         </Header>
 
@@ -100,7 +85,6 @@ var MeetingHeader = React.createClass({
                   <h1>{this.props.title}</h1>
                   <p className="lead">
                     {this.props.start.calendar()}
-                    {this.props.isLiveNow && liveNowBadge}
                   </p>
                 </div>
               </div>

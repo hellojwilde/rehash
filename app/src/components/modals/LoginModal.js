@@ -9,28 +9,25 @@ var LoginModal = React.createClass({
   },
 
   propTypes: {
-    onCancel: React.PropTypes.func,
     onComplete: React.PropTypes.func,
-    isVisible: React.PropTypes.bool
+    onCancel: React.PropTypes.func
   },
 
   getDefaultProps: function() {
     return {
-      onCancel: function() {},
       onComplete: function() {},
-      isVisible: false
+      onCancel: function() {}
     };
   },
 
   handleLoginClick: function() {
-    this.flux.getActions('currentUser').login();
+    Promise.resolve(this.context.flux.getActions('currentUser').login())
+      .then(() => this.props.onComplete());
   },
 
   render: function() {
     return (
-      <div 
-        className="modal" 
-        style={this.props.isVisible ? {display: 'block'} : {}}>
+      <div className="modal" style={{display: 'block'}}>
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
             <div className="modal-header">

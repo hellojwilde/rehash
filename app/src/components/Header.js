@@ -1,6 +1,6 @@
+var FluxComponent = require('flummox/component');
+var HeaderUserInfo = require('components/HeaderUserInfo');
 var React = require('react');
-var Logo = require('components/Logo');
-var LoginModalLink = require('components/login/LoginModalLink');
 
 var joinClasses = require('react/lib/joinClasses');
 
@@ -8,22 +8,6 @@ require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Header.css');
 
 var Header = React.createClass({
-
-  propTypes: {
-    currentUser: React.PropTypes.object.isRequired
-  },
-
-  renderCurrentUserLinks: function() {
-    var links = {};
-
-    if (this.props.currentUser) {
-      links['logout'] = <li><a href="#">Logout</a></li>;
-    } else {
-      links['login'] = <li><LoginModalLink>Login</LoginModalLink></li>;
-    }
-
-    return links;
-  },
 
   render: function() {
     var {children, className, ...otherProps} = this.props;
@@ -52,9 +36,12 @@ var Header = React.createClass({
           </div>
 
           <div className="collapse navbar-collapse navbar-right">
-            <ul className="nav navbar-nav">
-              {this.renderCurrentUserLinks()}
-            </ul>
+            <FluxComponent 
+              connectToStores={{currentUser: (store) => {
+                return {currentUser: store.getCurrentUser()};
+              }}}>
+              <HeaderUserInfo/>
+            </FluxComponent>
           </div> 
         </div>
       </nav>
