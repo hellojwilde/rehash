@@ -41,7 +41,7 @@ var OverviewAttendees = React.createClass({
             );
           })}
 
-          // TODO: Wire up a new join button here.
+          {/* TODO: Wire up a new join button here. */}
         </div>
       </div>
     );

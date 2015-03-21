@@ -17,6 +17,7 @@ var LoginModal = React.createClass({
   getDefaultProps: function() {
     return {
       onCancel: function() {},
+      onComplete: function() {},
       isVisible: false
     };
   },
@@ -29,8 +30,8 @@ var LoginModal = React.createClass({
     return (
       <div 
         className="modal" 
-        style={this.props.isVisible && {display: 'block'}}>
-        <div className="modal-dialog">
+        style={this.props.isVisible ? {display: 'block'} : {}}>
+        <div className="modal-dialog modal-sm">
           <div className="modal-content">
             <div className="modal-header">
               <button 
