@@ -3,8 +3,6 @@ var Router = require('react-router');
 var Routes = require('./Routes');
 var FluxRegistry = require('./FluxRegistry');
 
-var flux = new FluxRegistry();
-
 // 
 // Shamelessly based off of the existing work in:
 // 
@@ -14,21 +12,19 @@ var flux = new FluxRegistry();
 //   performRouteHandlerStaticMethod.js>
 //   
 
-function ensureDataAvailable(state, flux) {
+function ensureDataAvailable(state) {
   return Promise.all(
     state.routes
       .filter((route) => route.handler.ensureDataAvailable)
-      .map((route) => {
-        return Promise.resolve(route.handler.ensureDataAvailable(state, flux));
-      })
+      .map((route) => Promise.resolve(
+        route.handler.ensureDataAvailable(state)
+      ))
   );
 }
 
 Router.run(Routes, Router.HashLocation, function(Handler, state) {
-  ensureDataAvailable(state, flux)
-    .then(() => {
-      React.withContext({flux}, () => {
-        React.render(<Handler/>, document.body);
-      });
-    });
+  ensureDataAvailable(state)
+    .then(() => React.withContext({flux: FluxRegistry}, () => {
+      React.render(<Handler/>, document.body)
+    }));
 });

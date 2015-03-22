@@ -1,5 +1,7 @@
 var React = require('react');
 
+require('3rdparty/bootstrap/css/bootstrap.css');
+
 var MeetingLayoutContent = React.createClass({
 
   render: function() {

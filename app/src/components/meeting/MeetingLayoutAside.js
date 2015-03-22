@@ -1,6 +1,6 @@
 var React = require('react');
 
-// TODO: Make this stick to the top of the screen when we scroll down.
+require('3rdparty/bootstrap/css/bootstrap.css');
 
 var MeetingLayoutAside = React.createClass({
 

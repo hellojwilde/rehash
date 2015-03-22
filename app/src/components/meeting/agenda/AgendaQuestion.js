@@ -5,18 +5,25 @@ require('3rdparty/bootstrap/css/bootstrap.css');
 var AgendaQuestion = React.createClass({
 
   propTypes: {
-    text: React.PropTypes.string
+    user: React.PropTypes.shape({
+      name: React.PropTypes.string.isRequired,
+      photoThumbnailUrl: React.PropTypes.string.isRequired
+    }).isRequired,
+    content: React.PropTypes.string.isRequired
   },
 
   render: function() {
     return (
       <div className="media">
         <div className="media-left">
-          <img src="http://placehold.it/50x50"/>
+          <img 
+            src={this.props.user.photoThumbnailUrl}
+            alt={`${this.props.user.name} (photo)`}
+          />
         </div>
 
         <div className="media-body">
-          <p>{this.props.text}</p>
+          <p>{this.props.content}</p>
         </div>
       </div>
     );

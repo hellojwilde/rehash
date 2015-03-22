@@ -9,7 +9,8 @@ require('./MeetingJoinButton.css');
 var MeetingJoinButton = React.createClass({
 
   contextTypes: {
-    flux: React.PropTypes.object.isRequired
+    flux: React.PropTypes.object.isRequired,
+    router: React.PropTypes.func.isRequired
   },
 
   propTypes: {
@@ -20,10 +21,17 @@ var MeetingJoinButton = React.createClass({
   handleJoinClick: function() {
     var meetingActions = this.context.flux.getActions('meeting');
 
-    ensureCurrentUser(
+    var currentUserPromise = ensureCurrentUser(
       this.context.flux,
       'In order to join an event, we need to you to be logged in.'
-    ).then(() => meetingActions.join(this.props.id));
+    );
+
+    currentUserPromise
+      .then(() => meetingActions.join(this.props.id))
+      .then(() => this.context.router.replaceWith(
+        'meeting-broadcast',
+        this.context.router.getCurrentParams()
+      ));
   },
 
   render: function() {

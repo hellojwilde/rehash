@@ -1,5 +1,6 @@
 var DocumentTitle = require('react-document-title');
 var FluxComponent = require('flummox/component');
+var FluxRegistry = require('FluxRegistry');
 var MeetingHeader = require('components/meeting/MeetingHeader');
 var React = require('react');
 var {RouteHandler} = require('react-router');
@@ -7,16 +8,15 @@ var {RouteHandler} = require('react-router');
 var MeetingHandler = React.createClass({
 
   statics: {
-    ensureDataAvailable: function(state, flux) {
+    ensureDataAvailable: function(state) {
       var {meetingId} = state.params,
-          meetingActions = flux.getActions('meeting');
+          meetingActions = FluxRegistry.getActions('meeting');
 
       return meetingActions.fetch(meetingId);
-    }
+    },
   },
 
   contextTypes: {
-    flux: React.PropTypes.object.isRequired,
     router: React.PropTypes.func.isRequired
   },
 

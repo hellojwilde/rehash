@@ -79,58 +79,69 @@ const EXAMPLE_MEETINGS = {
 
 const EXAMPLE_AGENDAS = {
   0: {
-    0: {
-
-    },
-    1: {
-
-    },
-    2: {
-
-    }
+    meetingId: 0,
+    topics: [
+      {
+        id: 0,
+        content: 
+          'Challenges with competition for an outsourcing job and the role of \
+           brains and beauty in hiring decisions',
+        questions: []
+      },
+      {
+        id: 1,
+        content:
+          'Exploring the reporting process for the project and the challenges \
+           faced during production',
+        questions: []
+      },
+      {
+        id: 2,
+        content:
+          'Exploring the reporting process for the project and the challenges \
+           faced during production',
+        questions: []
+      }
+    ]
   }
 }
 
-class ExampleAPI {
-  constructor(flux) {
-    this.flux = flux;
-  }
-
+var ExampleAPI = {
   // TODO: Figure out a credential to support here.
-  currentUserLogin() {
+  currentUserLogin: function() {
     return Promise.resolve({
       user: EXAMPLE_USERS[0],
       joinedMeetingIds: []
     });
-  }
+  },
 
-  currentUserLogout() {
+  currentUserLogout: function() {
     return Promise.resolve({});
-  }
+  },
 
-  userFetch(userId) {
+  userFetch: function(userId) {
     return Promise.resolve(EXAMPLE_USERS[userId]);
-  }
+  },
 
-  meetingFetch(meetingId) {
+  meetingFetch: function(meetingId) {
     return Promise.resolve(EXAMPLE_MEETINGS[meetingId]);
-  }
+  },
 
-  meetingJoin(meetingId) {
+  meetingJoin: function(meetingId) {
     return Promise.resolve(meetingId);
-  }
+  },
 
-  agendaFetch(meetingId) {
+  agendaFetch: function(meetingId) {
     return Promise.resolve(EXAMPLE_AGENDAS[meetingId]);
+  },
+
+  createAgendaTopic: function(meetingId, content) {
+
+  },
+
+  createAgendaQuestion: function(meetingId, topicId, content) {
+
   }
-
-  createAgendaTopic(meetingId) {
-
-  }
-
-  createAgendaQuestion(meetingId, topicId) {
-
-  }
-}
+};
 
 module.exports = ExampleAPI;

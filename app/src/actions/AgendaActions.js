@@ -1,19 +1,32 @@
 var {Actions} = require('flummox');
 
 class AgendaActions extends Actions {
-  fetch(meetingId) {
-
+  constructor(api) {
+    super();
+    this.api = api;
   }
 
-  createTopic(meetingId, userId, content) {
+  fetch(meetingId) {
+    return this.api.agendaFetch(meetingId);
+  }
+
+  createTopic(meetingId, content) {
+    return this.api.agendaCreateTopic(meetingId, content);
+  }
+
+  createQuestion(meetingId, topicId, content) {
+    return this.api.agendaCreateQuestion(meetingId, topicId, content);
+  }
+
+  remoteCreateTopic(meetingId, userId, content) {
     return {
       meetingId: meetingId,
       userId: userId,
       content: content
     };
-  },
+  } 
 
-  createQuestion(meetingId, topicId, userId, content) {
+  remoteCreateQuestion(meetingId, topicId, userId, content) {
     return {
       meetingId: meetingId,
       topicId: topicId,
@@ -22,3 +35,5 @@ class AgendaActions extends Actions {
     };
   }
 }
+
+module.exports = AgendaActions;

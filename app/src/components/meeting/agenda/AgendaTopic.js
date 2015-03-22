@@ -1,37 +1,15 @@
-var AgendaQuestion = require('components/agenda/AgendaQuestion');
-var AgendaQuestionComposer = require('components/agenda/AgendaQuestionComposer');
-var QuestionStore = require('stores/QuestionStore');
+var AgendaQuestion = require('components/meeting/agenda/AgendaQuestion');
+var AgendaQuestionComposer = require('components/meeting/agenda/AgendaQuestionComposer');
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 
-function getStoreState(topicID) {
-  return {
-    questions: QuestionStore.getAllForTopic(topicID)
-  };
-}
-
 var AgendaTopic = React.createClass({
 
   propTypes: {
-    topicID: React.PropTypes.number.isRequired,
-    text: React.PropTypes.string
-  },
-
-  getInitialState: function() {
-    return getStoreState(this.props.topicID);
-  },
-
-  componentDidMount: function() {
-    QuestionStore.on(QuestionStore.CHANGE_EVENT, this.handleStoreChange);
-  },
-
-  componentWillUnmount: function() {
-    QuestionStore.off(QuestionStore.CHANGE_EVENT, this.handleStoreChange);
-  },
-
-  handleStoreChange: function() {
-    this.setState(getStoreState(this.props.topicID));
+    meetingId: React.PropTypes.number.isRequired,
+    topicId: React.PropTypes.number.isRequired,
+    content: React.PropTypes.string
   },
 
   render: function() {
@@ -39,16 +17,23 @@ var AgendaTopic = React.createClass({
       <div className="panel panel-default">
         <div className="panel-body">
           <p className="lead">
-            {this.props.text}
+            {this.props.content}
           </p>
 
           <h4>Questions</h4>
 
-          {this.state.questions.map(function(question, idx) {
-            return <AgendaQuestion key={idx} text={question.text} />;
-          })}
+          {/*this.state.questions.map(function(question, idx) {
+            return (
+              <AgendaQuestion 
+                key={idx} text={question.text}
+              />
+            );
+          })*/}
 
-          <AgendaQuestionComposer topicID={this.props.topicID}/>
+          <AgendaQuestionComposer
+            meetingId={this.props.meetingId} 
+            topicId={this.props.topicId}
+          />
         </div>
       </div>
     );
