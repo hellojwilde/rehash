@@ -1,0 +1,22 @@
+.Attendee {
+  margin: 5px 0;
+}
+
+.Attendee-info {
+  padding: 8px 0;
+}
+
+.Attendee-thumbnail {
+  margin-right: 10px;
+}
+
+.Attendee-name {
+  margin: 0;
+}
+
+.Attendee-affiliation {
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

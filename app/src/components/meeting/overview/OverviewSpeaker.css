@@ -1,0 +1,13 @@
+.OverviewSpeaker {
+  border-color: #232323;
+}
+
+.OverviewSpeaker > .panel-heading {
+  color: #fff;
+  background: #333;
+  border-color: #232323;
+}
+
+.OverviewSpeaker > .panel-body > p:last-child {
+  margin-bottom: 0;
+}

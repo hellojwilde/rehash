@@ -1,0 +1,16 @@
+.AgendaOnline {
+  margin: 0;
+  font-size: 20px;
+}
+
+.AgendaOnline-title {
+  font-size: 14px;
+  float: left;
+  margin: 12px 10px;
+  font-weight: normal;
+  color: #ccc;
+}
+
+.AgendaOnline-thumbnail {
+  margin-left: 2px;
+}

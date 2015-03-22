@@ -1,4 +1,4 @@
-application: apprtc
+application: jwilde-debrief
 version: 6
 runtime: python27
 threadsafe: true
