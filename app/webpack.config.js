@@ -17,7 +17,7 @@ module.exports = {
   module: {
     loaders: [
       {test: /\.css$/, loader: 'style-loader!css-loader'},
-      {test: /\.js$/, loader: 'react-hot!babel-loader?experimental', exclude: /node_modules/},
+      {test: /\.js$/, loader: 'react-hot!jsx-loader?harmony', exclude: /node_modules/},
       {test: /\.(png|jpg|svg|ttf|eot|woff|woff2)$/, loader: 'url-loader?limit=8192'}
     ]
   },

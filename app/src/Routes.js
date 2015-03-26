@@ -1,23 +1,17 @@
-var MeetingHandler = require('handlers/MeetingHandler');
-var MeetingOverviewHandler = require('handlers/MeetingOverviewHandler');
-var MeetingBroadcastHandler = require('handlers/MeetingBroadcastHandler');
-var AppHandler = require('handlers/AppHandler');
+var Debrief = require('handlers/Debrief');
+var DebriefUnpaid = require('handlers/DebriefUnpaid');
+var DebriefPaid = require('handlers/DebriefPaid');
+var Home = require('handlers/Home');
+var Router = require('react-router');
 var React = require('react');
-var {Route, DefaultRoute} = require('react-router');
+
+var {Route, DefaultRoute} = Router;
 
 var Routes = (
-  <Route handler={AppHandler}>
-    <Route handler={MeetingHandler}>
-      <Route 
-        name="meeting-overview" 
-        path="/meeting/:meetingId"
-        handler={MeetingOverviewHandler}
-      />
-      <Route 
-        name="meeting-broadcast"
-        path="/meeting/:meetingId/broadcast"
-        handler={MeetingBroadcastHandler}
-      />
+  <Route>
+    <Route handler={Debrief}>
+      <Route handler={DebriefUnpaid} name="unpaid" path="/"/>
+      <Route handler={DebriefPaid} name="paid" path="/paid"/>
     </Route>
   </Route>
 );

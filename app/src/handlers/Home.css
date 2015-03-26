@@ -1,0 +1,19 @@
+.Home-logo {
+  font-size: 30px;
+}
+
+.Home-jumbotron .Home-tagline {
+  color: white;
+  margin: 20px 0 30px;
+}
+
+.Home-jumbotron {
+  background: #222;
+  text-shadow: black 0px 1px 1px;
+}
+
+.Home-start {
+  font-weight: bold;
+  text-shadow: rgba(0,0,0,0.4) 0px 1px 2px;
+  box-shadow: rgba(0,0,0,0.5) 0px 1px 2px;
+}

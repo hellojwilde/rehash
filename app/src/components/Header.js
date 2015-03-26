@@ -1,6 +1,5 @@
-var FluxComponent = require('flummox/component');
-var HeaderUserInfo = require('components/HeaderUserInfo');
 var React = require('react');
+var Logo = require('components/Logo');
 
 var joinClasses = require('react/lib/joinClasses');
 
@@ -36,12 +35,9 @@ var Header = React.createClass({
           </div>
 
           <div className="collapse navbar-collapse navbar-right">
-            <FluxComponent 
-              connectToStores={{currentUser: (store) => {
-                return {currentUser: store.getCurrentUser()};
-              }}}>
-              <HeaderUserInfo/>
-            </FluxComponent>
+            <ul className="nav navbar-nav">
+              <li><a href="#">Logout</a></li>
+            </ul>
           </div> 
         </div>
       </nav>

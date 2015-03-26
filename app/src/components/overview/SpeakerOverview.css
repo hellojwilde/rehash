@@ -1,0 +1,21 @@
+.SpeakerOverview {
+  border-color: #232323;
+}
+
+.SpeakerOverview > .panel-heading {
+  color: #fff;
+  background: #333;
+  border-color: #232323;
+}
+
+.SpeakerOverview > .panel-body > p:last-child {
+  margin-bottom: 0;
+}
+
+.btn-attend {
+  float: right;
+}
+
+.buttons {
+  padding: 30px;
+}
