@@ -178,8 +178,11 @@ function createPeerConnection() {
   pc.oniceconnectionstatechange = onIceConnectionStateChanged;
 }
 
+// function that try to start connections when ready 
 function maybeStart() {
-  if (!started && signalingReady && channelReady && turnDone &&
+  // !started &&
+  // we want it to be able to restart and reinitiate and continue creating connections 
+  if ( signalingReady && channelReady && turnDone &&
       (localStream || !hasLocalStream)) {
     setStatus('Connecting...');
     console.log('Creating PeerConnection.');
@@ -321,8 +324,10 @@ function onChannelMessage(message) {
   // Message delivery due to possible datastore query at server side,
   // So callee needs to cache messages before peerConnection is created.
 
-
-  if (!initiator && !started) {
+  // 
+  // && !started commented out to allow multiple p2p connections
+  if (!initiator ) {
+    console.log('INITIATOR! inside ONCHANNELMESSAGE' )
     if (msg.type === 'offer') {
       // Add offer to the beginning of msgQueue, since we can't handle
       // Early candidates before offer at present.
@@ -334,7 +339,7 @@ function onChannelMessage(message) {
       msgQueue.push(msg);
     }
   } 
-  ////// allow people to chat with each other 
+  ////// allow people to chat with each other  ***
   else if (msg.type === 'peerMsg'){
     $('#chat_mes_display').append('<br/> Love: '+ msg.content);
   } else {
@@ -445,7 +450,8 @@ function onHangup() {
 function onRemoteHangup() {
   console.log('Session terminated.');
   initiator = 0;
-  transitionToWaiting();
+  // the host don't need to transitToWaiting at all just connect accept new connections
+  // transitionToWaiting();
   stop();
 }
 
@@ -469,30 +475,6 @@ function waitForRemoteVideo() {
     setTimeout(waitForRemoteVideo, 100);
   }
 }
-
-// ////// provide audio functionality
-// function waitForRemoteAudio() {
-//   // Call the getVideoTracks method via adapter.js.
-//   audioTracks = remoteStream.getAudioTracks();
-//   if (audioTracks.length === 0 || remoteAudio.currentTime > 0) {
-//     transitionToActive();
-//   } else {
-//     setTimeout(waitForRemoteAudio, 100);
-//   }
-// }
-
-// function transitionToActive() {
-//   reattachMediaStream(miniVideo, localVideo);
-//   remoteVideo.style.opacity = 1;
-//   // card.style.webkitTransform = 'rotateY(-30deg)';
-//   setTimeout(function() { localVideo.src = remoteVideo.src; }, 500);
-//   localVideo.play();
-//   setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
-//   // Reset window display according to the asperio of remote video.
-//   // window.onresize();
-//   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
-//             onclick=\'onHangup()\' />');
-// }
 
 function transitionToActive() {
   //reattachMediaStream(miniVideo, localVideo);

@@ -82,7 +82,9 @@ def make_loopback_answer(message):
   message = message.replace("a=ice-options:google-ice\\r\\n", "")
   return message
 
+### need to implement: if the host quit, we have to close the sesssion
 def handle_message(room, user, message):
+  logging.info('handle_message' + str(user) + message)
   message_obj = json.loads(message)
   other_user = room.get_other_user(user)
   room_key = room.key().id_or_name()
@@ -192,82 +194,148 @@ class Message(db.Model):
   client_id = db.StringProperty()
   msg = db.TextProperty()
 
+# ### Room stores personal connection detail and user properties 
+# class Room(db.Model):
+#   """All the data we store for a room"""
+#   user1 = db.StringProperty()
+#   user2 = db.StringProperty()
+#   user1_connected = db.BooleanProperty(default=False)
+#   user2_connected = db.BooleanProperty(default=False)
+
+#   def __str__(self):
+#     result = '['
+#     if self.user1:
+#       result += "%s-%r" % (self.user1, self.user1_connected)
+#     if self.user2:
+#       result += ", %s-%r" % (self.user2, self.user2_connected)
+#     result += ']'
+#     return result
+
+#   def get_occupancy(self):
+#     occupancy = 0
+#     if self.user1:
+#       occupancy += 1
+#     if self.user2:
+#       occupancy += 1
+#     return occupancy
+
+#   def get_other_user(self, user):
+#     if user == self.user1:
+#       return self.user2
+#     elif user == self.user2:
+#       return self.user1
+#     else:
+#       return None
+
+#   def has_user(self, user):
+#     return (user and (user == self.user1 or user == self.user2))
+
+#   def add_user(self, user):
+#     if not self.user1:
+#       self.user1 = user
+#     elif not self.user2:
+#       self.user2 = user
+#     else:
+#       raise RuntimeError('room is full')
+#     self.put()
+
+#   def remove_user(self, user):
+#     delete_saved_messages(make_client_id(self, user))
+#     if user == self.user2:
+#       self.user2 = None
+#       self.user2_connected = False
+#     if user == self.user1:
+#       if self.user2:
+#         self.user1 = self.user2
+#         self.user1_connected = self.user2_connected
+#         self.user2 = None
+#         self.user2_connected = False
+#       else:
+#         self.user1 = None
+#         self.user1_connected = False
+#     if self.get_occupancy() > 0:
+#       self.put()
+#     else:
+#       self.delete()
+
+#   def set_connected(self, user):
+#     if user == self.user1:
+#       self.user1_connected = True
+#     if user == self.user2:
+#       self.user2_connected = True
+#     self.put()
+
+#   def is_connected(self, user):
+#     if user == self.user1:
+#       return self.user1_connected
+#     if user == self.user2:
+#       return self.user2_connected
+
 ### Room stores personal connection detail and user properties 
 class Room(db.Model):
   """All the data we store for a room"""
-  user1 = db.StringProperty()
-  user2 = db.StringProperty()
-  user1_connected = db.BooleanProperty(default=False)
-  user2_connected = db.BooleanProperty(default=False)
+  users = db.ListProperty(str)
+  users_connected = db.ListProperty(bool)
+  index_h1 = db.IntegerProperty() ### host/broadcaster index
+  index_h1 = 0
 
   def __str__(self):
     result = '['
-    if self.user1:
-      result += "%s-%r" % (self.user1, self.user1_connected)
-    if self.user2:
-      result += ", %s-%r" % (self.user2, self.user2_connected)
+
+    for i in range(len(self.users)):
+      result += "%s-%r," % (self.users[i], self.users_connected[i])
+
+    if len(result) > 1:
+      result = result[:-1] 
     result += ']'
     return result
 
   def get_occupancy(self):
-    occupancy = 0
-    if self.user1:
-      occupancy += 1
-    if self.user2:
-      occupancy += 1
-    return occupancy
+    return len(self.users)
 
+  ### get_other_user currently implemented as get host
   def get_other_user(self, user):
-    if user == self.user1:
-      return self.user2
-    elif user == self.user2:
-      return self.user1
+    if self.users.index(user) == 0:
+      return self.users[-1]
     else:
-      return None
+      return self.users[0]
 
   def has_user(self, user):
-    return (user and (user == self.user1 or user == self.user2))
+    if user in self.users:
+      return True
+    else:
+      return False
 
   def add_user(self, user):
-    if not self.user1:
-      self.user1 = user
-    elif not self.user2:
-      self.user2 = user
-    else:
+    #ucount = len(self.users)
+    ### expand the room! 
+    if len(self.users) > 5:
       raise RuntimeError('room is full')
+    self.users.append(user)
+    self.users_connected.append(False)
     self.put()
 
+  ### ponder over when to close the room: now it is till the room has no people
+  ### if broadcaster quit, we delete the broadcast session?
   def remove_user(self, user):
-    delete_saved_messages(make_client_id(self, user))
-    if user == self.user2:
-      self.user2 = None
-      self.user2_connected = False
-    if user == self.user1:
-      if self.user2:
-        self.user1 = self.user2
-        self.user1_connected = self.user2_connected
-        self.user2 = None
-        self.user2_connected = False
-      else:
-        self.user1 = None
-        self.user1_connected = False
-    if self.get_occupancy() > 0:
+    # if self.users.index(user) == 0:
+    #   self.delete()
+    logging.info('delete user called' + str(self.get_occupancy()))
+    if user in self.users:
+      delete_saved_messages(make_client_id(self, user))
+      self.users_connected.pop(self.users.index(user))
+      self.users.remove(user)
       self.put()
-    else:
+    if self.get_occupancy() == 0:
+      logging.info('remove delete somehow' + str(self.get_occupancy()))
       self.delete()
 
   def set_connected(self, user):
-    if user == self.user1:
-      self.user1_connected = True
-    if user == self.user2:
-      self.user2_connected = True
+    self.users_connected[self.users.index(user)] = True
     self.put()
 
   def is_connected(self, user):
-    if user == self.user1:
-      return self.user1_connected
-    if user == self.user2:
-      return self.user2_connected
+    return self.users_connected[self.users.index(user)]
 
 ### transactional means atomic operation here
 @db.transactional
@@ -293,6 +361,7 @@ class ConnectPage(webapp2.RequestHandler):
       if room and room.has_user(user):
         send_saved_messages(make_client_id(room, user))
 
+### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
     key = self.request.get('from')
@@ -301,7 +370,9 @@ class DisconnectPage(webapp2.RequestHandler):
       room = Room.get_by_key_name(room_key)
       if room and room.has_user(user):
         other_user = room.get_other_user(user)
-        room.remove_user(user)
+
+        ### room.remove_user(user), we also remove user on_message, if do it here, remove 2
+
         logging.info('User ' + user + ' removed from room ' + room_key)
         logging.info('Room ' + room_key + ' has state ' + str(room))
         if other_user and other_user != user:
@@ -442,17 +513,19 @@ class MainPage(webapp2.RequestHandler):
         else:
           room.add_user(user)
           initiator = 1
-      elif room and room.get_occupancy() == 1 and debug != 'full':
+      elif room and room.get_occupancy() >= 1: # and debug != 'full':
+        logging.info("Current Occupancy: " + str(room.get_occupancy()))
         # 1 occupant.
         user = generate_random(8)
         room.add_user(user)
         initiator = 1
-      else:
-        # 2 occupants (full).
-        template = jinja_environment.get_template('full.html')
-        self.response.out.write(template.render({ 'room_key': room_key }))
-        logging.info('Room ' + room_key + ' is full')
-        return
+      # else:
+      #   logging.info("Current Occupancy: " + str(room.get_occupancy()))
+      #   # 2 occupants (full).
+      #   template = jinja_environment.get_template('full.html')
+      #   self.response.out.write(template.render({ 'room_key': room_key }))
+      #   logging.info('Room ' + room_key + ' is full')
+      #   return
 
     if turn_server == 'false':
       turn_server = None
