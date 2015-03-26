@@ -1,8 +1,9 @@
-var React = require('react');
+var Agenda = require('components/meeting/agenda/Agenda');
+var Broadcast = require('components/meeting/broadcast/Broadcast');
 var MeetingLayout = require('components/meeting/MeetingLayout');
 var MeetingLayoutAside = require('components/meeting/MeetingLayoutAside');
 var MeetingLayoutContent = require('components/meeting/MeetingLayoutContent');
-var Agenda = require('components/meeting/agenda/Agenda');
+var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 
@@ -17,7 +18,7 @@ var MeetingBroadcastView = React.createClass({
     return (
       <MeetingLayout>
         <MeetingLayoutAside>
-
+          <Broadcast/>
         </MeetingLayoutAside>
 
         <MeetingLayoutContent>

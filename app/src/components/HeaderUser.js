@@ -1,27 +1,35 @@
 var React = require('react');
 var Button = require('components/Button');
+var CreateModal = require('components/modals/CreateModal');
 
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
+var userPropType = require('types/userPropType');
 
-var HeaderUserInfo = React.createClass({
+var HeaderUser = React.createClass({
 
   contextTypes: {
-    flux: React.PropTypes.object.isRequired
+    flux: React.PropTypes.object.isRequired,
+    router: React.PropTypes.func.isRequired
   },
 
   propTypes: {
-    currentUser: React.PropTypes.shape({
-      name: React.PropTypes.string.isRequired
-    }).isRequired
+    currentUser: userPropType.isRequired
   },
 
-  handleLoginClick: function(e) {
-    e.preventDefault();
+  handleLoginClick: function() {
     ensureCurrentUser(this.context.flux);
   },
 
-  handleLogoutClick: function(e) {
-    e.preventDefault();
+  handleCreateClick: function() {
+    this.context.flux.getActions('modal').push(
+      CreateModal,
+      {
+        onComplete: function() {}
+      }
+    );
+  },
+
+  handleLogoutClick: function() {
     this.context.flux.getActions('currentUser').logout();
   },
 
@@ -30,9 +38,7 @@ var HeaderUserInfo = React.createClass({
       return (
         <ul className="nav navbar-nav">
           <li>
-            <Button onClick={this.handleLoginClick}>
-              Login
-            </Button>
+            <Button onClick={this.handleLoginClick}>Login</Button>
           </li>
         </ul>
       );
@@ -40,11 +46,19 @@ var HeaderUserInfo = React.createClass({
 
     return (
       <ul className="nav navbar-nav">
-        <li><p className="navbar-text">{this.props.currentUser.name}</p></li>
         <li>
-          <Button onClick={this.handleLogoutClick}>
-            Logout
-          </Button>
+          <button 
+            onClick={this.handleCreateClick} 
+            className="btn btn-primary btn-sm navbar-btn">
+            <span className="glyphicon glyphicon-plus"></span>{' '}
+            Create Event
+          </button>
+        </li>
+        <li>
+          <p className="navbar-text">{this.props.currentUser.name}</p>
+        </li>
+        <li>
+          <Button onClick={this.handleLogoutClick}>Logout</Button>
         </li>
       </ul>
     )
@@ -52,4 +66,4 @@ var HeaderUserInfo = React.createClass({
 
 });
 
-module.exports = HeaderUserInfo;
+module.exports = HeaderUser;

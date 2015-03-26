@@ -1,3 +1,6 @@
+var Modal = require('components/modals/Modal');
+var ModalBody = require('components/modals/ModalBody');
+var ModalHeader = require('components/modals/ModalHeader');
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
@@ -23,40 +26,26 @@ var LoginModal = React.createClass({
   },
 
   handleLoginClick: function() {
-    Promise.resolve(this.context.flux.getActions('currentUser').login())
+    this.context.flux.getActions('currentUser').login()
       .then(() => this.props.onComplete());
   },
 
   render: function() {
     return (
-      <div className="modal" style={{display: 'block'}}>
-        <div className="modal-dialog modal-sm">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button 
-                className="close" 
-                ariaLabel="Close" 
-                onClick={this.props.onCancel}>
-                <span ariaHidden="true">&times;</span>
-              </button>
+      <Modal>
+        <ModalHeader onCancel={this.props.onCancel}>Log In</ModalHeader>
+        <ModalBody>
+          {this.props.message && (
+            <p>{this.props.message}</p>
+          )}
 
-              <h4 className="modal-title">Log In</h4>
-            </div>
-
-            <div className="modal-body">
-              {this.props.message && (
-                <p>{this.props.message}</p>
-              )}
-
-              <button 
-                onClick={this.handleLoginClick}
-                className="btn btn-primary btn-lg btn-block">
-                Log in with ExampleAPI
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+          <button 
+            onClick={this.handleLoginClick}
+            className="btn btn-primary btn-lg btn-block">
+            Log in with ExampleAPI
+          </button>
+        </ModalBody>
+      </Modal>
     );
   }
 

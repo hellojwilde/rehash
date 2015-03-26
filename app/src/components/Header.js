@@ -3,6 +3,7 @@ var HeaderUser = require('components/HeaderUser');
 var React = require('react');
 
 var joinClasses = require('react/lib/joinClasses');
+var userPropType = require('types/userPropType');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Header.css');
@@ -10,7 +11,7 @@ require('./Header.css');
 var Header = React.createClass({
 
   propTypes: {
-    currentUser: React.PropTypes.object.isRequired
+    currentUser: userPropType.isRequired
   },
 
   render: function() {
