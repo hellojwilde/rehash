@@ -1,0 +1,19 @@
+var FluxRegistry = require('FluxRegistry');
+
+function getMeetingWillTransitionTo(currentHandlerName) {
+  return function(transition, params, query) {
+    var {meetingId} = params;
+    var currentUserStore = FluxRegistry.getStore('currentUser');
+    var handlerName = 'meeting-overview';
+
+    if (currentUserStore.isJoined(meetingId)) {
+      handlerName = 'meeting-broadcast';
+    }
+
+    if (handlerName !== currentHandlerName) {
+      transition.redirect(handlerName, params, query);
+    }
+  };
+}
+
+module.exports = getMeetingWillTransitionTo;

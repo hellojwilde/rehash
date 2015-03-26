@@ -9,8 +9,8 @@ var MeetingHandler = React.createClass({
 
   statics: {
     ensureDataAvailable: function(state) {
-      var {meetingId} = state.params,
-          meetingActions = FluxRegistry.getActions('meeting');
+      var {meetingId} = state.params;
+      var meetingActions = FluxRegistry.getActions('meeting');
 
       return meetingActions.fetch(meetingId);
     },
@@ -28,15 +28,20 @@ var MeetingHandler = React.createClass({
         connectToStores={['meeting', 'currentUser']}
         stateGetter={([meetingStore, currentUserStore]) => ({
           meeting: meetingStore.getById(meetingId),
+          currentUser: currentUserStore.getCurrentUser(),
           isJoined: currentUserStore.isJoined(meetingId)
         })}
         render={(storeState) => {
-          var {meeting, isJoined} = storeState;
+          var {meeting, currentUser, isJoined} = storeState;
 
           return (
             <DocumentTitle title={meeting.title}>
               <div className="MeetingHandler">
-                <MeetingHeader {...meeting} isJoined={isJoined} />
+                <MeetingHeader 
+                  {...meeting} 
+                  currentUser={currentUser} 
+                  isJoined={isJoined}
+                />
                 <RouteHandler/>
               </div>
             </DocumentTitle>

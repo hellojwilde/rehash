@@ -1,9 +1,14 @@
 var FluxComponent = require('flummox/component');
-var MeetingNavigation = require('components/meeting/MeetingNavigation');
 var MeetingOverviewView = require('components/meeting/MeetingOverviewView');
 var React = require('react');
 
+var getMeetingWillTransitionTo = require('helpers/getMeetingWillTransitionTo');
+
 var MeetingOverviewHandler = React.createClass({
+
+  statics: {
+    willTransitionTo: getMeetingWillTransitionTo('meeting-overview')
+  },
 
   contextTypes: {
     router: React.PropTypes.func.isRequired
@@ -21,15 +26,7 @@ var MeetingOverviewHandler = React.createClass({
         })}
         render={(storeState) => {
           var {meeting, isJoined} = storeState;
-
-          return (
-            <div className="MeetingOverviewHandler">
-              {isJoined && (
-                <MeetingNavigation meetingId={meetingId} title={'Overview'}/>
-              )}
-              <MeetingOverviewView {...meeting}/>
-            </div>
-          );
+          return <MeetingOverviewView {...meeting}/>;
         }}
       />
     );

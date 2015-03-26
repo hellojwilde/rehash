@@ -20,6 +20,7 @@ var MeetingHeader = React.createClass({
     start: React.PropTypes.object.isRequired,
     end: React.PropTypes.object.isRequired,
     isJoined: React.PropTypes.bool.isRequired,
+    currentUser: React.PropTypes.object.isRequired
   },
 
   getInitialState: function() {
@@ -60,7 +61,10 @@ var MeetingHeader = React.createClass({
 
     return (
       <div className="MeetingHeader">
-        <Header ref="header" className="MeetingHeader-header">
+        <Header 
+          ref="header" 
+          className="MeetingHeader-header" 
+          currentUser={this.props.currentUser}>
           <p 
             className="navbar-text MeetingHeader-title"
             style={{top: headerTextTop}}>

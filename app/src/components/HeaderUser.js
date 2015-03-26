@@ -1,5 +1,5 @@
 var React = require('react');
-var {Link} = require('react-router');
+var Button = require('components/Button');
 
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 
@@ -30,12 +30,9 @@ var HeaderUserInfo = React.createClass({
       return (
         <ul className="nav navbar-nav">
           <li>
-            <a 
-              href="#"
-              role="button"
-              onClick={this.handleLoginClick}>
+            <Button onClick={this.handleLoginClick}>
               Login
-            </a>
+            </Button>
           </li>
         </ul>
       );
@@ -45,12 +42,9 @@ var HeaderUserInfo = React.createClass({
       <ul className="nav navbar-nav">
         <li><p className="navbar-text">{this.props.currentUser.name}</p></li>
         <li>
-          <a 
-            href="#" 
-            role="button" 
-            onClick={this.handleLogoutClick}>
+          <Button onClick={this.handleLogoutClick}>
             Logout
-          </a>
+          </Button>
         </li>
       </ul>
     )
