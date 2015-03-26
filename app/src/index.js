@@ -22,7 +22,7 @@ function ensureDataAvailable(state) {
   );
 }
 
-Router.run(Routes, Router.HashLocation, function(Handler, state) {
+Router.run(Routes, Router.HistoryLocation, function(Handler, state) {
   ensureDataAvailable(state)
     .then(() => React.withContext({flux: FluxRegistry}, () => {
       React.render(<Handler/>, document.body)
