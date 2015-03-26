@@ -11,3 +11,11 @@
 .OverviewSpeaker > .panel-body > p:last-child {
   margin-bottom: 0;
 }
+
+.btn-attend {
+  float: right;
+}
+
+.buttons {
+  padding: 30px;
+}

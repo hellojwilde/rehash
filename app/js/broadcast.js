@@ -36,12 +36,11 @@ function initialize() {
   console.log('Initializing; room=' + roomKey + '.');
   //card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
-  localVideo.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
-  
   // Reset localVideo display to center.
   localVideo.addEventListener('loadedmetadata', function(){
     window.onresize();});
-
+  miniVideo = document.getElementById('miniVideo');
+  remoteVideo = document.getElementById('remoteVideo');
   resetStatus();
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
@@ -51,8 +50,8 @@ function initialize() {
   // Caller is always ready to create peerConnection.
   signalingReady = initiator;
 
-  if ((mediaConstraints.audio === false &&
-      mediaConstraints.video === false) || initiator) {
+  if (mediaConstraints.audio === false &&
+      mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -178,11 +177,8 @@ function createPeerConnection() {
   pc.oniceconnectionstatechange = onIceConnectionStateChanged;
 }
 
-// function that try to start connections when ready 
 function maybeStart() {
-  // !started &&
-  // we want it to be able to restart and reinitiate and continue creating connections 
-  if ( signalingReady && channelReady && turnDone &&
+  if (!started && signalingReady && channelReady && turnDone &&
       (localStream || !hasLocalStream)) {
     setStatus('Connecting...');
     console.log('Creating PeerConnection.');
@@ -324,10 +320,8 @@ function onChannelMessage(message) {
   // Message delivery due to possible datastore query at server side,
   // So callee needs to cache messages before peerConnection is created.
 
-  // 
-  // && !started commented out to allow multiple p2p connections
-  if (!initiator ) {
-    console.log('INITIATOR! inside ONCHANNELMESSAGE' )
+
+  if (!initiator && !started) {
     if (msg.type === 'offer') {
       // Add offer to the beginning of msgQueue, since we can't handle
       // Early candidates before offer at present.
@@ -339,7 +333,7 @@ function onChannelMessage(message) {
       msgQueue.push(msg);
     }
   } 
-  ////// allow people to chat with each other  ***
+  ////// allow people to chat with each other 
   else if (msg.type === 'peerMsg'){
     $('#chat_mes_display').append('<br/> Love: '+ msg.content);
   } else {
@@ -363,14 +357,19 @@ function messageError(msg) {
 
 function onUserMediaSuccess(stream) {
   console.log('User has granted access to local media.');
-
-  attachMediaStream(localVideo, stream);
+  // Call the polyfill wrapper to attach the media stream to this element.
+  
+  ////// instead of cameraing here, we serve a picture first
+  localVideo.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
+  //attachMediaStream(localVideo, stream);
   //// important to play it! 
-  localVideo.play();
+  //localVideo.play();
+  //////allow audio to be played
+  //////attachMediaStream(localAudio, stream);
   localVideo.style.opacity = 1;
+  remoteVideo.style.opacity = 1;
+
   localStream = stream;
-
-
   // Caller creates PeerConnection.
   maybeStart();
 }
@@ -421,8 +420,10 @@ function onIceCandidate(event) {
 
 function onRemoteStreamAdded(event) {
   console.log('Remote stream added.');
+  attachMediaStream(remoteVideo, event.stream);
   attachMediaStream(localVideo, event.stream);
   remoteStream = event.stream;
+  remoteVideo.play();
   localVideo.play();
 }
 
@@ -450,8 +451,7 @@ function onHangup() {
 function onRemoteHangup() {
   console.log('Session terminated.');
   initiator = 0;
-  // the host don't need to transitToWaiting at all just connect accept new connections
-  // transitionToWaiting();
+  transitionToWaiting();
   stop();
 }
 
@@ -476,19 +476,42 @@ function waitForRemoteVideo() {
   }
 }
 
+// ////// provide audio functionality
+// function waitForRemoteAudio() {
+//   // Call the getVideoTracks method via adapter.js.
+//   audioTracks = remoteStream.getAudioTracks();
+//   if (audioTracks.length === 0 || remoteAudio.currentTime > 0) {
+//     transitionToActive();
+//   } else {
+//     setTimeout(waitForRemoteAudio, 100);
+//   }
+// }
+
+// function transitionToActive() {
+//   reattachMediaStream(miniVideo, localVideo);
+//   remoteVideo.style.opacity = 1;
+//   // card.style.webkitTransform = 'rotateY(-30deg)';
+//   setTimeout(function() { localVideo.src = remoteVideo.src; }, 500);
+//   localVideo.play();
+//   setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
+//   // Reset window display according to the asperio of remote video.
+//   // window.onresize();
+//   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
+//             onclick=\'onHangup()\' />');
+// }
+
 function transitionToActive() {
   //reattachMediaStream(miniVideo, localVideo);
   remoteVideo.style.opacity = 1;
-  // if initiator, retain the local video
-  if(!initiator) {
-    reattachMediaStream(localVideo, remoteVideo);
-  }
-  setStatus('Broadcasting Started');
+  // card.style.webkitTransform = 'rotateY(-30deg)';
+  
+  //setTimeout(function() { localVideo.src = ''; }, 500);
+  reattachMediaStream(localVideo, remoteVideo);
 
   localVideo.play();
   //setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
   // Reset window display according to the asperio of remote video.
-  //window.onresize();
+  window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
             onclick=\'onHangup()\' />');
 }
