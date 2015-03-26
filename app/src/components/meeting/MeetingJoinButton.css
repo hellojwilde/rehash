@@ -1,0 +1,14 @@
+.MeetingJoinButton {
+  text-shadow: rgba(0,0,0,0.4) 0px 1px 2px;
+  box-shadow: rgba(0,0,0,0.5) 0px 1px 2px;
+}
+
+.MeetingJoinButton-major {
+  font-weight: bold;
+  padding-right: 10px;
+  border-right: 1px solid #2D6E2D;
+}
+
+.MeetingJoinButton-cost {
+  padding-left: 10px;
+}

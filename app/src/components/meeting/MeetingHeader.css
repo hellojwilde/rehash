@@ -1,0 +1,36 @@
+.MeetingHeader-header {
+  overflow: hidden;
+}
+
+.MeetingHeader-title {
+  font-size: 18px;
+  margin: 12px 0;
+  position: relative;
+}
+
+.MeetingHeader-preview {
+  /* TODO: This should not be hardcoded at all. */
+  background-image: url(./IMG_0467.jpg);
+  background-size: cover;
+  background-position: center bottom;
+  box-shadow: 0 -70px 150px rgba(0,0,0,0.8) inset;
+  border-bottom: 1px solid #000;
+}
+
+.MeetingHeader-content {
+  display: table;
+  height: 300px;
+  width: 100%;
+  color: white;
+  text-shadow: black 0px 1px 2px;
+}
+
+.MeetingHeader-content-inner {
+  display: table-cell;
+  vertical-align: bottom;
+  padding: 50px 0 10px;
+}
+
+.MeetingHeader-join {
+  padding: 18px 0;
+}
