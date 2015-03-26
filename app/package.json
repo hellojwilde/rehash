@@ -10,20 +10,27 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "flux": "^2.0.1",
-    "keymirror": "^0.1.1",
+    "flummox": "^3.1.1",
     "moment": "^2.9.0",
     "object-assign": "^2.0.0",
+<<<<<<< HEAD
     "react": "^0.12.2",
     "react-router": "^0.12.4",
     "react-scroll-components": "^0.1.0",
     "key": "^0.1.11",
     "mirror": "^0.3.3"
+=======
+    "react": "^0.13.1",
+    "react-document-title": "^1.0.2",
+    "react-router": "^0.13.1",
+    "react-scroll-components": "hellojwilde/react-scroll-components#patch-1"
+>>>>>>> origin/master
   },
   "devDependencies": {
+    "babel-core": "^4.7.16",
+    "babel-loader": "^4.2.0",
     "css-loader": "^0.9.1",
     "file-loader": "^0.8.1",
-    "jsx-loader": "^0.12.2",
     "react-hot-loader": "^1.1.7",
     "style-loader": "^0.8.3",
     "url-loader": "^0.5.5",
