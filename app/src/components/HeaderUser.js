@@ -13,7 +13,13 @@ var HeaderUser = React.createClass({
   },
 
   propTypes: {
-    currentUser: userPropType.isRequired
+    currentUser: userPropType
+  },
+
+  getDefaultProps: function() {
+    return {
+      currentUser: null
+    };
   },
 
   handleLoginClick: function() {

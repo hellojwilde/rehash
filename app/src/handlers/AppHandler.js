@@ -11,9 +11,10 @@ var AppHandler = React.createClass({
       <div className="AppHandler">
         <RouteHandler/>
         <Footer/>
-        <FluxComponent connectToStores={['modal']}>
-          <ModalStack/>
-        </FluxComponent>
+        <FluxComponent 
+          connectToStores={['modal']}
+          render={(data) => <ModalStack {...data}/>}
+        />
       </div>
     );
   }

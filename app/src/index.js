@@ -2,6 +2,7 @@ var React = require('react');
 var Router = require('react-router');
 var Routes = require('./Routes');
 var FluxRegistry = require('./FluxRegistry');
+var FluxComponent = require('flummox/component');
 
 // 
 // Shamelessly based off of the existing work in:
@@ -22,9 +23,14 @@ function ensureDataAvailable(state) {
   );
 }
 
-Router.run(Routes, Router.HistoryLocation, function(Handler, state) {
+Router.run(Routes, Router.HashLocation, function(Handler, state) {
   ensureDataAvailable(state)
-    .then(() => React.withContext({flux: FluxRegistry}, () => {
-      React.render(<Handler/>, document.body)
-    }));
+    .then(() => {
+      React.render(
+        <FluxComponent flux={FluxRegistry}>
+          <Handler/>
+        </FluxComponent>, 
+        document.body
+      )
+    });
 });

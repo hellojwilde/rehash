@@ -11,7 +11,7 @@ require('./Header.css');
 var Header = React.createClass({
 
   propTypes: {
-    currentUser: userPropType.isRequired
+    currentUser: userPropType
   },
 
   render: function() {

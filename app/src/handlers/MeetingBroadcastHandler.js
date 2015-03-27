@@ -14,7 +14,7 @@ var MeetingBroadcastHandler = React.createClass({
 
       return meetingActions.fetch(meetingId);
     },
-
+    
     willTransitionTo: getMeetingWillTransitionTo('meeting-broadcast')
   },
  

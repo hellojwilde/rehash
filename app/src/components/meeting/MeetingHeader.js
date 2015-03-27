@@ -5,6 +5,7 @@ var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
 
 var moment = require('moment');
+var userPropType = require('types/userPropType');
 var getLinearInterpolation = require('helpers/getLinearInterpolation');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
@@ -20,7 +21,7 @@ var MeetingHeader = React.createClass({
     start: React.PropTypes.object.isRequired,
     end: React.PropTypes.object.isRequired,
     isJoined: React.PropTypes.bool.isRequired,
-    currentUser: React.PropTypes.object.isRequired
+    currentUser: userPropType
   },
 
   getInitialState: function() {
