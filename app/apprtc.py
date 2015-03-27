@@ -495,7 +495,7 @@ class MainPage(webapp2.RequestHandler):
       room_key = generate_random(8)
       redirect = '/?r=' + room_key
       redirect = append_url_arguments(self.request, redirect)
-      self.redirect(redirect)
+      #self.redirect(redirect)
       logging.info('Redirecting visitor to base URL to ' + redirect)
       return
 
@@ -566,10 +566,26 @@ class MainPage(webapp2.RequestHandler):
     logging.info('User ' + user + ' added to room ' + room_key)
     logging.info('Room ' + room_key + ' has state ' + str(room))
 
+### Handle the case where clients request to join existing room
+class MeetingJoin(webapp2.RequestHandler):
+  def get(self, room_key):
+    page = 'index.html'
+    template_values = {}
+    template = jinja_environment.get_template(page)
+    self.response.out.write(template.render(template_values))
+
+class MeetingBroadcast(webapp2.RequestHandler):
+  def get(self, room_key):
+    page = 'sample.html'
+    template_values = {}
+    template = jinja_environment.get_template(page)
+    self.response.out.write(template.render(template_values))
+
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/paid', MainPage),
+    (r'/', MainPage),
+    (r'/meeting/(\d+)', MeetingJoin),
+    (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)

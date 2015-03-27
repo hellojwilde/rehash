@@ -4,7 +4,6 @@ var Routes = require('./Routes');
 var FluxRegistry = require('./FluxRegistry');
 var FluxComponent = require('flummox/component');
 
-// 
 // Shamelessly based off of the existing work in:
 // 
 //  <https://github.com/rackt/react-router/blob/master/examples/async-data/

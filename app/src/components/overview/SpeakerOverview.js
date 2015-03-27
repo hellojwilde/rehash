@@ -5,6 +5,8 @@ require('./SpeakerOverview.css');
 
 var SpeakerOverview = React.createClass({
 
+  
+
   render: function() {
     return (
       <div className="panel panel-default SpeakerOverview`">
