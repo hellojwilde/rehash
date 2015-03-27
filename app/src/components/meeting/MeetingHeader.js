@@ -35,7 +35,7 @@ var MeetingHeader = React.createClass({
   componentDidMount: function() {
     var headerRect = this.refs.header.getDOMNode().getBoundingClientRect();
     var contentRect = this.refs.content.getDOMNode().getBoundingClientRect();
-    var scrollTop = this.state.scrollTop;
+    var scrollTop = window.scrollY;
 
     this.setState({
       transitionStart: (contentRect.top + scrollTop) - headerRect.height,
