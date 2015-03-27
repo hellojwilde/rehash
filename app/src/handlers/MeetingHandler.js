@@ -26,7 +26,6 @@ var MeetingHandler = React.createClass({
         connectToStores={['meeting', 'currentUser']}
         stateGetter={([meetingStore, currentUserStore]) => {
           var {meetingId} = this.context.router.getCurrentParams();
-          
           return {
             meeting: meetingStore.getById(meetingId),
             isJoined: currentUserStore.isJoined(meetingId),

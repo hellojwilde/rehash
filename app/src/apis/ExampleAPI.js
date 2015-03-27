@@ -1,4 +1,5 @@
 var moment = require('moment');
+var assign = require('object-assign');
 
 var USERS = {
   0: {
@@ -135,7 +136,7 @@ var ExampleAPI = {
   meetingCreate: function(meeting) {
     var meetingId = ++MEETING_ID;
 
-    MEETINGS[meetingId] = Object.assign(meeting, {id: meetingId}); 
+    MEETINGS[meetingId] = assign(meeting, {id: meetingId}); 
     AGENDAS[meetingId] = {
       meetingId: meetingId,
       topics: []

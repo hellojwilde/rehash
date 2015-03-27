@@ -1,5 +1,7 @@
 var {Actions} = require('flummox');
 
+var assign = require('object-assign');
+
 class MeetingActions extends Actions {
   constructor(flux, api) {
     super();
@@ -19,7 +21,7 @@ class MeetingActions extends Actions {
   create(meeting) {
     var currentUserStore = this.flux.getStore('currentUser');
 
-    return this.api.meetingCreate(Object.assign(
+    return this.api.meetingCreate(assign(
       meeting,
       {host: currentUserStore.getCurrentUser()}
     ));

@@ -42,7 +42,7 @@ var CreateModal = React.createClass({
 
     meetingActions.create({
       title: this.state.title,
-      description: this.state.title,
+      description: this.state.description,
       start: moment(
         `${this.state.startDate} ${this.state.startTime}`, 
         'YYYY-MM-DD HH:mm:ss Z'
