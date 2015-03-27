@@ -20,12 +20,12 @@ To set it up locally, you'll need the following prerequisites:
 
 Once you've got that set up check out the code:
 
-  git clone https://github.com/hellojwilde/rehash.git
-  cd rehash/src
+    git clone https://github.com/hellojwilde/rehash.git
+    cd rehash/src
   
 Then build the JavaScript for the client-side webapp:
 
-  webpack
+    webpack
   
 You'll need to re-run webpack everytime you change any code in the app.
   
