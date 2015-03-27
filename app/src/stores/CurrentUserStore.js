@@ -73,6 +73,7 @@ class CurrentUserStore extends Store {
 
   handleMeetingCreate(meetingId) {
     this.setState({
+      participating: getSetWith(this.state.participating, meetingId),
       hosting: getSetWith(this.state.hosting, meetingId)
     });
   }

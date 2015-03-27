@@ -1,5 +1,5 @@
 var FluxComponent = require('flummox/component');
-var HeaderUser = require('components/HeaderUser');
+var HeaderUserNav = require('components/HeaderUserNav');
 var React = require('react');
 
 var joinClasses = require('react/lib/joinClasses');
@@ -41,7 +41,7 @@ var Header = React.createClass({
           </div>
 
           <div className="collapse navbar-collapse navbar-right">
-            <HeaderUser currentUser={this.props.currentUser}/>
+            <HeaderUserNav currentUser={this.props.currentUser}/>
           </div> 
         </div>
       </nav>

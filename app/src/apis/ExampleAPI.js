@@ -4,7 +4,7 @@ var assign = require('object-assign');
 var USERS = {
   0: {
     id: 0,
-    photoUrl: 'http://placehold.it/200x170',
+    photoUrl: 'http://placehold.it/400x300',
     photoThumbnailUrl: 'http://placehold.it/50x50',
     name: 'Jonathan Wilde',
     affiliation: 'Tufts University',
@@ -12,7 +12,7 @@ var USERS = {
   },
   4: {
     id: 4,
-    photoUrl: 'http://placehold.it/200x170',
+    photoUrl: 'http://placehold.it/400x300',
     name: 'Coleen Jose',
     bio: 
       'Coleen Jose is an American-Filipino multimedia journalist and \
@@ -139,13 +139,16 @@ var ExampleAPI = {
   meetingCreate: function(meeting) {
     var meetingId = ++MEETING_ID;
 
-    MEETINGS[meetingId] = assign(meeting, {id: meetingId}); 
+    MEETINGS[meetingId] = assign(meeting, {
+      id: meetingId,
+      highlights: [],
+      attendees: []
+    });
+
     AGENDAS[meetingId] = {
       meetingId: meetingId,
       topics: []
     };
-
-    console.log(MEETINGS, AGENDAS)
 
     return Promise.resolve(meetingId);
   },

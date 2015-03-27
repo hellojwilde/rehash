@@ -19,8 +19,13 @@ var OverviewHost = React.createClass({
           {this.props.name}
         </div>
 
+        <img 
+          src={this.props.photoUrl} 
+          alt={`${this.props.name} (photo)`}
+          className="img-responsive"
+        />
+
         <div className="panel-body" id="container">
-          <img src={this.props.photoUrl} alt={`${this.props.name} (photo)`}/>
           <p>{this.props.bio}</p>
         </div>
       </div>

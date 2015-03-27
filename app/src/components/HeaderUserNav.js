@@ -27,18 +27,21 @@ var HeaderUser = React.createClass({
   },
 
   handleCreateClick: function() {
-    this.context.flux.getActions('modal').push(
-      CreateModal,
-      {
-        onComplete: (meetingId) => {
-          console.log(meetingId);
-          this.context.router.transitionTo(
-            'meeting-overview',
-            {meetingId: meetingId}
-          )
-        }
-      }
-    );
+    ensureCurrentUser(this.context.flux)
+      .then(() => {
+        this.context.flux.getActions('modal').push(
+          CreateModal,
+          {
+            onComplete: (meetingId) => {
+              console.log(meetingId);
+              this.context.router.transitionTo(
+                'meeting-overview',
+                {meetingId: meetingId}
+              )
+            }
+          }
+        );
+      });
   },
 
   handleLogoutClick: function() {
@@ -46,32 +49,41 @@ var HeaderUser = React.createClass({
   },
 
   render: function() {
-    if (!this.props.currentUser) {
-      return (
-        <ul className="nav navbar-nav">
-          <li>
-            <Button onClick={this.handleLoginClick}>Login</Button>
-          </li>
-        </ul>
+    var buttons = {};
+
+    buttons['create'] = (
+      <li>
+        <button 
+          onClick={this.handleCreateClick} 
+          className="btn btn-primary btn-sm navbar-btn">
+          Create Meeting
+        </button>
+      </li>
+    );
+
+    if (this.props.currentUser) {
+      buttons['user'] = (
+        <li>
+          <p className="navbar-text">{this.props.currentUser.name}</p>
+        </li>
+      );
+
+      buttons['logout'] = (
+        <li>
+          <Button onClick={this.handleLogoutClick}>Logout</Button>
+        </li>
+      );
+    } else {
+      buttons['login'] = (
+        <li>
+          <Button onClick={this.handleLoginClick}>Login</Button>
+        </li>
       );
     }
 
     return (
       <ul className="nav navbar-nav">
-        <li>
-          <button 
-            onClick={this.handleCreateClick} 
-            className="btn btn-primary btn-sm navbar-btn">
-            <span className="glyphicon glyphicon-plus"></span>{' '}
-            Create Meeting
-          </button>
-        </li>
-        <li>
-          <p className="navbar-text">{this.props.currentUser.name}</p>
-        </li>
-        <li>
-          <Button onClick={this.handleLogoutClick}>Logout</Button>
-        </li>
+        {buttons}
       </ul>
     )
   }

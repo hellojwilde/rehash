@@ -49,7 +49,7 @@ var MeetingJoinButton = React.createClass({
 
     return (
       <button
-        className="btn btn-success btn-lg MeetingJoinButton"
+        className="btn btn-primary btn-lg MeetingJoinButton"
         onClick={this.handleJoinClick}>
         <span className="glyphicon glyphicon-plus"></span> Join
       </button>

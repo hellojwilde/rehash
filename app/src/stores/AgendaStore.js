@@ -20,14 +20,6 @@ class AgendaStore extends Store {
       [agenda.meetingId]: agenda
     });
   }
-
-  handleAgendaCreateQuestion() {
-
-  }
-
-  handleAgendaCreateTopic() {
-    
-  }
 }
 
 module.exports = AgendaStore;

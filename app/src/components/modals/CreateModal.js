@@ -56,7 +56,7 @@ var CreateModal = React.createClass({
         <ModalHeader onCancel={this.props.onCancel}>Create Meeting</ModalHeader>
         <ModalBody>
           <div className="form-group">
-            <label for="CreateModalTitle">Title</label>
+            <label htmlFor="CreateModalTitle">Title</label>
             <input 
               name="CreateModalTitle"
               className="form-control"
@@ -66,7 +66,7 @@ var CreateModal = React.createClass({
           </div>
 
           <div className="form-group">
-            <label for="CreateModalDescription">Description</label>
+            <label htmlFor="CreateModalDescription">Description</label>
             <textarea 
               name="CreateModalDescription"
               className="form-control"
@@ -77,7 +77,7 @@ var CreateModal = React.createClass({
           <div className="row">
             <div className="col-xs-6">
               <div className="form-group">
-                <label for="CreateModalDate">Start Date</label>
+                <label htmlFor="CreateModalDate">Start Date</label>
                 <input 
                   name="CreateModalStartDate"
                   className="form-control"
@@ -89,7 +89,7 @@ var CreateModal = React.createClass({
 
             <div className="col-xs-6">
               <div className="form-group">
-                <label for="CreateModalTime">Start Time</label>
+                <label htmlFor="CreateModalTime">Start Time</label>
                 <input 
                   name="CreateModalStartTime"
                   className="form-control"

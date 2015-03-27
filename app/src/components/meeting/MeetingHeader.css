@@ -9,11 +9,9 @@
 }
 
 .MeetingHeader-preview {
-  /* TODO: This should not be hardcoded at all. */
-  background-image: url(./IMG_0467.jpg);
-  background-size: cover;
+  background: url(./background/MeetingHeaderBackground.png) top center repeat;
   background-position: center bottom;
-  box-shadow: 0 -70px 150px rgba(0,0,0,0.8) inset;
+  box-shadow: 0 -70px 150px rgba(0,0,0,0.6) inset;
   border-bottom: 1px solid #000;
 }
 
