@@ -11,7 +11,7 @@ var Modal = React.createClass({
 
     return (
       <div className="modal" style={{display: 'block'}}>
-        <div className={joinClasses('modal-dialog modal-sm', className)}>
+        <div className={joinClasses('modal-dialog', className)}>
           <div className="modal-content">
             {children}
           </div>

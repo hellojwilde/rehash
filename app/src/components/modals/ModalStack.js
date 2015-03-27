@@ -17,14 +17,14 @@ var ModalStack = React.createClass({
     })).isRequired
   },
 
-  handleModalCancel: function(onCancelCallback) {
+  handleModalCancel: function(onCancelCallback, ...args) {
     this.context.flux.getActions('modal').pop();
-    onCancelCallback && onCancelCallback();
+    onCancelCallback && onCancelCallback(...args);
   },
 
-  handleModalComplete: function(onCompleteCallback) {
+  handleModalComplete: function(onCompleteCallback, ...args) {
     this.context.flux.getActions('modal').pop();
-    onCompleteCallback && onCompleteCallback();
+    onCompleteCallback && onCompleteCallback(...args);
   },
 
   render: function() {

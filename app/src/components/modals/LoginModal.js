@@ -32,7 +32,7 @@ var LoginModal = React.createClass({
 
   render: function() {
     return (
-      <Modal>
+      <Modal className="modal-sm">
         <ModalHeader onCancel={this.props.onCancel}>Log In</ModalHeader>
         <ModalBody>
           {this.props.message && (

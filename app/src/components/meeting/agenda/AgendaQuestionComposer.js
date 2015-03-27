@@ -22,17 +22,19 @@ var AgendaQuestionComposer = React.createClass({
   },
 
   handleKeyUp: function(e) {
-    var QuestionActions = this.context.flux.getActions('question');
+    // TODO: Implement agenda actions for all of this.
+        
+    // var QuestionActions = this.context.flux.getActions('question');
 
-    if (e.keyCode === ENTER_KEY && this.state.text.length > MIN_POST_LENGTH) {
-      QuestionActions.create(
-        this.props.topicId,
-        this.props.userId,
-        this.state.text
-      );
+    // if (e.keyCode === ENTER_KEY && this.state.text.length > MIN_POST_LENGTH) {
+    //   QuestionActions.create(
+    //     this.props.topicId,
+    //     this.props.userId,
+    //     this.state.text
+    //   );
 
-      this.setState({text: ''});
-    }
+    //   this.setState({text: ''});
+    // }
   },
 
   render: function() {

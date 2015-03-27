@@ -21,16 +21,18 @@ var MeetingHandler = React.createClass({
   },
 
   render: function() {
-    var {meetingId} = this.context.router.getCurrentParams();
-
     return (
       <FluxComponent 
         connectToStores={['meeting', 'currentUser']}
-        stateGetter={([meetingStore, currentUserStore]) => ({
-          meeting: meetingStore.getById(meetingId),
-          currentUser: currentUserStore.getCurrentUser(),
-          isJoined: currentUserStore.isJoined(meetingId)
-        })}
+        stateGetter={([meetingStore, currentUserStore]) => {
+          var {meetingId} = this.context.router.getCurrentParams();
+          
+          return {
+            meeting: meetingStore.getById(meetingId),
+            isJoined: currentUserStore.isJoined(meetingId),
+            currentUser: currentUserStore.getCurrentUser()
+          };
+        }}
         render={(storeState) => {
           var {meeting, currentUser, isJoined} = storeState;
 
@@ -42,7 +44,7 @@ var MeetingHandler = React.createClass({
                   currentUser={currentUser} 
                   isJoined={isJoined}
                 />
-                <RouteHandler/>
+                <RouteHandler {...this.props} />
               </div>
             </DocumentTitle>
           );

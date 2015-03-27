@@ -1,8 +1,10 @@
 var {Actions} = require('flummox');
 
 class MeetingActions extends Actions {
-  constructor(api) {
+  constructor(flux, api) {
     super();
+    
+    this.flux = flux;
     this.api = api;
   }
 
@@ -12,6 +14,15 @@ class MeetingActions extends Actions {
 
   join(meetingId) {
     return this.api.meetingJoin(meetingId);
+  }
+
+  create(meeting) {
+    var currentUserStore = this.flux.getStore('currentUser');
+
+    return this.api.meetingCreate(Object.assign(
+      meeting,
+      {host: currentUserStore.getCurrentUser()}
+    ));
   }
 }
 

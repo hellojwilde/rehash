@@ -9,7 +9,7 @@ var AppHandler = React.createClass({
   render: function() {
     return (
       <div className="AppHandler">
-        <RouteHandler/>
+        <RouteHandler {...this.props} />
         <Footer/>
         <FluxComponent 
           connectToStores={['modal']}

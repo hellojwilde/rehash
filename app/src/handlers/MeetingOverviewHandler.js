@@ -15,19 +15,14 @@ var MeetingOverviewHandler = React.createClass({
   },
 
   render: function() {
-    var {meetingId} = this.context.router.getCurrentParams();
-
     return (
       <FluxComponent 
-        connectToStores={['meeting', 'currentUser']}
-        stateGetter={([meetingStore, currentUserStore]) => ({
-          meeting: meetingStore.getById(meetingId),
-          isJoined: currentUserStore.isJoined(meetingId)
-        })}
-        render={(storeState) => {
-          var {meeting, isJoined} = storeState;
-          return <MeetingOverviewView {...meeting}/>;
+        connectToStores={['meeting']}
+        stateGetter={([meetingStore]) => {
+          var {meetingId} = this.context.router.getCurrentParams();
+          return meetingStore.getById(meetingId);
         }}
+        render={(meeting) => <MeetingOverviewView {...meeting}/>}
       />
     );
   }

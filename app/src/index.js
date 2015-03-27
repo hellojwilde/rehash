@@ -24,13 +24,12 @@ function ensureDataAvailable(state) {
 }
 
 Router.run(Routes, Router.HashLocation, function(Handler, state) {
-  ensureDataAvailable(state)
-    .then(() => {
-      React.render(
-        <FluxComponent flux={FluxRegistry}>
-          <Handler/>
-        </FluxComponent>, 
-        document.body
-      )
-    });
+  ensureDataAvailable(state).then(() => {
+    React.render(
+      <FluxComponent flux={FluxRegistry}>
+        <Handler/>
+      </FluxComponent>, 
+      document.body
+    )
+  });
 });

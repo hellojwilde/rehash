@@ -30,7 +30,13 @@ var HeaderUser = React.createClass({
     this.context.flux.getActions('modal').push(
       CreateModal,
       {
-        onComplete: function() {}
+        onComplete: (meetingId) => {
+          console.log(meetingId);
+          this.context.router.transitionTo(
+            'meeting-overview',
+            {meetingId: meetingId}
+          )
+        }
       }
     );
   },
@@ -57,7 +63,7 @@ var HeaderUser = React.createClass({
             onClick={this.handleCreateClick} 
             className="btn btn-primary btn-sm navbar-btn">
             <span className="glyphicon glyphicon-plus"></span>{' '}
-            Create Event
+            Create Meeting
           </button>
         </li>
         <li>

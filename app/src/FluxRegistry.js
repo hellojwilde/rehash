@@ -13,9 +13,9 @@ class FluxRegistry extends Flummox {
   constructor() {
     super();
 
-    this.createActions('agenda', AgendaActions, ExampleAPI);
+    this.createActions('agenda', AgendaActions, this, ExampleAPI);
     this.createActions('currentUser', CurrentUserActions, ExampleAPI);
-    this.createActions('meeting', MeetingActions, ExampleAPI);
+    this.createActions('meeting', MeetingActions, this, ExampleAPI);
     this.createActions('modal', ModalActions);
 
     this.createStore('agenda', AgendaStore, this);

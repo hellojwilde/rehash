@@ -19,7 +19,6 @@ var MeetingHeader = React.createClass({
     id: React.PropTypes.number.isRequired,
     title: React.PropTypes.string.isRequired,
     start: React.PropTypes.object.isRequired,
-    end: React.PropTypes.object.isRequired,
     isJoined: React.PropTypes.bool.isRequired,
     currentUser: userPropType
   },

@@ -23,12 +23,18 @@ var MeetingBroadcastHandler = React.createClass({
   },
 
   render: function() {
-    var {meetingId} = this.context.router.getCurrentParams();
-
     return (
       <FluxComponent 
-        connectToStores={{agenda: (store) => store.getByMeetingId(meetingId)}}>
-        <MeetingBroadcastView meetingId={meetingId}/>
+        connectToStores={['agenda']}
+        stateGetter={(agendaStore) => {
+          var {meetingId} = this.context.router.getCurrentParams();
+          
+          return {
+            meetingId: meetingId,
+            agenda: store.getByMeetingId(meetingId)
+          };
+        }}>
+        <MeetingBroadcastView/>
       </FluxComponent>
     );
   }

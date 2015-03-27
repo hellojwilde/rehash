@@ -1,6 +1,6 @@
 var moment = require('moment');
 
-const EXAMPLE_USERS = {
+var USERS = {
   0: {
     id: 0,
     photoThumbnailUrl: 'http://placehold.it/50x50',
@@ -43,7 +43,9 @@ const EXAMPLE_USERS = {
   }
 };
 
-const EXAMPLE_MEETINGS = {
+var MEETING_ID = 0;
+
+var MEETINGS = {
   0: {
     id: 0,
     title: 'The Philippines’s Outsourcing Wave',
@@ -52,8 +54,7 @@ const EXAMPLE_MEETINGS = {
        increase in outsourcing operations in the Philippines and the impacts \
        on Philippine youth.',
     start: moment().subtract(10, 'm'),
-    end: moment().add(1, 'h'),
-    speaker: EXAMPLE_USERS[4],
+    speaker: USERS[4],
     highlights: [
       {
         type: 'TOPIC',
@@ -69,15 +70,15 @@ const EXAMPLE_MEETINGS = {
       }
     ],
     attendees: [
-      EXAMPLE_USERS[5], 
-      EXAMPLE_USERS[6],
-      EXAMPLE_USERS[7],
-      EXAMPLE_USERS[8]
+      USERS[5], 
+      USERS[6],
+      USERS[7],
+      USERS[8]
     ]
   }
 };
 
-const EXAMPLE_AGENDAS = {
+var AGENDAS = {
   0: {
     meetingId: 0,
     topics: [
@@ -110,7 +111,7 @@ var ExampleAPI = {
   // TODO: Figure out a credential to support here.
   currentUserLogin: function() {
     return Promise.resolve({
-      user: EXAMPLE_USERS[0],
+      user: USERS[0],
       joinedMeetingIds: []
     });
   },
@@ -120,27 +121,33 @@ var ExampleAPI = {
   },
 
   userFetch: function(userId) {
-    return Promise.resolve(EXAMPLE_USERS[userId]);
+    return Promise.resolve(USERS[userId]);
   },
 
   meetingFetch: function(meetingId) {
-    return Promise.resolve(EXAMPLE_MEETINGS[meetingId]);
+    return Promise.resolve(MEETINGS[meetingId]);
   },
 
   meetingJoin: function(meetingId) {
     return Promise.resolve(meetingId);
   },
 
+  meetingCreate: function(meeting) {
+    var meetingId = ++MEETING_ID;
+
+    MEETINGS[meetingId] = Object.assign(meeting, {id: meetingId}); 
+    AGENDAS[meetingId] = {
+      meetingId: meetingId,
+      topics: []
+    };
+
+    console.log(MEETINGS, AGENDAS)
+
+    return Promise.resolve(meetingId);
+  },
+
   agendaFetch: function(meetingId) {
-    return Promise.resolve(EXAMPLE_AGENDAS[meetingId]);
-  },
-
-  createAgendaTopic: function(meetingId, content) {
-
-  },
-
-  createAgendaQuestion: function(meetingId, topicId, content) {
-
+    return Promise.resolve(AGENDAS[meetingId]);
   }
 };
 
