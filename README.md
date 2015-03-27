@@ -8,7 +8,7 @@ Simple broadcasting for online dialogues. In a nutshell, you:
 
 A [Tufts](http://www.tufts.edu/) [School of Engineering](http://engineering.tufts.edu/) senior capstone project. In partnership with [The GroundTruth Project](http://thegroundtruthproject.org/).
 
-## Development
+## Installing
 
 To set it up locally, you'll need the following already installed:
 
@@ -28,4 +28,8 @@ Then build the JavaScript for the client-side webapp:
 You'll need to re-run webpack everytime you change any code in the app.
   
 And finally, add `rehash/src` to the Google App Engine Launcher as an application, run the application, and then open the URL that you set it to run at.
+
+## Deployment
+
+Just deploy it from the Google App Engine Launcher. Boom, done.
   
