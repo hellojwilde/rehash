@@ -10,11 +10,11 @@ A [Tufts](http://www.tufts.edu/) [School of Engineering](http://engineering.tuft
 
 ## Development
 
-To set it up locally, you'll need the following prerequisites:
+To set it up locally, you'll need the following already installed:
 
 - [Google App Engine SDK](https://cloud.google.com/appengine/downloads) for Python
 - [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/)
-- The [Webpack](webpack.github.io) CLI, which you can install with `npm install -g webpack`
+- The [Webpack](http://webpack.github.io) CLI, which you can install with `npm install -g webpack`
 
 Once you've got that set up check out the code:
 
