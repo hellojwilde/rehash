@@ -31,3 +31,6 @@ node_modules
 .DS_Store
 
 *.pyc
+
+# Just no
+app/dist
