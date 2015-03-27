@@ -2,6 +2,7 @@ var DocumentTitle = require('react-document-title');
 var FluxComponent = require('flummox/component');
 var FluxRegistry = require('FluxRegistry');
 var MeetingHeader = require('components/meeting/MeetingHeader');
+var HostNav = require('components/meeting/host/HostNav');
 var React = require('react');
 var {RouteHandler} = require('react-router');
 
@@ -45,6 +46,7 @@ var MeetingHandler = React.createClass({
                   isParticipant={isParticipant}
                   isHost={isHost}
                 />
+                {isHost && <HostNav/>}
                 <RouteHandler {...this.props} />
               </div>
             </DocumentTitle>
