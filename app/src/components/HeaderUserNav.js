@@ -27,21 +27,23 @@ var HeaderUser = React.createClass({
   },
 
   handleCreateClick: function() {
-    ensureCurrentUser(this.context.flux)
-      .then(() => {
-        this.context.flux.getActions('modal').push(
-          CreateModal,
-          {
-            onComplete: (meetingId) => {
-              console.log(meetingId);
-              this.context.router.transitionTo(
-                'meeting-overview',
-                {meetingId: meetingId}
-              )
-            }
+    ensureCurrentUser(
+      this.context.flux, 
+      'In order to create a new meeting, we\'ll need you to log in.'
+    ).then(() => {
+      this.context.flux.getActions('modal').push(
+        CreateModal,
+        {
+          onComplete: (meetingId) => {
+            console.log(meetingId);
+            this.context.router.transitionTo(
+              'meeting-overview',
+              {meetingId: meetingId}
+            )
           }
-        );
-      });
+        }
+      );
+    });
   },
 
   handleLogoutClick: function() {
