@@ -15,7 +15,8 @@ var MeetingJoinButton = React.createClass({
 
   propTypes: {
     id: React.PropTypes.number.isRequired,
-    isJoined: React.PropTypes.bool.isRequired
+    isParticipant: React.PropTypes.bool.isRequired,
+    isHost: React.PropTypes.bool.isRequired
   },
 
   handleJoinClick: function() {
@@ -35,12 +36,13 @@ var MeetingJoinButton = React.createClass({
   },
 
   render: function() {
-    if (this.props.isJoined) {
+    if (this.props.isParticipant) {
       return (
         <button
           className="btn btn-success btn-lg MeetingJoinButton"
           disabled={true}>
-          <span className="glyphicon glyphicon-ok"></span> Joined
+          <span className="glyphicon glyphicon-ok"></span>{' '}Joined
+          {this.props.isHost && (<span className="label">Host</span>)}
         </button>
       );
     }

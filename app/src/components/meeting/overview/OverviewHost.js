@@ -1,9 +1,9 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./OverviewSpeaker.css');
+require('./OverviewHost.css');
 
-var OverviewSpeaker = React.createClass({
+var OverviewHost = React.createClass({
 
   propTypes: {
     id: React.PropTypes.number.isRequired,
@@ -14,8 +14,8 @@ var OverviewSpeaker = React.createClass({
 
   render: function() {
     return (
-      <div className="panel panel-default OverviewSpeaker">
-        <div className="panel-heading OverviewSpeaker-heading">
+      <div className="panel panel-default OverviewHost">
+        <div className="panel-heading OverviewHost-heading">
           {this.props.name}
         </div>
 
@@ -28,4 +28,4 @@ var OverviewSpeaker = React.createClass({
   }
 });
 
-module.exports = OverviewSpeaker;
+module.exports = OverviewHost;

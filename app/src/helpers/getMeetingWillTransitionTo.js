@@ -6,7 +6,7 @@ function getMeetingWillTransitionTo(currentHandlerName) {
     var currentUserStore = FluxRegistry.getStore('currentUser');
     var handlerName = 'meeting-overview';
 
-    if (currentUserStore.isJoined(meetingId)) {
+    if (currentUserStore.isParticipant(meetingId)) {
       handlerName = 'meeting-broadcast';
     }
 

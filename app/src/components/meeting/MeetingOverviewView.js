@@ -4,13 +4,13 @@ var MeetingLayoutAside = require('components/meeting/MeetingLayoutAside');
 var MeetingLayoutContent = require('components/meeting/MeetingLayoutContent');
 var OverviewDescription = require('components/meeting/overview/OverviewDescription');
 var OverviewAttendees = require('components/meeting/overview/OverviewAttendees');
-var OverviewSpeaker = require('components/meeting/overview/OverviewSpeaker');
+var OverviewHost = require('components/meeting/overview/OverviewHost');
 var OverviewHighlights = require('components/meeting/overview/OverviewHighlights');
 
 var MeetingOverviewView = React.createClass({
 
   propTypes: {
-    speaker: React.PropTypes.object.isRequired,
+    host: React.PropTypes.object.isRequired,
     description: React.PropTypes.string.isRequired,
     highlights: React.PropTypes.array.isRequired,
     attendees: React.PropTypes.array.isRequired
@@ -20,7 +20,7 @@ var MeetingOverviewView = React.createClass({
     return (
       <MeetingLayout>
         <MeetingLayoutAside>
-          <OverviewSpeaker {...this.props.speaker} />
+          <OverviewHost {...this.props.host} />
         </MeetingLayoutAside>
 
         <MeetingLayoutContent>

@@ -19,7 +19,8 @@ var MeetingHeader = React.createClass({
     id: React.PropTypes.number.isRequired,
     title: React.PropTypes.string.isRequired,
     start: React.PropTypes.object.isRequired,
-    isJoined: React.PropTypes.bool.isRequired,
+    isParticipant: React.PropTypes.bool.isRequired,
+    isHost: React.PropTypes.bool.isRequired,
     currentUser: userPropType
   },
 
@@ -82,7 +83,8 @@ var MeetingHeader = React.createClass({
                   <div className="MeetingHeader-join pull-right">
                     <MeetingJoinButton 
                       id={this.props.id}
-                      isJoined={this.props.isJoined}
+                      isParticipant={this.props.isParticipant}
+                      isHost={this.props.isHost}
                     />
                   </div>
 

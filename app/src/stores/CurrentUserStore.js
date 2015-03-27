@@ -1,5 +1,21 @@
 var {Store} = require('flummox');
 
+function getSetFromArray(arr) {
+  return arr.reduce(function(set, item) {
+    set[item] = true;
+    return set;
+  }, {});
+}
+
+function getSetWith(set, item) {
+  set[item] = true;
+  return set;
+}
+
+function isInSet(set, item) {
+  return !!set[item];
+}
+
 class CurrentUserStore extends Store {
   constructor(flux) {
     super();
@@ -10,10 +26,12 @@ class CurrentUserStore extends Store {
     this.register(currentUserActionIds.login, this.handleCurrentUserLogin);
     this.register(currentUserActionIds.logout, this.handleCurrentUserLogout);
     this.register(meetingActionIds.join, this.handleMeetingJoin);
+    this.register(meetingActionIds.create, this.handleMeetingCreate);
 
     this.state = {
       user: null,
-      joined: {}
+      participating: {},
+      hosting: {}
     };
   }
 
@@ -21,30 +39,42 @@ class CurrentUserStore extends Store {
     return this.state.user;
   }
 
-  isJoined(meetingId) {
-    return !!this.state.joined[meetingId];
+  isParticipant(meetingId) {
+    return isInSet(this.state.participating, meetingId);
+  }
+
+  isHost(meetingId) {
+    return isInSet(this.state.hosting, meetingId);
   }
 
   handleCurrentUserLogin(login) {
-    var {user, joinedMeetingIds} = login;
+    var {user, participating, hosting} = login;
 
     this.setState({
       user: user,
-      joined: joinedMeetingIds.reduce(function(set, meetingId) {
-        set[meetingId] = true;
-        return set;
-      }, {})
+      participating: getSetFromArray(participating),
+      hosting: getSetFromArray(hosting)
     });
   }
 
   handleCurrentUserLogout() {
-    this.setState({user: null, joined: {}});
+    this.setState({
+      user: null, 
+      participating: {},
+      hosting: {}
+    });
   }
 
   handleMeetingJoin(meetingId) {
-    var joined = this.state.joined;
-    joined[meetingId] = true;
-    this.setState({joined: joined});
+    this.setState({
+      participating: getSetWith(this.state.participating, meetingId)
+    });
+  }
+
+  handleMeetingCreate(meetingId) {
+    this.setState({
+      hosting: getSetWith(this.state.hosting, meetingId)
+    });
   }
 }
 

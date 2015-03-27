@@ -4,9 +4,11 @@ var assign = require('object-assign');
 var USERS = {
   0: {
     id: 0,
+    photoUrl: 'http://placehold.it/200x170',
     photoThumbnailUrl: 'http://placehold.it/50x50',
     name: 'Jonathan Wilde',
-    affiliation: 'Tufts University'
+    affiliation: 'Tufts University',
+    bio: ''
   },
   4: {
     id: 4,
@@ -55,7 +57,7 @@ var MEETINGS = {
        increase in outsourcing operations in the Philippines and the impacts \
        on Philippine youth.',
     start: moment().subtract(10, 'm'),
-    speaker: USERS[4],
+    host: USERS[4],
     highlights: [
       {
         type: 'TOPIC',
@@ -113,7 +115,8 @@ var ExampleAPI = {
   currentUserLogin: function() {
     return Promise.resolve({
       user: USERS[0],
-      joinedMeetingIds: []
+      participating: [],
+      hosting: []
     });
   },
 

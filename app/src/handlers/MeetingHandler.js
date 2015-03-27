@@ -28,12 +28,13 @@ var MeetingHandler = React.createClass({
           var {meetingId} = this.context.router.getCurrentParams();
           return {
             meeting: meetingStore.getById(meetingId),
-            isJoined: currentUserStore.isJoined(meetingId),
+            isParticipant: currentUserStore.isParticipant(meetingId),
+            isHost: currentUserStore.isHost(meetingId),
             currentUser: currentUserStore.getCurrentUser()
           };
         }}
         render={(storeState) => {
-          var {meeting, currentUser, isJoined} = storeState;
+          var {meeting, currentUser, isParticipant, isHost} = storeState;
 
           return (
             <DocumentTitle title={meeting.title}>
@@ -41,7 +42,8 @@ var MeetingHandler = React.createClass({
                 <MeetingHeader 
                   {...meeting} 
                   currentUser={currentUser} 
-                  isJoined={isJoined}
+                  isParticipant={isParticipant}
+                  isHost={isHost}
                 />
                 <RouteHandler {...this.props} />
               </div>
