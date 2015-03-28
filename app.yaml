@@ -9,19 +9,19 @@ handlers:
   static_dir: html
 
 - url: /images
-  static_dir: images
+  static_dir: client/images
 
 - url: /js
-  static_dir: js
+  static_dir: client/js
 
 - url: /dist
-  static_dir: dist
+  static_dir: client/dist
 
 - url: /css
-  static_dir: css
+  static_dir: client/css
 
 - url: /.*
-  script: apprtc.app
+  script: server.apprtc.app
   secure: always
 
 inbound_services:

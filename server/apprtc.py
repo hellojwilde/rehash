@@ -573,10 +573,16 @@ class MeetingJoin(webapp2.RequestHandler):
     template_values = {}
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
+    # page = 'index.html'
+    # template_values = {}
+    # loader = jinja2.FileSystemLoader('../client')
+    # environment = jinja2.Environment(loader=loader)
+    # template = environment.get_template(page)
+    # self.response.out.write(template.render(template_values))
 
 class MeetingBroadcast(webapp2.RequestHandler):
   def get(self, room_key):
-    page = 'sample.html'
+    page = 'index.html'
     template_values = {}
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
