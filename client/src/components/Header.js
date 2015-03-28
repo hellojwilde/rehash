@@ -35,7 +35,7 @@ var Header = React.createClass({
               <span className="icon-bar"></span>
             </button>
 
-            <a className="navbar-brand Header-brand" href="#">Debrief</a>
+            <a className="navbar-brand Header-brand" href="#">Rehash</a>
 
             {this.props.children}
           </div>
