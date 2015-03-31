@@ -18,7 +18,7 @@ var MeetingBroadcastView = React.createClass({
     return (
       <MeetingLayout>
         <MeetingLayoutAside>
-          <Broadcast/>
+          <Broadcast meetingId={this.props.meetingId} />
         </MeetingLayoutAside>
 
         <MeetingLayoutContent>

@@ -1,3 +1,13 @@
 video {
 	width: 292px;
 }
+.btnrow {
+	text-align: center;
+}
+.btnstop {
+	margin-left: 50px;
+	width: 100px;
+}
+.btnstart {
+	width: 100px;
+}

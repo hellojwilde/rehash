@@ -369,8 +369,6 @@ function onUserMediaSuccess(stream) {
   localVideo.play();
   localVideo.style.opacity = 1;
   localStream = stream;
-
-
   // Caller creates PeerConnection.
   maybeStart();
 }

@@ -79,29 +79,37 @@ def create_channel(room, user, duration_minutes):
 
 def make_loopback_answer(message):
   message = message.replace("\"offer\"", "\"answer\"")
-  message = message.replace("a=ice-options:google-ice\\r\\n", "")
+  message = message.replace("a=ice- options:google-ice\\r\\n", "")
   return message
 
 ### need to implement: if the host quit, we have to close the sesssion
 def handle_message(room, user, message):
+  # implement broadcast to OTHERUSERS! 
   logging.info('handle_message' + str(user) + message)
   message_obj = json.loads(message)
-  other_user = room.get_other_user(user)
+  other_users = room.get_other_users(user)
   room_key = room.key().id_or_name()
+
+  ### the bye functionality has been depreciated and replaced
   if message_obj['type'] == 'bye':
-    # This would remove the other_user in loopback test too.
-    # So check its availability before forwarding Bye message.
     room.remove_user(user)
     logging.info('User ' + user + ' quit from room ' + room_key)
     logging.info('Room ' + room_key + ' has state ' + str(room))
-  if other_user and room.has_user(other_user):
-    if message_obj['type'] == 'offer':
-      # Special case the loopback scenario.
-      if other_user == user:
-        message = make_loopback_answer(message)
-    if message_obj['type'] == 'peerMsg':
-      logging.info(message_obj['content'])
-    on_message(room, other_user, message)
+  if message_obj['type'] == 'broadcast':
+    logging.info('User ' + user + ' started broadcasting')
+    room.select_host(user)
+  if other_users:  
+    # if message_obj['type'] == 'offer':
+    #   # if user in other_users:
+    #   #   message = make_loopback_answer(message)
+    #   on_message(room, room.host, message)
+    for other_user in other_users:
+      ### Special case the loopback scenario.
+      ### disable loopback; add it back if required 
+      if message_obj['type'] == 'offer':
+        if other_user == user:
+          message = make_loopback_answer(message)
+      on_message(room, other_user, message)
   else:
     # For unittest
     on_message(room, user, message)
@@ -194,97 +202,19 @@ class Message(db.Model):
   client_id = db.StringProperty()
   msg = db.TextProperty()
 
-# ### Room stores personal connection detail and user properties 
-# class Room(db.Model):
-#   """All the data we store for a room"""
-#   user1 = db.StringProperty()
-#   user2 = db.StringProperty()
-#   user1_connected = db.BooleanProperty(default=False)
-#   user2_connected = db.BooleanProperty(default=False)
-
-#   def __str__(self):
-#     result = '['
-#     if self.user1:
-#       result += "%s-%r" % (self.user1, self.user1_connected)
-#     if self.user2:
-#       result += ", %s-%r" % (self.user2, self.user2_connected)
-#     result += ']'
-#     return result
-
-#   def get_occupancy(self):
-#     occupancy = 0
-#     if self.user1:
-#       occupancy += 1
-#     if self.user2:
-#       occupancy += 1
-#     return occupancy
-
-#   def get_other_user(self, user):
-#     if user == self.user1:
-#       return self.user2
-#     elif user == self.user2:
-#       return self.user1
-#     else:
-#       return None
-
-#   def has_user(self, user):
-#     return (user and (user == self.user1 or user == self.user2))
-
-#   def add_user(self, user):
-#     if not self.user1:
-#       self.user1 = user
-#     elif not self.user2:
-#       self.user2 = user
-#     else:
-#       raise RuntimeError('room is full')
-#     self.put()
-
-#   def remove_user(self, user):
-#     delete_saved_messages(make_client_id(self, user))
-#     if user == self.user2:
-#       self.user2 = None
-#       self.user2_connected = False
-#     if user == self.user1:
-#       if self.user2:
-#         self.user1 = self.user2
-#         self.user1_connected = self.user2_connected
-#         self.user2 = None
-#         self.user2_connected = False
-#       else:
-#         self.user1 = None
-#         self.user1_connected = False
-#     if self.get_occupancy() > 0:
-#       self.put()
-#     else:
-#       self.delete()
-
-#   def set_connected(self, user):
-#     if user == self.user1:
-#       self.user1_connected = True
-#     if user == self.user2:
-#       self.user2_connected = True
-#     self.put()
-
-#   def is_connected(self, user):
-#     if user == self.user1:
-#       return self.user1_connected
-#     if user == self.user2:
-#       return self.user2_connected
-
 ### Room stores personal connection detail and user properties 
 class Room(db.Model):
   """All the data we store for a room"""
   users = db.ListProperty(str)
   users_connected = db.ListProperty(bool)
-  index_h1 = db.IntegerProperty() ### host/broadcaster index
-  index_h1 = 0
+  host = db.StringProperty() ### host/broadcaster index
+  host_started = db.BooleanProperty()
+  host_started = False
 
   def __str__(self):
     result = '['
-
     for i in range(len(self.users)):
       result += "%s-%r," % (self.users[i], self.users_connected[i])
-
     if len(result) > 1:
       result = result[:-1] 
     result += ']'
@@ -293,12 +223,13 @@ class Room(db.Model):
   def get_occupancy(self):
     return len(self.users)
 
-  ### get_other_user currently implemented as get host
-  def get_other_user(self, user):
-    if self.users.index(user) == 0:
-      return self.users[-1]
-    else:
-      return self.users[0]
+  def get_other_users(self, user):
+    users = [];
+    for other_user in self.users:
+      if other_user != user: 
+        users.append(other_user)
+    logging.info("other users: " + ''.join(users))
+    return users
 
   def has_user(self, user):
     if user in self.users:
@@ -307,16 +238,18 @@ class Room(db.Model):
       return False
 
   def add_user(self, user):
-    #ucount = len(self.users)
-    ### expand the room! 
-    if len(self.users) > 5:
-      raise RuntimeError('room is full')
+    ### consider limiting the number of audiences here! 
     self.users.append(user)
     self.users_connected.append(False)
     self.put()
 
-  ### ponder over when to close the room: now it is till the room has no people
-  ### if broadcaster quit, we delete the broadcast session?
+  ### chose the given host and start broadcasting
+  def select_host(self, user):
+    self.host = user
+    self.host_started = True
+    self.put()
+    logging.info("Host chosen and start broadcasting")
+
   def remove_user(self, user):
     # if self.users.index(user) == 0:
     #   self.delete()
@@ -326,16 +259,27 @@ class Room(db.Model):
       self.users_connected.pop(self.users.index(user))
       self.users.remove(user)
       self.put()
-    if self.get_occupancy() == 0:
-      logging.info('remove delete somehow' + str(self.get_occupancy()))
-      self.delete()
+    cur_num_users = len(self.users)
+    for j in range(cur_num_users ):
+      i = cur_num_users - j - 1
+      if self.users_connected[i] == False:
+        delete_saved_messages(make_client_id(self, self.users[i]))
+        self.users_connected.pop(i)
+        self.users.remove(self.users[i])
+        self.put()
+    if self.get_occupancy() == 0 or self.host == user:
+      logging.info('ROOM DELETED' + str(self.get_occupancy()))
+    self.delete()
 
   def set_connected(self, user):
     self.users_connected[self.users.index(user)] = True
     self.put()
 
   def is_connected(self, user):
-    return self.users_connected[self.users.index(user)]
+    if user in self.users:
+      return self.users_connected[self.users.index(user)]
+    else: 
+      return False
 
 ### transactional means atomic operation here
 @db.transactional
@@ -369,16 +313,16 @@ class DisconnectPage(webapp2.RequestHandler):
     with LOCK:
       room = Room.get_by_key_name(room_key)
       if room and room.has_user(user):
-        other_user = room.get_other_user(user)
-
-        ### room.remove_user(user), we also remove user on_message, if do it here, remove 2
-
-        logging.info('User ' + user + ' removed from room ' + room_key)
-        logging.info('Room ' + room_key + ' has state ' + str(room))
-        if other_user and other_user != user:
-          channel.send_message(make_client_id(room, other_user),
-                               '{"type":"bye"}')
-          logging.info('Sent BYE to ' + other_user)
+        other_users = room.get_other_users(user)
+        for other_user in other_users:
+          ##### look into the add/removal scheme here! 
+          #room.remove_user(user) #, we also remove user on_message, if do it here, remove 2
+          logging.info('User ' + user + ' removed from room ' + room_key)
+          logging.info('Room ' + room_key + ' has state ' + str(room))
+          if other_user and other_user != user:
+            channel.send_message(make_client_id(room, other_user),
+                                 '{"type":"bye"}')
+            logging.info('Sent BYE to ' + other_user)
     logging.warning('User ' + user + ' disconnected from room ' + room_key)
 
 ### Got message from clients here? 
@@ -394,178 +338,11 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
-
-### ?? self.request.get, those methods, how they retrieve the staff?
 ### are they inherent staff of webrtc?
 class MainPage(webapp2.RequestHandler):
   """The main UI page, renders the 'index.html' template."""
   def get(self):
-    """Renders the main page. When this page is shown, we create a new
-    channel to push asynchronous updates to the client."""
-
-    # Append strings to this list to have them thrown up in message boxes. This
-    # will also cause the app to fail.
-    error_messages = []
-    # Get the base url without arguments.
-    base_url = self.request.path_url
-    user_agent = self.request.headers['User-Agent']
-    room_key = sanitize(self.request.get('r'))
-    ### 
-    room_key = re.sub(r'[^a-zA-Z0-9\[\]]','', room_key)
-    ###
-    stun_server = self.request.get('ss')
-    if not stun_server:
-      stun_server = get_default_stun_server(user_agent)
-    turn_server = self.request.get('ts')
-    ts_pwd = self.request.get('tp')
-
-    # Use "audio" and "video" to set the media stream constraints. Defined here:
-    # http://goo.gl/V7cZg
-    #
-    # "true" and "false" are recognized and interpreted as bools, for example:
-    #   "?audio=true&video=false" (Start an audio-only call.)
-    #   "?audio=false" (Start a video-only call.)
-    # If unspecified, the stream constraint defaults to True.
-    #
-    # To specify media track constraints, pass in a comma-separated list of
-    # key/value pairs, separated by a "=". Examples:
-    #   "?audio=googEchoCancellation=false,googAutoGainControl=true"
-    #   (Disable echo cancellation and enable gain control.)
-    #
-    #   "?video=minWidth=1280,minHeight=720,googNoiseReduction=true"
-    #   (Set the minimum resolution to 1280x720 and enable noise reduction.)
-    #
-    # Keys starting with "goog" will be added to the "optional" key; all others
-    # will be added to the "mandatory" key.
-    #
-    # The audio keys are defined here: talk/app/webrtc/localaudiosource.cc
-    # The video keys are defined here: talk/app/webrtc/videosource.cc
-    audio = self.request.get('audio')
-    video = self.request.get('video')
-
-    if self.request.get('hd').lower() == 'true':
-      if video:
-        message = 'The "hd" parameter has overridden video=' + str(video)
-        logging.error(message)
-        error_messages.append(message)
-      video = 'minWidth=1280,minHeight=720'
-
-    if self.request.get('minre') or self.request.get('maxre'):
-      message = ('The "minre" and "maxre" parameters are no longer supported. '
-                 'Use "video" instead.')
-      logging.error(message)
-      error_messages.append(message)
-
-    audio_send_codec = self.request.get('asc')
-    if not audio_send_codec:
-      audio_send_codec = get_preferred_audio_send_codec(user_agent)
-
-    audio_receive_codec = self.request.get('arc')
-    if not audio_receive_codec:
-      audio_receive_codec = get_preferred_audio_receive_codec()
-
-    # Set stereo to false by default.
-    stereo = 'false'
-    if self.request.get('stereo'):
-      stereo = self.request.get('stereo')
-
-    # Options for making pcConstraints
-    dtls = self.request.get('dtls')
-    dscp = self.request.get('dscp')
-    ipv6 = self.request.get('ipv6')
-
-    debug = self.request.get('debug')
-    if debug == 'loopback':
-      # Set dtls to false as DTLS does not work for loopback.
-      dtls = 'false'
-
-    # token_timeout for channel creation, default 30min, max 1 days, min 3min.
-    token_timeout = self.request.get_range('tt',
-                                           min_value = 3,
-                                           max_value = 1440,
-                                           default = 30)
-
-    unittest = self.request.get('unittest')
-    if unittest:
-      # Always create a new room for the unit tests.
-      room_key = generate_random(8)
-
-    ### CHANGE: users will only be redirected upon user r
-    if not room_key:
-      room_key = generate_random(8)
-      redirect = '/?r=' + room_key
-      redirect = append_url_arguments(self.request, redirect)
-      #self.redirect(redirect)
-      logging.info('Redirecting visitor to base URL to ' + redirect)
-      return
-
-    user = None
-    initiator = 0
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if not room and debug != "full":
-        # New room.
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        if debug != 'loopback':
-          initiator = 0
-        else:
-          room.add_user(user)
-          initiator = 1
-      elif room and room.get_occupancy() >= 1: # and debug != 'full':
-        logging.info("Current Occupancy: " + str(room.get_occupancy()))
-        # 1 occupant.
-        user = generate_random(8)
-        room.add_user(user)
-        initiator = 1
-      # else:
-      #   logging.info("Current Occupancy: " + str(room.get_occupancy()))
-      #   # 2 occupants (full).
-      #   template = jinja_environment.get_template('full.html')
-      #   self.response.out.write(template.render({ 'room_key': room_key }))
-      #   logging.info('Room ' + room_key + ' is full')
-      #   return
-
-    if turn_server == 'false':
-      turn_server = None
-      turn_url = ''
-    else:
-      turn_url = 'https://computeengineondemand.appspot.com/'
-      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
-
-    room_link = base_url + '?r=' + room_key
-    room_link = append_url_arguments(self.request, room_link)
-    token = create_channel(room, user, token_timeout)
-    pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-    offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video)
-    template_values = {'error_messages': error_messages,
-                       'token': token,
-                       'me': user,
-                       'room_key': room_key,
-                       'room_link': room_link,
-                       'initiator': initiator,
-                       'pc_config': json.dumps(pc_config),
-                       'pc_constraints': json.dumps(pc_constraints),
-                       'offer_constraints': json.dumps(offer_constraints),
-                       'media_constraints': json.dumps(media_constraints),
-                       'turn_url': turn_url,
-                       'stereo': stereo,
-                       'audio_send_codec': audio_send_codec,
-                       'audio_receive_codec': audio_receive_codec
-                      }
-    if unittest:
-      target_page = 'test/test_' + unittest + '.html'
-    else:
-      target_page = 'index.html'
-
-    template = jinja_environment.get_template(target_page)
-    self.response.out.write(template.render(template_values))
-    logging.info('User ' + user + ' added to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-
+    return
 ### Handle the case where clients request to join existing room
 class MeetingJoin(webapp2.RequestHandler):
   def get(self, room_key):
@@ -587,11 +364,106 @@ class MeetingBroadcast(webapp2.RequestHandler):
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
 
+### upon xmlhttprequest for webrtc, return initial data set for channel
+class RequestBroadcastData(webapp2.RequestHandler):
+  def get(self, room_key):
+    ### audio and video bools, currently set to true
+    # audio = self.request.get('audio')
+    # video = self.request.get('video')
+    error_messages = []
+    audio = 'true'
+    video = 'true'
+
+    ### stun server
+    user_agent = self.request.headers['User-Agent']
+    stun_server = self.request.get('ss')
+    if not stun_server:
+      stun_server = get_default_stun_server(user_agent)
+    
+    turn_server = self.request.get('ts')
+    #turn_server = 'true'
+    ts_pwd = self.request.get('tp')
+    ### set audio send and receive codec
+    audio_send_codec = self.request.get('asc')
+    if not audio_send_codec:
+      audio_send_codec = get_preferred_audio_send_codec(user_agent)
+    audio_receive_codec = self.request.get('arc')
+    if not audio_receive_codec:
+      audio_receive_codec = get_preferred_audio_receive_codec()
+    stereo = 'false'
+    if self.request.get('stereo'):
+      stereo = self.request.get('stereo')
+
+    # Options for making pcConstraints
+    dtls = self.request.get('dtls')
+    dscp = self.request.get('dscp')
+    ipv6 = self.request.get('ipv6')
+
+    debug = self.request.get('debug')
+    if debug == 'loopback':
+      # Set dtls to false as DTLS does not work for loopback.
+      dtls = 'false'
+
+    # token_timeout for channel creation, default 30min, max 1 days, min 3min.
+    token_timeout = self.request.get_range('tt',
+                                           min_value = 3,
+                                           max_value = 1440,
+                                           default = 30)
+    user = None
+    ### everyone will be assigned a user number
+    ### for future, can connect with user account
+    ### everyone's initiator value set to 1, NEGATIVE, who initiates will get 0
+    initiator = 0
+    with LOCK:
+      room = Room.get_by_key_name(room_key)
+      ### create new room
+      if not room:
+        user = generate_random(8)
+        room = Room(key_name = room_key)
+        room.add_user(user)
+      ### add to existing room, 
+      elif room:
+        logging.info("Current Occupancy: " + str(room.get_occupancy()))
+        user = generate_random(8)
+        room.add_user(user)
+        initiator = 1
+
+
+    if turn_server == 'false':
+      turn_server = None
+      turn_url = ''
+    else:
+      turn_url = 'https://computeengineondemand.appspot.com/'
+      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
+
+    token = create_channel(room, user, token_timeout)
+    pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
+    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
+    offer_constraints = make_offer_constraints()
+    media_constraints = make_media_stream_constraints(audio, video)
+
+    data = {'token': token,
+             'me': user,
+             'room_key': room_key,
+             'initiator': initiator,
+             'pc_config': pc_config,
+             'pc_constraints': pc_constraints,
+             'offer_constraints': offer_constraints,
+             'media_constraints': media_constraints,
+             'turn_url': turn_url,
+             'stereo': stereo,
+             'audio_send_codec': audio_send_codec,
+             'audio_receive_codec': audio_receive_codec
+            }
+    logging.info('correctly established!');
+    self.response.out.write(json.dumps(data));
+
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
     (r'/meeting/(\d+)', MeetingJoin),
     (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
+    (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)
