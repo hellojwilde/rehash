@@ -95,24 +95,28 @@ def handle_message(room, user, message):
     room.remove_user(user)
     logging.info('User ' + user + ' quit from room ' + room_key)
     logging.info('Room ' + room_key + ' has state ' + str(room))
-  if message_obj['type'] == 'broadcast':
+    return
+  elif message_obj['type'] == 'broadcast':
     logging.info('User ' + user + ' started broadcasting')
     room.select_host(user)
-  if other_users:  
-    # if message_obj['type'] == 'offer':
-    #   # if user in other_users:
-    #   #   message = make_loopback_answer(message)
-    #   on_message(room, room.host, message)
-    for other_user in other_users:
-      ### Special case the loopback scenario.
-      ### disable loopback; add it back if required 
-      if message_obj['type'] == 'offer':
-        if other_user == user:
-          message = make_loopback_answer(message)
-      on_message(room, other_user, message)
-  else:
-    # For unittest
-    on_message(room, user, message)
+
+  for other in other_users:
+    on_message(room, other, message)
+
+  # if message_obj['type'] == 'offer':
+  #   logging.info('OFFER')hand
+  #   on_message(room, room.host, message)
+  # elif other_users:  
+  #   for other_user in other_users:
+  #     ### Special case the loopback scenario.
+  #     ### disable loopback; add it back if required 
+  #     if message_obj['type'] == 'offer':
+  #       if other_user == user:
+  #         message = make_loopback_answer(message)
+  #     on_message(room, other_user, message)
+  # else:
+  #   # For unittest
+  #   on_message(room, user, message)
 
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
@@ -240,7 +244,7 @@ class Room(db.Model):
   def add_user(self, user):
     ### consider limiting the number of audiences here! 
     self.users.append(user)
-    self.users_connected.append(False)
+    self.users_connected.append(True)
     self.put()
 
   ### chose the given host and start broadcasting
@@ -421,6 +425,8 @@ class RequestBroadcastData(webapp2.RequestHandler):
         user = generate_random(8)
         room = Room(key_name = room_key)
         room.add_user(user)
+        ###########
+        room.select_host(user)
       ### add to existing room, 
       elif room:
         logging.info("Current Occupancy: " + str(room.get_occupancy()))

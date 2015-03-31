@@ -374,7 +374,7 @@ self.initialize();
     else if (initiator && msg.type === 'broadcast' ) {
       this.initialize();
     }
-    else{
+    else if (!remoteStream) {
       this.processSignalingMessage(msg);
     }
   },
@@ -461,7 +461,7 @@ self.initialize();
     console.log('Session terminated.');
     initiator = 0;
 // the host don't need to transitToWaiting at all just connect accept new connections
-    transitionToWaiting();
+    this.transitionToWaiting();
     stop();
   },
   stop: function () {
@@ -725,7 +725,7 @@ self.initialize();
       return sdp;
 
     // Append stereo=1 to fmtp line.
-    sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
+    //sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
 
     sdp = sdpLines.join('\r\n');
     return sdp;
