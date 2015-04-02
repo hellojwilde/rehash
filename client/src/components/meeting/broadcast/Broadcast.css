@@ -1,5 +1,6 @@
 video {
-	width: 292px;
+	width: 100%;
+	height: auto;
 }
 .btnrow {
 	text-align: center;
@@ -11,3 +12,4 @@ video {
 .btnstart {
 	width: 100px;
 }
+

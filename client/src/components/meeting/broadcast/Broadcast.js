@@ -87,18 +87,20 @@ var Broadcast = React.createClass({
         console.log("loaded the adapter script successfully");
         // start the session to begin accepting server info
         self.openChannel();
-self.initialize();
+ //// self.initialize();
         // session start & stop control
         var startbtn = React.findDOMNode(self.refs.startBroadcast);
         startbtn.addEventListener('click', function(){
-//// initiator = 0;
+          // here, need to make sure we request to be initiator
+          // only one initiator at a time 
+          initiator = 0;
           self.initialize();
           console.log("Start the broadcast and notify audiences!");
           self.sendMessage({type: 'broadcast'});
         }, false);
         var stopbtn = React.findDOMNode(self.refs.stopBroadcast);
         stopbtn.addEventListener('click', function(){
-          self.onHangup();
+          self.stop();
         }, false);
 
       });
@@ -334,10 +336,7 @@ self.initialize();
                          this.onAddIceCandidateSuccess, this.onAddIceCandidateError);
     } else if (message.type === 'bye') {
       this.onRemoteHangup();
-    } else if (message.type === 'peerMsg') {
-        ////// TO DO: differentiate types of messages 
-      $('#chat_mes_display').append('<br/> Other: '+ message.peerMsg);
-    }
+    } 
   },
   onAddIceCandidateSuccess: function () {
     console.log('AddIceCandidate success.');
@@ -349,6 +348,7 @@ self.initialize();
     console.log('Channel opened.');
     channelReady = true;
     this.maybeStart();
+    this.sendMessage({type: 'ready'});
   },
   onChannelMessage: function(message) {
     console.log('S->C: ' + message.data);
@@ -371,12 +371,16 @@ self.initialize();
         msgQueue.push(msg);
       }
     } 
-    else if (initiator && msg.type === 'broadcast' ) {
-      this.initialize();
-    }
-    else if (!remoteStream) {
+    // need to be selective! connect only if it matches your user name
+    else{
       this.processSignalingMessage(msg);
     }
+    // the audience should start the conversation
+    if (initiator && msg.type === 'broadcast' ) {
+      console.log('Received broadcast from Server! ');
+      this.initialize();
+    }
+
   },
   onChannelError: function () {
     this.messageError('Channel error.');
@@ -391,7 +395,9 @@ self.initialize();
   },
   onUserMediaSuccess: function (stream) {
     console.log('User has granted access to local media.');
+    video.muted=true;
     attachMediaStream(video, stream);
+    video.muted=true;
     video.play();
     localStream = stream;
     this.maybeStart();
@@ -439,6 +445,7 @@ self.initialize();
     attachMediaStream(video, event.stream);
     remoteStream = event.stream;
     video.play();
+    this.sendMessage({type:'connected'});
   },
   onRemoteStreamRemoved: function(event) {
     console.log('Remote stream removed.');
@@ -458,11 +465,11 @@ self.initialize();
     socket.close();
   },
   onRemoteHangup: function() {
-    console.log('Session terminated.');
-    initiator = 0;
-// the host don't need to transitToWaiting at all just connect accept new connections
-    this.transitionToWaiting();
-    stop();
+    // console.log('Session terminated.');
+    // initiator = 1;
+    // the host don't need to transitToWaiting at all just connect accept new connections
+    // this.transitionToWaiting();
+    // this.stop();
   },
   stop: function () {
     started = false;
@@ -471,6 +478,7 @@ self.initialize();
     isVideoMuted = false;
     pc.close();
     pc = null;
+    video.pause();
     remoteStream = null;
     msgQueue.length = 0;
   },
@@ -611,35 +619,6 @@ self.initialize();
     isAudioMuted = !isAudioMuted;
   },
 
-  // Mac: hotkey is Command.
-  // Non-Mac: hotkey is Control.
-  // <hotkey>-D: toggle audio mute.
-  // <hotkey>-E: toggle video mute.
-  // <hotkey>-I: toggle Info box.
-  // Return false to screen out original Chrome shortcuts.
-  // document.onkeydown = function(event) {
-  //   var hotkey = event.ctrlKey;
-  //   if (navigator.appVersion.indexOf('Mac') != -1)
-  //     hotkey = event.metaKey;
-  //   if (!hotkey)
-  //     return;
-  //   switch (event.keyCode) {
-  //     case 68:
-  //       toggleAudioMute();
-  //       return false;
-  //     case 69:
-  //       toggleVideoMute();
-  //       return false;
-  //     case 73:
-  //       toggleInfoDiv();
-  //       return false;
-  //     case 13:
-  //       $("#chat_input_submit").click();
-  //       return false; 
-  //     default:
-  //       return;
-  //   }
-  // }
   maybePreferAudioSendCodec: function(sdp) {
     if (audio_send_codec == '') {
       console.log('No preference on audio send codec.');
@@ -725,7 +704,7 @@ self.initialize();
       return sdp;
 
     // Append stereo=1 to fmtp line.
-    //sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
+    // sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
 
     sdp = sdpLines.join('\r\n');
     return sdp;

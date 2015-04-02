@@ -31,6 +31,7 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
+
 def generate_random(length):
   word = ''
   for _ in range(length):
@@ -87,22 +88,51 @@ def handle_message(room, user, message):
   # implement broadcast to OTHERUSERS! 
   logging.info('handle_message' + str(user) + message)
   message_obj = json.loads(message)
-  other_users = room.get_other_users(user)
+  #other_users = room.get_other_users()
   room_key = room.key().id_or_name()
 
-  ### the bye functionality has been depreciated and replaced
+  ### IF SESSION ALREADY STARTED, send to host the user info 
   if message_obj['type'] == 'bye':
     room.remove_user(user)
     logging.info('User ' + user + ' quit from room ' + room_key)
     logging.info('Room ' + room_key + ' has state ' + str(room))
     return
+  # to start a broadcast session by asking others to initialize  
   elif message_obj['type'] == 'broadcast':
     logging.info('User ' + user + ' started broadcasting')
     room.select_host(user)
-
-  for other in other_users:
-    on_message(room, other, message)
-
+    on_message(room, room.get_next_user(), message)
+    # if len(room.connect_queue) > 0:
+    #   on_message(room, next_user, json.dumps({'type': 'broadcast'}))
+    # if len(room.connect_queue) > 0:
+    #   on_message(room, room.connect_queue[0], json.dumps({'type': 'broadcast'}))
+  # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
+  elif message_obj['type'] == 'ready':
+    if room.host_started:
+      room.connect_queue.append(user)
+      room.put()
+      if len(room.connect_queue) > 0:
+        on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+    return
+    # if user not in room.connect_queue:
+    # logging.info('*  ** ** * * * ** * sending broadcast')
+    # on_message(room, next_user, json.dumps({'type': 'broadcast'}))
+  # to trigger next connection (remove top from the queue and proceed)
+  elif message_obj['type'] == 'connected':
+    room.connect_queue.pop(0)
+    logging.info('*  ** ** * * * ** * CONNECTED going to next *************')
+    room.put()
+    if len(room.connect_queue) > 0:
+      on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+  else:
+    # also, queue, add alock later on
+    if room.host == None:
+      return
+      # on_message(room, room.host, message)
+    elif user == room.host: 
+      on_message(room, room.get_next_user(), message)
+    else:
+      on_message(room, room.host, message)
   # if message_obj['type'] == 'offer':
   #   logging.info('OFFER')hand
   #   on_message(room, room.host, message)
@@ -212,8 +242,8 @@ class Room(db.Model):
   users = db.ListProperty(str)
   users_connected = db.ListProperty(bool)
   host = db.StringProperty() ### host/broadcaster index
-  host_started = db.BooleanProperty()
-  host_started = False
+  host_started = db.BooleanProperty(False)
+  connect_queue = db.ListProperty(str)
 
   def __str__(self):
     result = '['
@@ -235,6 +265,10 @@ class Room(db.Model):
     logging.info("other users: " + ''.join(users))
     return users
 
+  def get_next_user(self):
+    if len(self.connect_queue) > 0:
+     return self.connect_queue[0]
+
   def has_user(self, user):
     if user in self.users:
       return True
@@ -245,13 +279,19 @@ class Room(db.Model):
     ### consider limiting the number of audiences here! 
     self.users.append(user)
     self.users_connected.append(True)
+    ### if not started, add to the queue; else, add through ready
+    if not self.host_started:
+      self.connect_queue.append(user)
     self.put()
 
   ### chose the given host and start broadcasting
   def select_host(self, user):
     self.host = user
     self.host_started = True
+    # avoid connecting to itself
+    self.connect_queue.remove(user)
     self.put()
+    logging.info('SELECTED host ' + str(self.host_started) + user)
     logging.info("Host chosen and start broadcasting")
 
   def remove_user(self, user):
@@ -263,17 +303,17 @@ class Room(db.Model):
       self.users_connected.pop(self.users.index(user))
       self.users.remove(user)
       self.put()
-    cur_num_users = len(self.users)
-    for j in range(cur_num_users ):
-      i = cur_num_users - j - 1
-      if self.users_connected[i] == False:
-        delete_saved_messages(make_client_id(self, self.users[i]))
-        self.users_connected.pop(i)
-        self.users.remove(self.users[i])
-        self.put()
+    # cur_num_users = len(self.users)
+    # for j in range(cur_num_users ):
+    #   i = cur_num_users - j - 1
+    #   if self.users_connected[i] == False:
+    #     delete_saved_messages(make_client_id(self, self.users[i]))
+    #     self.users_connected.pop(i)
+    #     self.users.remove(self.users[i])
+    #     self.put()
     if self.get_occupancy() == 0 or self.host == user:
       logging.info('ROOM DELETED' + str(self.get_occupancy()))
-    self.delete()
+      self.delete()
 
   def set_connected(self, user):
     self.users_connected[self.users.index(user)] = True
@@ -323,10 +363,10 @@ class DisconnectPage(webapp2.RequestHandler):
           #room.remove_user(user) #, we also remove user on_message, if do it here, remove 2
           logging.info('User ' + user + ' removed from room ' + room_key)
           logging.info('Room ' + room_key + ' has state ' + str(room))
-          if other_user and other_user != user:
-            channel.send_message(make_client_id(room, other_user),
-                                 '{"type":"bye"}')
-            logging.info('Sent BYE to ' + other_user)
+          #if other_user and other_user != user:
+            #channel.send_message(make_client_id(room, other_user),
+            #                     '{"type":"bye"}')
+            #logging.info('Sent BYE to ' + other_user)
     logging.warning('User ' + user + ' disconnected from room ' + room_key)
 
 ### Got message from clients here? 
@@ -417,7 +457,7 @@ class RequestBroadcastData(webapp2.RequestHandler):
     ### everyone will be assigned a user number
     ### for future, can connect with user account
     ### everyone's initiator value set to 1, NEGATIVE, who initiates will get 0
-    initiator = 0
+    initiator = 1
     with LOCK:
       room = Room.get_by_key_name(room_key)
       ### create new room
@@ -426,13 +466,13 @@ class RequestBroadcastData(webapp2.RequestHandler):
         room = Room(key_name = room_key)
         room.add_user(user)
         ###########
-        room.select_host(user)
+        #room.select_host(user)
       ### add to existing room, 
       elif room:
         logging.info("Current Occupancy: " + str(room.get_occupancy()))
         user = generate_random(8)
         room.add_user(user)
-        initiator = 1
+        #initiator = 1
 
 
     if turn_server == 'false':
@@ -463,6 +503,7 @@ class RequestBroadcastData(webapp2.RequestHandler):
             }
     logging.info('correctly established!');
     self.response.out.write(json.dumps(data));
+
 
 
 app = webapp2.WSGIApplication([
