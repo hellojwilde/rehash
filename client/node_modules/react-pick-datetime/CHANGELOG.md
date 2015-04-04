@@ -1,5 +1,11 @@
 ### v0.3.1 (2015-04-03)
 
+### BUGFIX
+
+- [b74bc7b](https://github.com/hellojwilde/react-pick-datetime/commit/8a935b3) - Actually add the styles into the build.
+
+### v0.3.1 (2015-04-03)
+
 #### FEATURES
 
 - [8a935b3](https://github.com/hellojwilde/react-pick-datetime/commit/8a935b3) - Make it cleaner to replace the inputComponent with some other one.

@@ -12,7 +12,12 @@ Built on top of [react-pick](https://github.com/hellojwilde/react-pick) and [mom
 
 `npm install react-pick-datetime`
 
-You'll need to make sure that you somehow include `react-pick`'s `style.css` file (or your own CSS) in your CSS bundle.
+You'll need to make sure that you somehow include the following CSS files from both `react-pick` and `react-pick-datetime`:
+
+- `'react-pick/lib/styles.css'`
+- `'react-pick-datetime/lib/styles.css'`
+
+Or, you could be awesome and write your own CSS for both. Up to you.
 
 ### What's Inside?
 
