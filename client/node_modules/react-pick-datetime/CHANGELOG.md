@@ -1,3 +1,9 @@
+### v0.3.1 (2015-04-03)
+
+#### FEATURES
+
+- [8a935b3](https://github.com/hellojwilde/react-pick-datetime/commit/8a935b3) - Make it cleaner to replace the inputComponent with some other one.
+
 ### v0.3.0 (2015-04-03)
 
 From now on, `react-pick-datetime` versions will track `react-pick` versions.

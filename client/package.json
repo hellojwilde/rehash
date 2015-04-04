@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./webpack.server.js"
   },
-  "author": "",
+  "authors": [
+    "Hao Wan",
+    "Jonathan Wilde"
+  ],
   "license": "MIT",
   "dependencies": {
     "flummox": "^3.2.1",
@@ -15,7 +18,7 @@
     "object-assign": "^2.0.0",
     "react": "^0.13.1",
     "react-document-title": "^1.0.2",
-    "react-pick-datetime": "^0.3.0",
+    "react-pick-datetime": "^0.3.1",
     "react-router": "^0.13.1",
     "react-scroll-components": "hellojwilde/react-scroll-components#patch-1"
   },
