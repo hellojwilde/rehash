@@ -1,4 +1,4 @@
-var Header = require('components/Header');
+var Header = require('components/core/Header');
 var MeetingJoinButton = require('components/meeting/MeetingJoinButton');
 var React = require('react');
 var {Link} = require('react-router');
