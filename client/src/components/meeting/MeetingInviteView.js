@@ -2,12 +2,12 @@ var React = require('react');
 var MeetingLayout = require('components/meeting/MeetingLayout');
 var MeetingLayoutAside = require('components/meeting/MeetingLayoutAside');
 var MeetingLayoutContent = require('components/meeting/MeetingLayoutContent');
-var OverviewDescription = require('components/meeting/overview/OverviewDescription');
-var OverviewAttendees = require('components/meeting/overview/OverviewAttendees');
-var OverviewHost = require('components/meeting/overview/OverviewHost');
-var OverviewHighlights = require('components/meeting/overview/OverviewHighlights');
+var InviteDescription = require('components/meeting/invite/InviteDescription');
+var InviteAttendees = require('components/meeting/invite/InviteAttendees');
+var InviteHost = require('components/meeting/invite/InviteHost');
+var InviteHighlights = require('components/meeting/invite/InviteHighlights');
 
-var MeetingOverviewView = React.createClass({
+var MeetingInviteView = React.createClass({
 
   propTypes: {
     host: React.PropTypes.object.isRequired,
@@ -20,13 +20,13 @@ var MeetingOverviewView = React.createClass({
     return (
       <MeetingLayout>
         <MeetingLayoutAside>
-          <OverviewHost {...this.props.host} />
+          <InviteHost {...this.props.host} />
         </MeetingLayoutAside>
 
         <MeetingLayoutContent>
-          <OverviewDescription description={this.props.description} />
-          <OverviewHighlights highlights={this.props.highlights} />
-          <OverviewAttendees attendees={this.props.attendees} />
+          <InviteDescription description={this.props.description} />
+          <InviteHighlights highlights={this.props.highlights} />
+          <InviteAttendees attendees={this.props.attendees} />
         </MeetingLayoutContent>
       </MeetingLayout>
     );
@@ -34,4 +34,4 @@ var MeetingOverviewView = React.createClass({
 
 });
 
-module.exports = MeetingOverviewView;
+module.exports = MeetingInviteView;

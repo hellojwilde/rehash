@@ -1,5 +1,5 @@
 var MeetingHandler = require('handlers/MeetingHandler');
-var MeetingOverviewHandler = require('handlers/MeetingOverviewHandler');
+var MeetingInviteHandler = require('handlers/MeetingInviteHandler');
 var MeetingBroadcastHandler = require('handlers/MeetingBroadcastHandler');
 var AppHandler = require('handlers/AppHandler');
 var React = require('react');
@@ -9,9 +9,9 @@ var Routes = (
   <Route handler={AppHandler}>
     <Route handler={MeetingHandler}>
       <Route 
-        name="meeting-overview" 
+        name="meeting-invite" 
         path="/meeting/:meetingId"
-        handler={MeetingOverviewHandler}
+        handler={MeetingInviteHandler}
       />
       <Route 
         name="meeting-broadcast"

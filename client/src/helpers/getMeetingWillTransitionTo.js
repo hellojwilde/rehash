@@ -9,7 +9,7 @@ function getMeetingWillTransitionTo(currentHandlerName) {
       return;
     }
 
-    var handlerName = 'meeting-overview';
+    var handlerName = 'meeting-invite';
     
     if (currentUserStore.isParticipant(meetingId)) {
       handlerName = 'meeting-broadcast';

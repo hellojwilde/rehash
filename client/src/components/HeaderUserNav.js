@@ -37,7 +37,7 @@ var HeaderUser = React.createClass({
           onComplete: (meetingId) => {
             console.log(meetingId);
             this.context.router.transitionTo(
-              'meeting-overview',
+              'meeting-invite',
               {meetingId: meetingId}
             )
           }

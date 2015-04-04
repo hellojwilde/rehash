@@ -1,9 +1,9 @@
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./OverviewDescription.css');
+require('./InviteDescription.css');
 
-var OverviewDescription = React.createClass({
+var InviteDescription = React.createClass({
 
   propTypes: {
     description: React.PropTypes.string.isRequired
@@ -11,7 +11,7 @@ var OverviewDescription = React.createClass({
 
   render: function() {
     return (
-      <div className="panel panel-default OverviewDescription">
+      <div className="panel panel-default InviteDescription">
         <div className="panel-body">
           <p className="lead">
             {this.props.description}
@@ -23,4 +23,4 @@ var OverviewDescription = React.createClass({
 
 });
 
-module.exports = OverviewDescription;
+module.exports = InviteDescription;

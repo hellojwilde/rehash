@@ -1,13 +1,13 @@
 var FluxComponent = require('flummox/component');
-var MeetingOverviewView = require('components/meeting/MeetingOverviewView');
+var MeetingInviteView = require('components/meeting/MeetingInviteView');
 var React = require('react');
 
 var getMeetingWillTransitionTo = require('helpers/getMeetingWillTransitionTo');
 
-var MeetingOverviewHandler = React.createClass({
+var MeetingInviteHandler = React.createClass({
 
   statics: {
-    willTransitionTo: getMeetingWillTransitionTo('meeting-overview')
+    willTransitionTo: getMeetingWillTransitionTo('meeting-invite')
   },
 
   contextTypes: {
@@ -22,11 +22,11 @@ var MeetingOverviewHandler = React.createClass({
           var {meetingId} = this.context.router.getCurrentParams();
           return meetingStore.getById(meetingId);
         }}
-        render={(meeting) => <MeetingOverviewView {...meeting}/>}
+        render={(meeting) => <MeetingInviteView {...meeting}/>}
       />
     );
   }
 
 });
 
-module.exports = MeetingOverviewHandler;
+module.exports = MeetingInviteHandler;

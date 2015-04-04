@@ -3,7 +3,7 @@ var React = require('react');
 require('3rdparty/bootstrap/css/bootstrap.css');
 
 
-var OverviewHighlights = React.createClass({
+var InviteHighlights = React.createClass({
 
   propTypes: {
     highlights: React.PropTypes.arrayOf(React.PropTypes.shape({
@@ -34,4 +34,4 @@ var OverviewHighlights = React.createClass({
 
 });
 
-module.exports = OverviewHighlights;
+module.exports = InviteHighlights;

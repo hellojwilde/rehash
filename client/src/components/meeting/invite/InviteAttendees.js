@@ -2,9 +2,9 @@ var React = require('react');
 var {Link} = require('react-router');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
-require('./OverviewAttendees.css');
+require('./InviteAttendees.css');
 
-var OverviewAttendees = React.createClass({
+var InviteAttendees = React.createClass({
 
   propTypes: {
     attendees: React.PropTypes.arrayOf(React.PropTypes.shape({
@@ -49,4 +49,4 @@ var OverviewAttendees = React.createClass({
 
 });
 
-module.exports = OverviewAttendees;
+module.exports = InviteAttendees;
