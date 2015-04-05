@@ -1,5 +1,5 @@
 var React = require('react');
-var Button = require('components/common/Button');
+var HeaderLink = require('components/common/HeaderLink');
 var CreateModal = require('modals/CreateModal');
 
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
@@ -72,13 +72,13 @@ var HeaderUserNav = React.createClass({
 
       buttons['logout'] = (
         <li>
-          <Button onClick={this.handleLogoutClick}>Logout</Button>
+          <HeaderLink onClick={this.handleLogoutClick}>Logout</HeaderLink>
         </li>
       );
     } else {
       buttons['login'] = (
         <li>
-          <Button onClick={this.handleLoginClick}>Login</Button>
+          <HeaderLink onClick={this.handleLoginClick}>Login</HeaderLink>
         </li>
       );
     }

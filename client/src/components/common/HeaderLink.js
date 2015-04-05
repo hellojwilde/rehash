@@ -1,6 +1,6 @@
 var React = require('react');
 
-var Button = React.createClass({
+var HeaderLink = React.createClass({
 
   propTypes: {
     onClick: React.PropTypes.func
@@ -29,4 +29,4 @@ var Button = React.createClass({
 
 });
 
-module.exports = Button;
+module.exports = HeaderLink;
