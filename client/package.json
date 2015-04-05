@@ -1,5 +1,5 @@
 {
-  "name": "debrief-client",
+  "name": "rehash-client",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -18,8 +18,8 @@
     "object-assign": "^2.0.0",
     "react": "^0.13.1",
     "react-document-title": "^1.0.2",
-    "react-pick": "^0.3.2",
-    "react-pick-datetime": "^0.3.2",
+    "react-pick": "^0.5.0",
+    "react-pick-datetime": "^0.5.0",
     "react-router": "^0.13.1",
     "react-scroll-components": "hellojwilde/react-scroll-components#patch-1"
   },
