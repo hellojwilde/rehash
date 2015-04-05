@@ -3,6 +3,8 @@ var ModalBody = require('components/modal/ModalBody');
 var ModalHeader = require('components/modal/ModalHeader');
 var ModalFooter = require('components/modal/ModalFooter');
 var {DateInput, TimeInput} = require('react-pick-datetime');
+var ValidatedForm = require('components/validation/ValidatedForm');
+var ValidatedFormGroup = require('components/validation/ValidatedFormGroup');
 var React = require('react/addons');
 
 require('react-pick/lib/styles.css');
@@ -11,6 +13,7 @@ require('react-pick-datetime/lib/styles.css');
 var LinkedStateMixin = React.addons.LinkedStateMixin;
 
 var moment = require('moment');
+var areResultsValid = require('components/validation/areResultsValid');
 
 function getCompoundDateTime(date, time) {
   return moment(time).set({
@@ -44,11 +47,16 @@ var CreateModal = React.createClass({
     var start = moment().add(2, 'hours');
 
     return {
+      validationResults: {},
       title: '',
       description: '',
       startDate: moment(start),
       startTime: moment(start)
     };
+  },
+
+  handleValidationResults: function(results) {
+    this.setState({validationResults: results});
   },
 
   handleCreateClick: function() {
@@ -71,59 +79,67 @@ var CreateModal = React.createClass({
           Create Meeting
         </ModalHeader>
         <ModalBody>
-          <div className="form-group">
-            <label htmlFor="CreateModalTitle">Title</label>
-            <input 
-              name="CreateModalTitle"
-              className="form-control"
-              type="text"
-              valueLink={this.linkState('title')}
-            />
-          </div>
+          <ValidatedForm 
+            values={{title: this.state.title}} 
+            rules={{title: (value) => (value.length === 0) ? 'error' : 'success'}}
+            onValidationResults={this.handleValidationResults}>
+            <ValidatedFormGroup resultsFor="title" results={this.state.validationResults}>
+              <label className="sr-only" htmlFor="CreateModalTitle">Title</label>
+              <input 
+                placeholder="Title..."
+                name="CreateModalTitle"
+                className="form-control"
+                type="text"
+                valueLink={this.linkState('title')}
+              />
+            </ValidatedFormGroup>
 
-          <div className="form-group">
-            <label htmlFor="CreateModalDescription">Description</label>
-            <textarea 
-              name="CreateModalDescription"
-              className="form-control"
-              valueLink={this.linkState('description')}
-            />
-          </div>
+            <div className="form-group">
+              <label className="sr-only" htmlFor="CreateModalDescription">Description</label>
+              <textarea 
+                placeholder="Description..."
+                name="CreateModalDescription"
+                className="form-control"
+                valueLink={this.linkState('description')}
+              />
+            </div>
 
-          <div className="row">
-            <div className="col-xs-6">
-              <div className="form-group">
-                <label htmlFor="CreateModalDate">Start Date</label>
-                <div>
-                  <DateInput 
-                    name="CreateModalStartDate"
-                    className="form-control"
-                    value={this.state.startDate}
-                    onChange={(startDate) => this.setState({startDate})}
-                  />
+            <div className="row">
+              <div className="col-xs-6">
+                <div className="form-group">
+                  <label htmlFor="CreateModalDate">Start Date</label>
+                  <div>
+                    <DateInput 
+                      name="CreateModalStartDate"
+                      className="form-control"
+                      value={this.state.startDate}
+                      onChange={(startDate) => this.setState({startDate})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-xs-6">
+                <div className="form-group">
+                  <label htmlFor="CreateModalTime">Start Time</label>
+                  <div>
+                    <TimeInput 
+                      name="CreateModalStartTime"
+                      className="form-control"
+                      value={this.state.startTime}
+                      onChange={(startTime) => this.setState({startTime})}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-
-            <div className="col-xs-6">
-              <div className="form-group">
-                <label htmlFor="CreateModalTime">Start Time</label>
-                <div>
-                  <TimeInput 
-                    name="CreateModalStartTime"
-                    className="form-control"
-                    value={this.state.startTime}
-                    onChange={(startTime) => this.setState({startTime})}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          </ValidatedForm>
         </ModalBody>
         <ModalFooter>
           <button 
             className="btn btn-primary" 
-            onClick={this.handleCreateClick}>
+            onClick={this.handleCreateClick}
+            disabled={!areResultsValid(this.state.validationResults)}>
             Create Meeting
           </button>
         </ModalFooter>

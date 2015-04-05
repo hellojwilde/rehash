@@ -1,7 +1,8 @@
-var React = require('react');
+var React = require('react/addons');
 var HeaderLink = require('components/common/HeaderLink');
 var CreateModal = require('modals/CreateModal');
 
+var createFragment = React.addons.createFragment;
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 var userPropType = require('types/userPropType');
 
@@ -66,26 +67,24 @@ var HeaderUserNav = React.createClass({
     if (this.props.currentUser) {
       buttons['user'] = (
         <li>
-          <p className="navbar-text">{this.props.currentUser.name}</p>
+          <p className="navbar-text">
+            {this.props.currentUser.name}
+          </p>
         </li>
       );
 
       buttons['logout'] = (
-        <li>
-          <HeaderLink onClick={this.handleLogoutClick}>Logout</HeaderLink>
-        </li>
+        <HeaderLink onClick={this.handleLogoutClick}>Logout</HeaderLink>
       );
     } else {
       buttons['login'] = (
-        <li>
-          <HeaderLink onClick={this.handleLoginClick}>Login</HeaderLink>
-        </li>
+        <HeaderLink onClick={this.handleLoginClick}>Login</HeaderLink>
       );
     }
 
     return (
       <ul className="nav navbar-nav">
-        {buttons}
+        {createFragment(buttons)}
       </ul>
     )
   }

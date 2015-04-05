@@ -21,9 +21,11 @@ var HeaderLink = React.createClass({
     var {children, ...otherProps} = this.props;
 
     return (
-      <a {...otherProps} href="#" role="button" onClick={this.handleClick}>
-        {children}
-      </a>
+      <li>
+        <a {...otherProps} href="#" role="button" onClick={this.handleClick}>
+          {children}
+        </a>
+      </li>
     );
   }
 
