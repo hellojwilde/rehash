@@ -1,4 +1,4 @@
-var LoginModal = require('components/modals/LoginModal');
+var LoginModal = require('modals/LoginModal');
 
 function ensureCurrentUser(flux, message) {
   var modalActions = flux.getActions('modal'),

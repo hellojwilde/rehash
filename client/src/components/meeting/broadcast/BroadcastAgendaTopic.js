@@ -1,5 +1,5 @@
-var AgendaQuestion = require('components/meeting/agenda/AgendaQuestion');
-var AgendaQuestionComposer = require('components/meeting/agenda/AgendaQuestionComposer');
+var AgendaQuestion = require('components/meeting/broadcast/BroadcastAgendaQuestion');
+var AgendaQuestionComposer = require('components/meeting/broadcast/BroadcastAgendaQuestionComposer');
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');

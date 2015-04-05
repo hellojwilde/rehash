@@ -1,6 +1,6 @@
 var React = require('react');
-var Button = require('components/core/Button');
-var CreateModal = require('components/modals/CreateModal');
+var Button = require('components/common/Button');
+var CreateModal = require('modals/CreateModal');
 
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 var userPropType = require('types/userPropType');

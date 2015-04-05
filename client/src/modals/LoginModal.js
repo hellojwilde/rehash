@@ -1,6 +1,6 @@
-var Modal = require('components/modals/Modal');
-var ModalBody = require('components/modals/ModalBody');
-var ModalHeader = require('components/modals/ModalHeader');
+var Modal = require('components/modal/Modal');
+var ModalBody = require('components/modal/ModalBody');
+var ModalHeader = require('components/modal/ModalHeader');
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');

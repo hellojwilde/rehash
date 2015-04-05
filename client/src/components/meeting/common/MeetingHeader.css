@@ -9,7 +9,7 @@
 }
 
 .MeetingHeader-preview {
-  background: url(./background/MeetingHeaderBackground.png) top center repeat;
+  background: url(./MeetingHeaderBackground.png) top center repeat;
   background-position: center bottom;
   box-shadow: 0 -70px 150px rgba(0,0,0,0.6) inset;
   border-bottom: 1px solid #000;

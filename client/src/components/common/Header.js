@@ -1,5 +1,5 @@
 var FluxComponent = require('flummox/component');
-var HeaderUserNav = require('components/core/HeaderUserNav');
+var HeaderUserNav = require('components/common/HeaderUserNav');
 var React = require('react');
 
 var joinClasses = require('react/lib/joinClasses');

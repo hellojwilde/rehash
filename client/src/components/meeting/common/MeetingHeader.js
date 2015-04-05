@@ -1,5 +1,5 @@
-var Header = require('components/core/Header');
-var MeetingJoinButton = require('components/meeting/MeetingJoinButton');
+var Header = require('components/common/Header');
+var MeetingJoinButton = require('components/meeting/common/MeetingJoinButton');
 var React = require('react');
 var {Link} = require('react-router');
 var {ScrollListenerMixin} = require('react-scroll-components');
