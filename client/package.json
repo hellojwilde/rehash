@@ -19,7 +19,7 @@
     "react": "^0.13.1",
     "react-document-title": "^1.0.2",
     "react-pick": "^0.5.0",
-    "react-pick-datetime": "^0.5.0",
+    "react-pick-datetime": "^0.5.1",
     "react-router": "^0.13.1",
     "react-scroll-components": "hellojwilde/react-scroll-components#patch-1"
   },
