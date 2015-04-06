@@ -18,8 +18,11 @@ import json
 import jinja2
 import webapp2
 import threading
+import datetime
+import copy
 from google.appengine.api import channel
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 ### Environment stores configuration and global objects, 
 ### used to load templates from the filesystem
@@ -102,10 +105,6 @@ def handle_message(room, user, message):
     logging.info('User ' + user + ' started broadcasting')
     room.select_host(user)
     on_message(room, room.get_next_user(), message)
-    # if len(room.connect_queue) > 0:
-    #   on_message(room, next_user, json.dumps({'type': 'broadcast'}))
-    # if len(room.connect_queue) > 0:
-    #   on_message(room, room.connect_queue[0], json.dumps({'type': 'broadcast'}))
   # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
   elif message_obj['type'] == 'ready':
     if room.host_started:
@@ -114,16 +113,13 @@ def handle_message(room, user, message):
       if len(room.connect_queue) > 0:
         on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
     return
-    # if user not in room.connect_queue:
-    # logging.info('*  ** ** * * * ** * sending broadcast')
-    # on_message(room, next_user, json.dumps({'type': 'broadcast'}))
   # to trigger next connection (remove top from the queue and proceed)
   elif message_obj['type'] == 'connected':
     room.connect_queue.pop(0)
-    logging.info('*  ** ** * * * ** * CONNECTED going to next *************')
     room.put()
     if len(room.connect_queue) > 0:
       on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+  # handle all other types of cross messages, like Candidate, Offer and Answer
   else:
     # also, queue, add alock later on
     if room.host == None:
@@ -133,20 +129,6 @@ def handle_message(room, user, message):
       on_message(room, room.get_next_user(), message)
     else:
       on_message(room, room.host, message)
-  # if message_obj['type'] == 'offer':
-  #   logging.info('OFFER')hand
-  #   on_message(room, room.host, message)
-  # elif other_users:  
-  #   for other_user in other_users:
-  #     ### Special case the loopback scenario.
-  #     ### disable loopback; add it back if required 
-  #     if message_obj['type'] == 'offer':
-  #       if other_user == user:
-  #         message = make_loopback_answer(message)
-  #     on_message(room, other_user, message)
-  # else:
-  #   # For unittest
-  #   on_message(room, user, message)
 
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
@@ -501,16 +483,294 @@ class RequestBroadcastData(webapp2.RequestHandler):
              'audio_send_codec': audio_send_codec,
              'audio_receive_codec': audio_receive_codec
             }
-    logging.info('correctly established!');
-    self.response.out.write(json.dumps(data));
+    logging.info('correctly established!')
+    self.response.out.write(json.dumps(data))
 
 
+### Collection of dataModels
+class LogModel(ndb.Model):
+  datetime = ndb.DateTimeProperty(auto_now_add=True)
+  #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
+  method = ndb.StringProperty()
+  data = ndb.JsonProperty()
+
+class UserModel(ndb.Model):
+  #id = ndb.IntegerProperty()
+  photoUrl = ndb.StringProperty()
+  photoThumbnailUrl = ndb.StringProperty()
+  name = ndb.StringProperty()
+  affiliation = ndb.StringProperty()
+  bio = ndb.StringProperty()
+
+class MeetingModel(ndb.Model):
+  #id = ndb.IntegerProperty()
+  title = ndb.StringProperty()
+  description = ndb.StringProperty()
+  start = ndb.StringProperty()
+  host = ndb.StringProperty()
+  highlights = ndb.JsonProperty()
+  attendees = ndb.StringProperty(repeated=True)
+
+class AgendaModel(ndb.Model):
+  meetingId = ndb.StringProperty()
+  # topics contains a list of {id: tId, content: '', questions: [qId, ]}
+  topics = ndb.JsonProperty()
+
+class TopicsModel(ndb.Model):
+  content = ndb.StringProperty()
+  questions = ndb.StringProperty(repeated=True)
+
+class QuestionModel(ndb.Model):
+  content = ndb.StringProperty()
+  answers = ndb.StringProperty(repeated=True)
+
+class AnswerModel(ndb.Model):
+  content = ndb.StringProperty()
+
+class AdaptJsonEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, datetime.datetime):
+      return obj.strftime('%Y-%m-%d %H:%M:%S')
+    return json.JSONEncoder.default(self, obj)
+
+class APIHandler(webapp2.RequestHandler):
+  def post(self):
+    logging.info('API Handler: ' + self.request.get('request'))
+
+    if self.request.get('request').lower() == 'userfetch':
+      self.userfetch(self.request, self.response)
+    elif self.request.get('request').lower() == 'currentuserlogin':
+      self.currentuserlogin(self.request, self.response)
+    elif self.request.get('request').lower() == 'meetingfetch':
+      self.meetingfetch(self.request, self.response)
+    elif self.request.get('request').lower() == 'meetingcreate':
+      self.meetingcreate(self.request, self.response)
+    elif self.request.get('request').lower() == 'agendacreate':
+      # agenda can be integrated with meetings?
+      self.agendacreate(self.request, self.response)
+    elif self.request.get('request').lower() == 'agendafetch':
+      self.agendafetch(self.request, self.response)
+
+  @classmethod
+  def add_user(self, id, request):
+    user = UserModel(id = id)
+    #user.id = id
+    user.photoUrl = 'http://placehold.it/400x300'
+    user.photoThumbnailUrl = 'http://placehold.it/50x50'
+    user.name = 'Coleen Jose'
+    user.affiliation = ''
+    user.bio = 'Coleen Jose is an American-Filipino multimedia journalist and \
+                documentary photographer. She writes and shoots for publications in the \
+                US and Philippines. She was a reporting fellow for E&E Publishing\'s \
+                ClimateWire in Washington, DC.'
+    user.put()
+
+  @classmethod
+  def add_log(self, method, data):
+    loggingId = LogModel.query().count()
+    logging.info(loggingId)
+    log = LogModel.get_by_id(str(loggingId))
+    while log:
+      loggingId += 1
+      log = LogModel.get_by_id(loggingId)
+    log = LogModel(id = str(loggingId))
+    log.method = method
+    log.data = data 
+    log.put()
+    for each in LogModel.query():
+      logging.info('LOGGED into ndb: ' + method)
+
+  @classmethod
+  def userfetch(self, request, response):
+    user = UserModel.get_by_id(request.get('userId'))
+    if user: 
+      data = {'id': request.get('userId'),
+              'photoUrl': user.photoUrl, 
+              'photoThumbnailUrl': user.photoThumbnailUrl,
+              'name': user.name,
+              'affiliation': user.affiliation,
+              'bio': user.bio
+      }
+      response.out.write(json.dumps(data))
+      self.add_log('userfetch', data)
+    else: 
+      data = {'error': 'not found'}
+      response.out.write(json.dumps(data))
+      user = UserModel(id = request.get('userId'))
+      #user.id = request.get('userId')
+      user.photoUrl = 'http://placehold.it/400x300'
+      user.photoThumbnailUrl = 'http://placehold.it/50x50'
+      user.name = 'Jonathan Wilde'
+      user.affiliation = 'Tufts University'
+      user.bio = ''
+      user.put()
+
+  @classmethod
+  def currentuserlogin(self, request, response):
+    user = UserModel.get_by_id(request.get('userId'))
+    if user: 
+      data = {'id': request.get('userId'),
+              'photoUrl': user.photoUrl, 
+              'photoThumbnailUrl': user.photoThumbnailUrl,
+              'name': user.name,
+              'affiliation': user.affiliation,
+              'bio': user.bio
+      }
+      response.out.write(json.dumps(data))
+      self.add_log('currentuserlogin', data)
+    else: 
+      data = {'error': 'not found'}
+      response.out.write(json.dumps(data))
+      user = UserModel(id = request.get('userId'))
+      #user.id = self.request.get('userId')
+      user.photoUrl = 'http://placehold.it/400x300'
+      user.photoThumbnailUrl = 'http://placehold.it/50x50'
+      user.name = 'Jonathan Wilde'
+      user.affiliation = 'Tufts University'
+      user.bio = ''
+      user.put()
+
+  @classmethod
+  def meetingfetch(self, request, response):
+    logging.info('MEETING FETCH ')
+    meeting = MeetingModel.get_by_id(request.get('meetingId'))
+    if meeting: 
+      attendees = []
+      # construct attendees list to be sent back
+      for attendeeId in meeting.attendees:
+        logging.info(attendeeId)
+        instance = UserModel.get_by_id(attendeeId)
+        attendee = {'id': attendeeId, 
+                'photoUrl': instance.photoUrl,
+                'photoThumbnailUrl': instance.photoThumbnailUrl,
+                'name': instance.name, 
+                'bio': instance.bio
+        }
+        attendees.append(attendee)
+        
+      # construct host object to be sent back
+      instance = UserModel.get_by_id(meeting.host)
+      host = {'id': meeting.host, 
+              'photoUrl': instance.photoUrl,
+              'photoThumbnailUrl': instance.photoThumbnailUrl,
+              'name': instance.name, 
+              'bio': instance.bio
+      }
+
+      data = {'id': request.get('meetingId'),
+              'title': meeting.title, 
+              'description': meeting.description,
+              'start': meeting.start,
+              'host': host,
+              'highlights': meeting.highlights,
+              'attendees': attendees
+      }
+      response.out.write(json.dumps(data))
+      self.add_log('meetingfetch', data)
+    else:
+      logging.info('MEETING pushed ')
+      meeting = MeetingModel(id = request.get('meetingId'))
+      meeting.title ='The Philippines\'s Outsourcing Wave'
+      meeting.description = 'Coleen Jose will discuss the process of reporting on the rapid \
+                             increase in outsourcing operations in the Philippines and the impacts \
+                             on Philippine youth.'
+      meeting.start = '2015-03-03 12:12:12 Z'
+      APIHandler.add_user('4', request)
+      APIHandler.add_user('5', request)
+      APIHandler.add_user('6', request)
+      APIHandler.add_user('7', request)
+      APIHandler.add_user('8', request)
+      meeting.host = '4'
+      meeting.highlights = [ \
+                              { \
+                                'type': 'TOPIC', \
+                                'content': 'Challenges with competition for an outsourcing job' \
+                              }, \
+                              { \
+                                'type': 'QUESTION', \
+                                'content': 'What sorts of ethical challenges were there in reporting?' \
+                              }, \
+                              { \
+                                'type': 'QUESTION', \
+                                'content': 'What changes need to happen to the outsourcing industry?' \
+                              } \
+                            ]
+      meeting.attendes = ['5', '6', '7', '8']
+      meeting.put()
+      logging.info('INSERT MEETING')
+
+  @classmethod
+  def meetingcreate(self, request, response):
+    # create a new meeting, ensuring that meetingId has not been used
+    meetingId = MeetingModel.query().count()
+    logging.info(meetingId)
+    meeting = MeetingModel.get_by_id(meetingId)
+    while meeting:
+      meetingId += 1
+      meeting = MeetingModel.get_by_id(meetingId)
+    # all ids about such entities are set strings for consistency 
+    meeting = MeetingModel(id = str(meetingId))
+    meeting.title = request.get('title')
+    meeting.description = request.get('description')
+    meeting.start = request.get('start')
+    meeting.highlights = copy.deepcopy(request.get('highlights'))
+    meeting.topics = copy.deepcopy(request.get('topics'))
+    meeting.put()
+    data = {'id': meetingId}
+    response.out.write(json.dumps(data))
+
+    ### need to amplify the data collected! 
+    self.add_log('meetingcreate', data)
+
+  @classmethod
+  def agendacreate(self, request, response):
+    # create a new meeting, ensuring that meetingId has not been used
+    meetingId = request.get('meetingId')
+    # current assumption: 1-1 relation!
+    agendaId = meetingId
+    # agendaId = len(AgendaModel)
+    # agenda = AgendaModel.get_by_id(agendaId)
+    # while agenda:
+    #   agendaId += 1
+    #   agenda = AgendaModel.get_by_id(agendaId)
+    agenda = AgendaModel(id = agendaId)
+    agenda.meetingId = meetingId
+    agenda.topics = copy.deepcopy(request.get('topics'))
+    agenda.put()
+    data = {'id': meetingId,
+            'topics': agenda.topics
+    }
+    self.add_log('agendacreate', data)
+
+  @classmethod
+  def agendafetch(self, request, response):
+    meetingId = request.get('meetingId')
+    topics = []
+    agenda = AgendaModel.get_by_id(meetingId) # meetingId and agendaId equivalent
+    if agenda: 
+      for t in agenda.topics:
+        qlist = []
+        for i in t.questions:
+          q = QuestionModel.get_by_id(i)
+          # note the answers are a list of indices 
+          qlist.append({'content': q.content, 'answers': q.answers})
+        topic = {'id': t.id,
+                 'content': t.content,
+                 'questions': qlist
+        }
+        topics.append(topic)
+    else: 
+      agenda = []
+    logging.info(topics)
+    response.out.write(json.dumps(topics))
+    self.add_log('agendafetch', topics)
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
     (r'/meeting/(\d+)', MeetingJoin),
     (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
     (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
+    (r'/api', APIHandler),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)

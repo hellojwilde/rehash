@@ -110,14 +110,55 @@ var AGENDAS = {
   }
 }
 
+// Test implementation
+var baseurl = '/api';
+
+function handleAjaxError(emessage){
+  console.log('AJAX ERROR: '+ emessage);
+}
+
+function sendAjaxRequest(reqData){
+  var result;
+  $.ajax({
+    url: baseurl,
+    method: 'POST',
+    data: reqData,
+    dataType: 'json',
+    // double check if making it sync have unintended impacts
+    async: false,
+    success: function(data) {
+      if (data.error == 'not found'){
+        handleAjaxError(data.error);
+      }
+      result = data;
+    },
+    error: handleAjaxError
+  });
+  console.log('test');
+  console.log(result);
+  return result;
+}
+
 var ExampleAPI = {
   // TODO: Figure out a credential to support here.
   currentUserLogin: function() {
+    var reqData = {
+      format: 'json',
+      userId: 0,
+      request: 'currentUserLogin'
+    };
+    var result = sendAjaxRequest(reqData);
+    result.id = Number(result.id);
     return Promise.resolve({
-      user: USERS[0],
+      user: result,
       participating: [],
       hosting: []
     });
+    // return Promise.resolve({
+    //   user: USERS[0],
+    //   participating: [],
+    //   hosting: []
+    // });
   },
 
   currentUserLogout: function() {
@@ -125,37 +166,96 @@ var ExampleAPI = {
   },
 
   userFetch: function(userId) {
-    return Promise.resolve(USERS[userId]);
+    var reqData = {
+      format: 'json',
+      userId: userId,
+      request: 'userFetch'
+    };
+    var result = sendAjaxRequest(reqData);
+    result.id = Number(result.id);
+    console.log(result);
+    return Promise.resolve(result);
+    //return Promise.resolve(USERS[userId]);
   },
 
   meetingFetch: function(meetingId) {
-    return Promise.resolve(MEETINGS[meetingId]);
+    var reqData = {
+      format: 'json',
+      meetingId: meetingId, 
+      request: 'meetingFetch'
+    };
+    var result = sendAjaxRequest(reqData);
+    // convert datetime string to moment
+    console.log(result.start);
+    result.start = moment(result.start);
+    result.id = 0;
+
+    console.log(result.start);
+    return Promise.resolve(result);
   },
 
   meetingJoin: function(meetingId) {
+    // need to pass in userId to add uses to attendees or hosts 
+    // log on host, so need to update this function
     return Promise.resolve(meetingId);
   },
 
+  // for datetime structure, think about saving on gae as string
   meetingCreate: function(meeting) {
-    var meetingId = ++MEETING_ID;
-
-    MEETINGS[meetingId] = assign(meeting, {
-      id: meetingId,
+    // dates are all saved as strings
+    var mReqData = {
+      format: 'json',
+      request: 'meetingcreate',
+      title: meeting.title, 
+      description: meeting.description,
+      start: meeting.start.format('YYYY-MM-DD HH:mm:ss Z'), 
       highlights: [],
+      // note here the attendees shall be a list of numerical user ids to maintain atomicity 
       attendees: []
-    });
-
-    AGENDAS[meetingId] = {
+    };
+    var meetingId = Number(sendAjaxRequest(mReqData).id);
+    var aReqData = {
+      format: 'json',
+      request: 'agendacreate',
       meetingId: meetingId,
       topics: []
     };
+    sendAjaxRequest(aReqData);
 
     return Promise.resolve(meetingId);
+    // MEETINGS[meetingId] = assign(meeting, {
+    //   id: meetingId,
+    //   highlights: [],
+    //   attendees: []
+    // });
   },
 
+  // await on decision
   agendaFetch: function(meetingId) {
-    return Promise.resolve(AGENDAS[meetingId]);
+    var reqData = {
+      format: 'json',
+      request: 'agendafetch',
+      meetingId: meetingId
+    }
+    var result = sendAjaxRequest(reqData);
+    result.topics = AGENDAS[0].topics;
+    result.meetingId = Number(result.meetingId);
+    console.log(result);
+    return Promise.resolve(AGENDAS[0]);
   }
 };
 
 module.exports = ExampleAPI;
+
+
+
+/*
+  Notes: all ids are stored as string in the database for consistency, 
+  need to recover if going to use them.  
+
+  3. creat the logging system 
+
+*/
+
+
+
