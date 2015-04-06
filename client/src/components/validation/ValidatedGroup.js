@@ -1,8 +1,15 @@
 var React = require('react');
+var {ResultTypes} = require('./ValidationConstants');
 
 var joinClasses = require('react/lib/joinClasses');
 
-var ValidatedFormGroup = React.createClass({
+var ResultTypeClassNames = {
+  [ResultTypes.SUCCESS]: 'has-success',
+  [ResultTypes.WARNING]: 'has-warning',
+  [ResultTypes.ERROR]: 'has-error'
+};
+
+var ValidatedGroup = React.createClass({
 
   propTypes: {
     results: React.PropTypes.object.isRequired,
@@ -16,7 +23,7 @@ var ValidatedFormGroup = React.createClass({
     return (
       <div className={joinClasses(
         'form-group',
-        result && `has-${result}`,
+        result && result.type && ResultTypeClassNames[result.type],
         className
       )}>
         {children}
@@ -26,4 +33,4 @@ var ValidatedFormGroup = React.createClass({
 
 });
 
-module.exports = ValidatedFormGroup;
+module.exports = ValidatedGroup;
