@@ -1,8 +1,8 @@
-var Agenda = require('components/meeting/agenda/Agenda');
+var Agenda = require('components/meeting/broadcast/BroadcastAgenda');
 var Broadcast = require('components/meeting/broadcast/Broadcast');
-var MeetingLayout = require('components/meeting/MeetingLayout');
-var MeetingLayoutAside = require('components/meeting/MeetingLayoutAside');
-var MeetingLayoutContent = require('components/meeting/MeetingLayoutContent');
+var MeetingLayout = require('components/meeting/common/MeetingLayout');
+var MeetingLayoutAside = require('components/meeting/common/MeetingLayoutAside');
+var MeetingLayoutContent = require('components/meeting/common/MeetingLayoutContent');
 var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');

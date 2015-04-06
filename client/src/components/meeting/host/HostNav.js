@@ -10,7 +10,7 @@ var HostNav = React.createClass({
       <nav className="navbar navbar-default HostNav">
         <div className="container">
           <ul className="nav navbar-nav">
-            <HostNavLink to="meeting-overview">Overview</HostNavLink>
+            <HostNavLink to="meeting-invite">Invite</HostNavLink>
             <HostNavLink to="meeting-broadcast">Broadcast</HostNavLink>
             <li><a href="#">Highlights</a></li>
           </ul>

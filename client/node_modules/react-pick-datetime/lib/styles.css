@@ -1,0 +1,50 @@
+.DateInput {
+  display: inline-block;
+  position: relative;
+}
+
+.DateInput .InputWithPopup-popup {
+  width: auto;
+}
+
+.CalendarHeader {
+  padding: 0.5em;
+}
+
+.CalendarHeader-previousButton {
+  float: left;
+}
+
+.CalendarHeader-nextButton {
+  float: right;
+}
+
+.CalendarHeader-heading {
+  text-align: center;
+  margin: 0.35em 0;
+  font-weight: bold;
+}
+
+.CalendarGrid {
+  outline: 0;
+}
+
+.CalendarGridBody-day {
+  cursor: pointer;
+  padding: 0.5em;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.CalendarGridBody-day:hover,
+.CalendarGridBody-day--isValue {
+  background: hsl(200, 50%, 50%);
+}
+
+.CalendarGridBody-day--isToday {
+  background: hsl(200, 50%, 80%);
+}
+
+.CalendarGridBody-day--isOtherMonth {
+  color: #999;
+}
