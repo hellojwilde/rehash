@@ -6,7 +6,7 @@ var createFragment = React.addons.createFragment;
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 var userPropType = require('types/userPropType');
 
-var HeaderUserNav = React.createClass({
+var HeaderUserLinks = React.createClass({
 
   contextTypes: {
     flux: React.PropTypes.object.isRequired,
@@ -91,4 +91,4 @@ var HeaderUserNav = React.createClass({
 
 });
 
-module.exports = HeaderUserNav;
+module.exports = HeaderUserLinks;
