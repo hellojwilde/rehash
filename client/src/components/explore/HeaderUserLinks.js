@@ -1,5 +1,5 @@
 var React = require('react/addons');
-var HeaderLink = require('components/common/HeaderLink');
+var HeaderLink = require('components/explore/HeaderLink');
 var CreateModal = require('modals/CreateModal');
 
 var createFragment = React.addons.createFragment;

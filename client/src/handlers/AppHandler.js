@@ -1,5 +1,4 @@
 var FluxComponent = require('flummox/component');
-var Footer = require('components/common/Footer');
 var ModalStack = require('components/modal/ModalStack');
 var React = require('react');
 var {RouteHandler} = require('react-router');

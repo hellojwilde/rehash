@@ -1,5 +1,5 @@
 var FluxComponent = require('flummox/component');
-var HeaderUserLinks = require('components/common/HeaderUserLinks');
+var HeaderUserLinks = require('components/explore/HeaderUserLinks');
 var React = require('react');
 
 var getUniqueId = require('react-pick/lib/helpers/getUniqueId');
@@ -22,6 +22,10 @@ var Header = React.createClass({
     };
   },
 
+  handleToggleClick: function() {
+    this.setState({isExpanded: !this.state.isExpanded});
+  },
+
   render: function() {
     var {children, className, ...otherProps} = this.props;
 
@@ -36,9 +40,10 @@ var Header = React.createClass({
           <div className="navbar-header">
             <button
               aria-expanded={this.state.isExpanded+''}
+              className="navbar-toggle collapsed"
+              onClick={this.handleToggleClick}
               target={'#' + this.state.id}
-              type="button" 
-              className="navbar-toggle collapsed">
+              type="button">
               <span className="sr-only">Toggle navigation</span>
               <span className="icon-bar"></span>
               <span className="icon-bar"></span>
