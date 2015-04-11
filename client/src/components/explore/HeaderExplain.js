@@ -9,10 +9,14 @@ var HeaderExplain = React.createClass({
     return (
       <div className="HeaderExplain">
         <div className="container">
-          <h2 className="HeaderExplain-heading">
-            Rehash makes it easy to have group discussions with amazing  
-            folks from around the world.
-          </h2>
+          <div className="row">
+            <div className="col-xs-8">
+              <h2 className="HeaderExplain-heading">
+                Rehash brings you together with amazing people from around the
+                world over video.
+              </h2>
+            </div>
+          </div>
         </div>
       </div>
     );
