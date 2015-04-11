@@ -1,4 +1,5 @@
 var React = require('react');
+var MeetingScheduleLabel = require('./MeetingScheduleLabel');
 
 var meetingPropType = require('types/meetingPropType');
 
@@ -23,6 +24,11 @@ var MeetingBeforeView = React.createClass({
             </div>
             <div className="col-xs-4 MeetingBeforeView-description">
               <div>
+                <MeetingScheduleLabel 
+                  start={meeting.start} 
+                  isBroadcasting={meeting.isBroadcasting}
+                />
+
                 <h2>{meeting.title}</h2>
                 <p>{meeting.description}</p>
 

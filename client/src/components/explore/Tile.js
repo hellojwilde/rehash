@@ -1,9 +1,6 @@
 var React = require('react');
 var LinkNoClobber = require('components/explore/LinkNoClobber');
-
-var cx = require('classnames');
-var joinClasses = require('react/lib/joinClasses');
-var moment = require('moment');
+var MeetingScheduleLabel = require('components/meeting/MeetingScheduleLabel');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Tile.css');
@@ -27,34 +24,26 @@ var Tile = React.createClass({
     };
   },
 
-  renderSchedule: function() {
-    var classNames = {'Tile-schedule': true};
-    var label = moment(this.props.start).format();
-
-    if (this.props.isBroadcasting) {
-      classNames['Tile-schedule--isBroadcasting'] = true;
-      label = 'Live';
-    }
-
-    if (moment().isAfter(this.props.start)) {
-      classNames['Tile-subscribe--isAfterStart'] = true;
-      label = 'Scheduled';
-    }
-
-    return (
-      <div className={cx(classNames)}>
-        {label}
-      </div>
-    );
-  },
-
   render: function() {
-    var {id, title, description, backgroundImageUrl} = this.props;
+    var {
+      id, 
+      title, 
+      description, 
+      start, 
+      backgroundImageUrl, 
+      isBroadcasting
+    } = this.props;
 
     return (
       <LinkNoClobber to="explore_meeting" params={{meetingId: id}}>
-        <div className='Tile' style={{backgroundImage: `url(${backgroundImageUrl})`}}>
-          {this.renderSchedule()}
+        <div 
+          className='Tile' 
+          style={{backgroundImage: `url(${backgroundImageUrl})`}}>
+          <MeetingScheduleLabel 
+            className="Tile-schedule"
+            isBroadcasting={isBroadcasting}
+            start={start}
+          />
 
           <div className="Tile-main">
             <h3 className="Tile-main-tile">{title}</h3>
