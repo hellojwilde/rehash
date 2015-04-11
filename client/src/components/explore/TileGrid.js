@@ -3,10 +3,12 @@ var TileGridDetail = require('./TileGridDetail');
 var Tile = require('./Tile');
 
 var _ = require('lodash');
+var meetingPropType = require('types/meetingPropType');
 
 // TODO (jwilde): Eventually figure out how we're going to change the number
 // of columns dynamically as the grid layout needs to change for different 
 // screen sizes.
+
 const COLUMNS = 3;
 
 require('3rdparty/bootstrap/css/bootstrap.css');
@@ -15,7 +17,7 @@ require('./TileGrid.css');
 var TileGrid = React.createClass({
 
   propTypes: {
-    meetings: React.PropTypes.array,
+    meetings: React.PropTypes.arrayOf(meetingPropType),
     detailMeetingId: React.PropTypes.number,
     detail: React.PropTypes.element
   },
@@ -46,23 +48,32 @@ var TileGrid = React.createClass({
 
     return (
       <div className="TileGrid">
-        {rows.map((meetingsForRow, idx) => (
-          <div className="TileGrid-row" key={idx}>
-            <div className="container">
-              <div className="row">
-                <div className="col-xs-4">
-                  {meetingsForRow.map((meeting, idx) => (
-                    <Tile key={idx} {...meeting} />
-                  ))}
+        {rows.map((meetingsForRow, idx) => {
+          var rowContainsDetail = !!_.find(
+            meetingsForRow, 
+            _.matchesProperty('id', detailMeetingId)
+          );
+
+          return (
+            <div className="TileGrid-row" key={idx}>
+              <div className="container">
+                <div className="row">
+                  <div className="col-xs-4">
+                    {meetingsForRow.map((meeting, idx) => (
+                      <Tile key={idx} {...meeting} />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {!!_.find(meetingsForRow, _.matchesProperty('id', detailMeetingId)) && (
-              <TileGridDetail ref="detail" column={idx}>{detail}</TileGridDetail>
-            )}
-          </div>
-        ))}
+              {rowContainsDetail && (
+                <TileGridDetail ref="detail" column={idx}>
+                  {detail}
+                </TileGridDetail>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   }

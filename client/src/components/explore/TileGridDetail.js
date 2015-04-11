@@ -17,6 +17,8 @@ var TileGridDetail = React.createClass({
 
     return (
       <div className="TileGridDetail" style={{height}}>
+        {this.props.children}
+
         <div className="TileGridDetail-header">
           {/* TODO (jwilde): Implement the arrow pointing at the tile... */}
 
@@ -26,8 +28,6 @@ var TileGridDetail = React.createClass({
             </LinkNoClobber>
           </div>
         </div>
-
-        {this.props.children}
       </div>
     );
   }
