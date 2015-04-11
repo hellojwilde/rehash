@@ -99,28 +99,29 @@ var AGENDAS = {
 // Test implementation
 var baseurl = '/api';
 
-function handleAjaxError(emessage){
+function handleAjaxError(emessage, callback){
   console.log('AJAX ERROR: '+ emessage);
+  callback(emessage);
 }
 
 function sendAjaxRequest(reqData) {
-  var result;
-  $.ajax({
-    url: baseurl,
-    method: 'POST',
-    data: reqData,
-    dataType: 'json',
-    success: function(data) {
-      if (data.error == 'not found'){
-        handleAjaxError(data.error);
-      }
-      result = data;
-    },
-    error: handleAjaxError
+  return new Promise(function(resolve, reject) {
+    $.ajax({
+      url: baseurl,
+      method: 'POST',
+      data: reqData,
+      dataType: 'json',
+      success: function(data) {
+        if (data.error == 'not found') {
+          handleAjaxError(data.error, reject);
+          return;
+        }
+
+        resolve(data);
+      },
+      error: handleAjaxError
+    });
   });
-  console.log('test');
-  console.log(result);
-  return result;
 }
 
 var ExampleAPI = {
@@ -130,14 +131,12 @@ var ExampleAPI = {
       userId: userId,
       request: 'userFetch'
     };
-    var result = sendAjaxRequest(reqData);
-    result.id = Number(result.id);
-    console.log(result);
-    return Promise.resolve(result);
-    //return Promise.resolve(USERS[userId]);
+
+    return sendAjaxRequest(reqData);
   },
 
   exploreFetch: function() {
+    // TODO: Make request against remote endpoint.
     return Promise.resolve(MEETINGS);
   },
 
@@ -147,14 +146,15 @@ var ExampleAPI = {
       meetingId: meetingId, 
       request: 'meetingFetch'
     };
-    var result = sendAjaxRequest(reqData);
-    // convert datetime string to moment
-    console.log(result.start);
-    result.start = moment(result.start);
-    result.id = 0;
-
-    console.log(result.start);
-    return Promise.resolve(result);
+    
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        // TODO: make sure we're including a real result id here.
+        // convert datetime string to moment
+        result.start = moment(result.start);
+        result.id = 0;
+        return result;
+      });
   },
 
   meetingJoin: function(meetingId) {
@@ -176,41 +176,39 @@ var ExampleAPI = {
       // note here the attendees shall be a list of numerical user ids to maintain atomicity 
       attendees: []
     };
-    var meetingId = Number(sendAjaxRequest(mReqData).id);
+    
     var aReqData = {
       format: 'json',
       request: 'agendacreate',
       meetingId: meetingId,
       topics: []
     };
-    sendAjaxRequest(aReqData);
 
-    return Promise.resolve(meetingId);
-    // MEETINGS[meetingId] = assign(meeting, {
-    //   id: meetingId,
-    //   highlights: [],
-    //   attendees: []
-    // });
+    return sendAjaxRequest(mReqData)
+      .then((result) => {
+        var meetingId = Number(result.id);
+        return sendAjaxRequest(aReqData)
+          .then(() => meetingId)
+      });
   },
 
-  // await on decision
   agendaFetch: function(meetingId) {
     var reqData = {
       format: 'json',
       request: 'agendafetch',
       meetingId: meetingId
-    }
-    var result = sendAjaxRequest(reqData);
-    result.topics = AGENDAS[0].topics;
-    result.meetingId = Number(result.meetingId);
-    console.log(result);
-    return Promise.resolve(AGENDAS[0]);
+    };
+    
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        result.topics = AGENDAS[0].topics;
+        result.meetingId = Number(result.meetingId);
+        return result;
+      });
   }
 };
 
 module.exports = ExampleAPI;
-
-
 
 /*
   Notes: all ids are stored as string in the database for consistency, 
