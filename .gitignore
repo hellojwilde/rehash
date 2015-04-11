@@ -28,4 +28,4 @@ build/Release
 *.pyc
 
 # Just no
-app/dist
+client/dist
