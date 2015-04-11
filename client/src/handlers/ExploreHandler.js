@@ -1,15 +1,23 @@
-var React = require('react');
-var Header = require('components/explore/Header');
-var Footer = require('components/explore/Footer');
 var FluxComponent = require('flummox/component');
+var Footer = require('components/explore/Footer');
+var Header = require('components/explore/Header');
+var React = require('react');
+var TileGrid = require('components/explore/TileGrid');
 var {RouteHandler} = require('react-router');
 
 var _ = require('lodash');
 
 var ExploreHandler = React.createClass({
 
+  statics: {
+    ensureDataAvailable: function(state, registry) {
+      return registry.getActions('explore').fetch();
+    }
+  },
+
   contextTypes: {
-    router: React.PropTypes.func
+    router: React.PropTypes.func.isRequired,
+    flux: React.PropTypes.object.isRequired
   },
 
   render: function() {
@@ -23,14 +31,14 @@ var ExploreHandler = React.createClass({
         />
         <FluxComponent
           connectToStores={['meeting']}
-          render={(meetings) => (
-            <TileGrid 
-              meetings={_.values(meetings)}
-              detailMeetingId={meetingId}
-              detail={<RouteHandler/>}
-            />
-          )}
-        />
+          stateGetter={([meetingStore]) => ({
+            meetings: meetingStore.getAll()
+          })}>
+          <TileGrid 
+            detailMeetingId={+meetingId}
+            detail={<RouteHandler/>}
+          />
+        </FluxComponent>
         <Footer/>
       </div>
     );

@@ -1,30 +1,13 @@
 var {Store} = require('flummox');
 
-function getSetFromArray(arr) {
-  return arr.reduce(function(set, item) {
-    set[item] = true;
-    return set;
-  }, {});
-}
-
-function getSetWith(set, item) {
-  set[item] = true;
-  return set;
-}
-
-function isInSet(set, item) {
-  return !!set[item];
-}
+var _ = require('lodash');
 
 class CurrentUserStore extends Store {
-  constructor(flux) {
+  constructor(registry) {
     super();
 
-    var currentUserActionIds = flux.getActionIds('currentUser'),
-        meetingActionIds = flux.getActionIds('meeting');
+    var meetingActionIds = registry.getActionIds('meeting');
 
-    this.register(currentUserActionIds.login, this.handleCurrentUserLogin);
-    this.register(currentUserActionIds.logout, this.handleCurrentUserLogout);
     this.register(meetingActionIds.join, this.handleMeetingJoin);
     this.register(meetingActionIds.create, this.handleMeetingCreate);
 
@@ -40,41 +23,23 @@ class CurrentUserStore extends Store {
   }
 
   isParticipant(meetingId) {
-    return isInSet(this.state.participating, meetingId);
+    return _.has(this.state.participating, meetingId);
   }
 
   isHost(meetingId) {
-    return isInSet(this.state.hosting, meetingId);
-  }
-
-  handleCurrentUserLogin(login) {
-    var {user, participating, hosting} = login;
-
-    this.setState({
-      user: user,
-      participating: getSetFromArray(participating),
-      hosting: getSetFromArray(hosting)
-    });
-  }
-
-  handleCurrentUserLogout() {
-    this.setState({
-      user: null, 
-      participating: {},
-      hosting: {}
-    });
+    return _.has(this.state.hosting, meetingId);
   }
 
   handleMeetingJoin(meetingId) {
     this.setState({
-      participating: getSetWith(this.state.participating, meetingId)
+      participating: _.assign(this.state.participating, {meetingId: true})
     });
   }
 
   handleMeetingCreate(meetingId) {
     this.setState({
-      participating: getSetWith(this.state.participating, meetingId),
-      hosting: getSetWith(this.state.hosting, meetingId)
+      participating: _.assign(this.state.participating, {meetingId: true}),
+      hosting: _.assign(this.state.hosting, {meetingId: true})
     });
   }
 }

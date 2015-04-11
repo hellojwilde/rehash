@@ -8,17 +8,23 @@ class MeetingStore extends Store {
     super();
 
     var meetingActionIds = flux.getActionIds('meeting');
+    var exploreActionIds = flux.getActionIds('explore');
 
     this.register(meetingActionIds.fetch, this.handleMeetingFetch);
+    this.register(exploreActionIds.fetch, this.handleExploreFetch);
 
     this.state = {};
+  }
+
+  getAll() {
+    return _.values(this.state);
   }
 
   getById(meetingId) {
     return this.state[meetingId];
   }
 
-  handleMeetingsFetch(meetings) {
+  handleExploreFetch(meetings) {
     this.setState(meetings);
   }
 

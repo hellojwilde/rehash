@@ -25,11 +25,6 @@ var LoginModal = React.createClass({
     };
   },
 
-  handleLoginClick: function() {
-    this.context.flux.getActions('currentUser').login()
-      .then(() => this.props.onComplete());
-  },
-
   render: function() {
     return (
       <Modal className="modal-sm">
@@ -39,11 +34,11 @@ var LoginModal = React.createClass({
             <p>{this.props.message}</p>
           )}
 
-          <button 
-            onClick={this.handleLoginClick}
+          <a 
+            href="/user/login"
             className="btn btn-primary btn-lg btn-block">
-            Log in with ExampleAPI
-          </button>
+            Log in with Twitter
+          </a>
         </ModalBody>
       </Modal>
     );

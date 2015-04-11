@@ -1,10 +1,10 @@
 var React = require('react/addons');
-var HeaderLink = require('components/explore/HeaderLink');
 var CreateModal = require('modals/CreateModal');
 
-var createFragment = React.addons.createFragment;
+var _ = require('lodash');
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 var userPropType = require('types/userPropType');
+var {createFragment} = React.addons;
 
 var HeaderUserLinks = React.createClass({
 
@@ -23,68 +23,46 @@ var HeaderUserLinks = React.createClass({
     };
   },
 
-  handleLoginClick: function() {
-    ensureCurrentUser(this.context.flux);
-  },
-
   handleCreateClick: function() {
     ensureCurrentUser(
       this.context.flux, 
       'In order to create a new meeting, we\'ll need you to log in.'
-    ).then(() => {
-      this.context.flux.getActions('modal').push(
-        CreateModal,
-        {
-          onComplete: (meetingId) => {
-            console.log(meetingId);
-            this.context.router.transitionTo(
-              'meeting-invite',
-              {meetingId: meetingId}
-            )
-          }
-        }
-      );
-    });
-  },
-
-  handleLogoutClick: function() {
-    this.context.flux.getActions('currentUser').logout();
+    );
   },
 
   render: function() {
-    var buttons = {};
-
-    buttons['create'] = (
-      <li>
-        <button 
-          onClick={this.handleCreateClick} 
-          className="btn btn-default navbar-btn">
-          <span 
-            aria-hidden="true" 
-            className="glyphicon glyphicon-plus">
-          </span>
-          {' '}
-          Create Rehash
-        </button>
-      </li>
-    );
+    var buttons = {
+      create: (
+        <li>
+          <button 
+            onClick={this.handleCreateClick} 
+            className="btn btn-default navbar-btn">
+            <span 
+              aria-hidden="true" 
+              className="glyphicon glyphicon-plus">
+            </span>
+            {' '}
+            Create Rehash
+          </button>
+        </li>
+      )
+    };
 
     if (this.props.currentUser) {
-      buttons['user'] = (
-        <li>
-          <p className="navbar-text">
-            {this.props.currentUser.name}
-          </p>
-        </li>
-      );
-
-      buttons['logout'] = (
-        <HeaderLink onClick={this.handleLogoutClick}>Logout</HeaderLink>
-      );
+      _.assign(buttons, {
+        user: (
+          <li>
+            <p className="navbar-text">
+              {this.props.currentUser.name}
+            </p>
+          </li>
+        ),
+        logout: <li><a href="/user/logout">Log out</a></li>
+      });
     } else {
-      buttons['login'] = (
-        <HeaderLink onClick={this.handleLoginClick}>Login</HeaderLink>
-      );
+      _.assign(buttons, {
+        login: <li><a href="/user/login">Log in</a></li>
+      });
     }
 
     return (

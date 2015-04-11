@@ -16,9 +16,11 @@ var TileGridDetail = React.createClass({
         {/* TODO (jwilde): Implement the arrow pointing at the tile... */}
 
         <div className="TileGridDetail-main">
-          <Link to="explore" className="TileGridDetail-close btn">
-            <span className="glyphicon glyphicon-remove"></span>
-          </Link>
+          <div className="container">
+            <Link to="explore" className="pull-right btn">
+              <span className="glyphicon glyphicon-remove"></span>
+            </Link>
+          </div>
 
           {this.props.children}
         </div>

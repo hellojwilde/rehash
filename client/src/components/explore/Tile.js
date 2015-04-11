@@ -17,7 +17,6 @@ var Tile = React.createClass({
     isBroadcasting: React.PropTypes.bool,
     description: React.PropTypes.string,
     backgroundImageUrl: React.PropTypes.string
-    onSubscribe: React.PropTypes.func
   },
 
   getDefaultProps: function() {
@@ -51,7 +50,7 @@ var Tile = React.createClass({
 
   render: function() {
     return (
-      <Link to="explore_meeting" meetingId={this.props.id}>
+      <Link to="explore_meeting" params={{meetingId: this.props.id}}>
         <div className='Tile'>
           {this.renderSchedule()}
 

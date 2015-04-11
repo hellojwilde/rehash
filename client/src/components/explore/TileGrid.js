@@ -1,5 +1,6 @@
 var React = require('react');
 var TileGridDetail = require('./TileGridDetail');
+var Tile = require('./Tile');
 
 var _ = require('lodash');
 
@@ -24,26 +25,28 @@ var TileGrid = React.createClass({
   },
 
   render: function() {
-    var {meetings, detailMeetingId} = this.props;
+    var {meetings, detailMeetingId, detail} = this.props;
     var rows = _.chunk(meetings, COLUMNS);
 
     return (
       <div className="TileGrid">
-        {rows.map((meetings, idx) => {
+        {rows.map((meetingsForRow, idx) => (
           <div className="TileGrid-row" key={idx}>
             <div className="container">
               <div className="row">
                 <div className="col-xs-4">
-                  {meetings.map((tile, idx) => <Tile key={idx} {...tile} />)}
+                  {meetingsForRow.map((meeting, idx) => (
+                    <Tile key={idx} {...meeting} />
+                  ))}
                 </div>
               </div>
             </div>
 
-            {_.find(meetings, ({id}) => id === detailMeetingId) && (
+            {!!_.find(meetingsForRow, _.matchesProperty('id', detailMeetingId)) && (
               <TileGridDetail column={idx}>{detail}</TileGridDetail>
             )}
           </div>
-        })}
+        ))}
       </div>
     );
   }

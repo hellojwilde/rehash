@@ -1,5 +1,6 @@
 var AppHandler = require('handlers/AppHandler');
 var ExploreHandler = require('handlers/ExploreHandler');
+var MeetingHandler = require('handlers/MeetingHandler');
 var React = require('react');
 var {Route} = require('react-router');
 

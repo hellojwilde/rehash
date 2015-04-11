@@ -58,20 +58,6 @@ var MEETINGS = {
        on Philippine youth.',
     start: moment().subtract(10, 'm'),
     host: USERS[4],
-    highlights: [
-      {
-        type: 'TOPIC',
-        content: 'Challenges with competition for an outsourcing job'
-      },
-      {
-        type: 'QUESTION',
-        content: 'What sorts of ethical challenges were there in reporting?'
-      },
-      {
-        type: 'QUESTION',
-        content: 'What changes need to happen to the outsourcing industry?'
-      }
-    ],
     attendees: [
       USERS[5], 
       USERS[6],
@@ -117,15 +103,13 @@ function handleAjaxError(emessage){
   console.log('AJAX ERROR: '+ emessage);
 }
 
-function sendAjaxRequest(reqData){
+function sendAjaxRequest(reqData) {
   var result;
   $.ajax({
     url: baseurl,
     method: 'POST',
     data: reqData,
     dataType: 'json',
-    // double check if making it sync have unintended impacts
-    async: false,
     success: function(data) {
       if (data.error == 'not found'){
         handleAjaxError(data.error);
@@ -140,31 +124,6 @@ function sendAjaxRequest(reqData){
 }
 
 var ExampleAPI = {
-  // TODO: Figure out a credential to support here.
-  currentUserLogin: function() {
-    var reqData = {
-      format: 'json',
-      userId: 0,
-      request: 'currentUserLogin'
-    };
-    var result = sendAjaxRequest(reqData);
-    result.id = Number(result.id);
-    return Promise.resolve({
-      user: result,
-      participating: [],
-      hosting: []
-    });
-    // return Promise.resolve({
-    //   user: USERS[0],
-    //   participating: [],
-    //   hosting: []
-    // });
-  },
-
-  currentUserLogout: function() {
-    return Promise.resolve({});
-  },
-
   userFetch: function(userId) {
     var reqData = {
       format: 'json',
@@ -176,6 +135,10 @@ var ExampleAPI = {
     console.log(result);
     return Promise.resolve(result);
     //return Promise.resolve(USERS[userId]);
+  },
+
+  exploreFetch: function() {
+    return Promise.resolve(MEETINGS);
   },
 
   meetingFetch: function(meetingId) {
