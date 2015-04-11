@@ -4,6 +4,9 @@ var Tile = require('./Tile');
 
 var _ = require('lodash');
 
+// TODO (jwilde): Eventually figure out how we're going to change the number
+// of columns dynamically as the grid layout needs to change for different 
+// screen sizes.
 const COLUMNS = 3;
 
 require('3rdparty/bootstrap/css/bootstrap.css');

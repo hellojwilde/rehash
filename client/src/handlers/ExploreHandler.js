@@ -16,8 +16,7 @@ var ExploreHandler = React.createClass({
   },
 
   contextTypes: {
-    router: React.PropTypes.func.isRequired,
-    flux: React.PropTypes.object.isRequired
+    router: React.PropTypes.func.isRequired
   },
 
   render: function() {

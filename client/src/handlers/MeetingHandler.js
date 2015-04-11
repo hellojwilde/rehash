@@ -1,4 +1,6 @@
 var React = require('react');
+var MeetingView = require('components/meeting/MeetingView')
+var FluxComponent = require('flummox/component');
 
 var MeetingHandler = React.createClass({
 
@@ -9,9 +11,21 @@ var MeetingHandler = React.createClass({
     }
   },
 
+  contextTypes: {
+    router: React.PropTypes.func.isRequired
+  },
+
   render: function() {
+    var {meetingId} = this.context.router.getCurrentParams();
+
     return (
-      <div>Meetinggggg</div>
+      <FluxComponent 
+        connectToStores={['meeting']}
+        stateGetter={([meetingStore]) => ({
+          meeting: meetingStore.getById(meetingId)
+        })}
+        render={(state) => <MeetingView {...state} />}
+      />
     );
   }
 
