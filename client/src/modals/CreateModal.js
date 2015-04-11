@@ -69,8 +69,6 @@ var CreateModal = React.createClass({
     var {title, description, startDate, startTime} = this.state;
     var meetingActions = this.context.flux.getActions('meeting');
 
-    // TODO Validate the contents of this somehow.
-
     meetingActions.create({
       title: title,
       description: description,

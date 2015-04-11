@@ -58,8 +58,13 @@ var HeaderUserLinks = React.createClass({
       <li>
         <button 
           onClick={this.handleCreateClick} 
-          className="btn btn-primary btn-sm navbar-btn">
-          Create Meeting
+          className="btn btn-default navbar-btn">
+          <span 
+            aria-hidden="true" 
+            className="glyphicon glyphicon-plus">
+          </span>
+          {' '}
+          Create Rehash
         </button>
       </li>
     );

@@ -5,7 +5,13 @@ var {Route} = require('react-router');
 
 var Routes = (
   <Route handler={AppHandler}>
-    <Route handler={ExploreHandler}/>
+    <Route name="explore" handler={ExploreHandler} path="/">
+      <Route 
+        name="explore_meeting" 
+        handler={MeetingHandler} 
+        path="/explore/meeting/:meetingId"
+      />
+    </Route>
   </Route>
 );
 

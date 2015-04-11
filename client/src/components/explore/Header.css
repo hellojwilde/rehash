@@ -1,12 +1,16 @@
-.Header, 
-.Header.navbar-default .navbar-nav > li > a,
-.Header.navbar-default .navbar-brand,
-.Header.navbar-default .navbar-text {
+.Header {
+  padding-top: 50px;
+}
+
+.Header .navbar, 
+.Header .navbar.navbar-default .navbar-nav > li > a,
+.Header .navbar.navbar-default .navbar-brand,
+.Header .navbar.navbar-default .navbar-text {
   color: white;
   text-shadow: black 0px 1px 1px;
 }
 
-.Header {
+.Header .navbar {
   border-bottom-color: #000;
   background-color: #222;
 }

@@ -1,0 +1,9 @@
+.HeaderExplain {
+  padding: 40px 0 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.HeaderExplain-heading {
+  font-weight: 300;
+  margin: 0;
+}
