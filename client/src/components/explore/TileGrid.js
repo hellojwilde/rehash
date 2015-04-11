@@ -7,6 +7,7 @@ var _ = require('lodash');
 const COLUMNS = 3;
 
 require('3rdparty/bootstrap/css/bootstrap.css');
+require('./TileGrid.css');
 
 var TileGrid = React.createClass({
 
@@ -22,6 +23,18 @@ var TileGrid = React.createClass({
       detailMeetingId: null,
       detail: null
     };
+  },
+
+  componentDidUpdate: function(prevProps, prevState) {
+    if (this.props.detail !== prevProps.detail &&
+        this.refs['detail']) {
+      var detailOffset = 0.1 * window.innerHeight;
+      var detailRect = this.refs['detail'].getDOMNode().getBoundingClientRect();
+
+      // XXX If we don't put this in a setTimeout, the scroll doesn't 
+      // consistently fire. Unclear why this is the case.
+      setTimeout(() => window.scrollBy(0, detailRect.top - detailOffset), 0);
+    }
   },
 
   render: function() {
@@ -43,7 +56,7 @@ var TileGrid = React.createClass({
             </div>
 
             {!!_.find(meetingsForRow, _.matchesProperty('id', detailMeetingId)) && (
-              <TileGridDetail column={idx}>{detail}</TileGridDetail>
+              <TileGridDetail ref="detail" column={idx}>{detail}</TileGridDetail>
             )}
           </div>
         ))}

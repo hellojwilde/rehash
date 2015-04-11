@@ -23,7 +23,7 @@ var Tile = React.createClass({
     return {
       isBroadcasting: false,
       description: '',
-      backgroundImageUrl: ''
+      backgroundImageUrl: require('./cartographer/cartographer.png')
     };
   },
 
@@ -49,14 +49,16 @@ var Tile = React.createClass({
   },
 
   render: function() {
+    var {id, title, description, backgroundImageUrl} = this.props;
+
     return (
-      <LinkNoClobber to="explore_meeting" params={{meetingId: this.props.id}}>
-        <div className='Tile'>
+      <LinkNoClobber to="explore_meeting" params={{meetingId: id}}>
+        <div className='Tile' style={{backgroundImage: `url(${backgroundImageUrl})`}}>
           {this.renderSchedule()}
 
           <div className="Tile-main">
-            <h3>{this.props.title}</h3>
-            <p>{this.props.description}</p>
+            <h3 className="Tile-main-tile">{title}</h3>
+            <p className="Tile-main-description">{description}</p>
           </div>
         </div>
       </LinkNoClobber>

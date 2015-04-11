@@ -4,6 +4,8 @@ var LinkNoClobber = require('components/explore/LinkNoClobber');
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGridDetail.css');
 
+const DEFAULT_HEIGHT = 500;
+
 var TileGridDetail = React.createClass({
 
   propTypes: {
@@ -11,19 +13,21 @@ var TileGridDetail = React.createClass({
   },
 
   render: function() {
-    return (
-      <div className="TileGridDetail">
-        {/* TODO (jwilde): Implement the arrow pointing at the tile... */}
+    var height = 0.8 * (window.innerHeight || DEFAULT_HEIGHT);
 
-        <div className="TileGridDetail-main">
+    return (
+      <div className="TileGridDetail" style={{height}}>
+        <div className="TileGridDetail-header">
+          {/* TODO (jwilde): Implement the arrow pointing at the tile... */}
+
           <div className="container">
-            <LinkNoClobber to="explore" className="pull-right btn">
+            <LinkNoClobber to="explore" className="pull-right btn btn-link">
               <span className="glyphicon glyphicon-remove"></span>
             </LinkNoClobber>
           </div>
-
-          {this.props.children}
         </div>
+
+        {this.props.children}
       </div>
     );
   }
