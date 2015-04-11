@@ -13,6 +13,11 @@ var Routes = (
         path="/explore/meeting/:meetingId"
       />
     </Route>
+    <Route 
+      name="meeting" 
+      handler={MeetingHandler} 
+      path="/meeting/:meetingId"
+    />
   </Route>
 );
 
