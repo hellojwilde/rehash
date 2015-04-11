@@ -1,5 +1,4 @@
 var AgendaActions = require('actions/AgendaActions');
-var AgendaStore = require('stores/AgendaStore');
 var CurrentUserStore = require('stores/CurrentUserStore');
 var ExampleAPI = require('apis/ExampleAPI');
 var ExploreActions = require('actions/ExploreActions');
@@ -18,7 +17,6 @@ class FluxRegistry extends Flummox {
     this.createActions('meeting', MeetingActions, this, ExampleAPI);
     this.createActions('modal', ModalActions);
 
-    this.createStore('agenda', AgendaStore, this);
     this.createStore('currentUser', CurrentUserStore, this);
     this.createStore('meeting', MeetingStore, this);
     this.createStore('modal', ModalStore, this);
