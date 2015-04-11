@@ -1,5 +1,4 @@
 var moment = require('moment');
-var assign = require('object-assign');
 
 var USERS = {
   0: {

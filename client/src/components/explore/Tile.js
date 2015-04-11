@@ -1,5 +1,5 @@
 var React = require('react');
-var {Link} = require('react-router');
+var LinkNoClobber = require('components/explore/LinkNoClobber');
 
 var cx = require('classnames');
 var joinClasses = require('react/lib/joinClasses');
@@ -50,7 +50,7 @@ var Tile = React.createClass({
 
   render: function() {
     return (
-      <Link to="explore_meeting" params={{meetingId: this.props.id}}>
+      <LinkNoClobber to="explore_meeting" params={{meetingId: this.props.id}}>
         <div className='Tile'>
           {this.renderSchedule()}
 
@@ -59,7 +59,7 @@ var Tile = React.createClass({
             <p>{this.props.description}</p>
           </div>
         </div>
-      </Link>
+      </LinkNoClobber>
     );
   }
 

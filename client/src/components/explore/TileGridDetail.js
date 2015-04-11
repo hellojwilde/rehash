@@ -1,5 +1,5 @@
 var React = require('react');
-var {Link} = require('react-router');
+var LinkNoClobber = require('components/explore/LinkNoClobber');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGridDetail.css');
@@ -17,9 +17,9 @@ var TileGridDetail = React.createClass({
 
         <div className="TileGridDetail-main">
           <div className="container">
-            <Link to="explore" className="pull-right btn">
+            <LinkNoClobber to="explore" className="pull-right btn">
               <span className="glyphicon glyphicon-remove"></span>
-            </Link>
+            </LinkNoClobber>
           </div>
 
           {this.props.children}
