@@ -1,7 +1,14 @@
+var React = require('react');
+var WebRTCAdapter = require('helpers/WebRTCAdapter');
+var WebRTCConstraints = require('helpers/WebRTCConstraints');
+
+var {getUserMedia} = WebRTCAdapter;
+var {mergeConstraints, getWithStereoIfPossible, getPreferredAudioCodec, getIceCandidateType} = WebRTCConstraints;
+
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Broadcast.css');
-var React = require('react');
+
 // variables to hold server data
 var initiator;
 var channelToken;
@@ -34,11 +41,6 @@ var msgQueue = [];
 var sdpConstraints = {'mandatory': {
                       'OfferToReceiveAudio': true,
                       'OfferToReceiveVideo': true }};
-var isVideoMuted = false;
-var isAudioMuted = false;
-// Types of gathered ICE Candidates.
-var gatheredIceCandidateTypes = { Local: {}, Remote: {} };
-var infoDivErrors = [];
 
 var Broadcast = React.createClass({
   propTypes: {
@@ -83,27 +85,23 @@ var Broadcast = React.createClass({
       console.log("NOTE HERE : " + JSON.stringify(data['pc_config'].iceServers[0].urls));
       // to set the data here! 
       var self = this;
-      $.getScript("/js/adapter.js", function(){
-        console.log("loaded the adapter script successfully");
-        // start the session to begin accepting server info
-        self.openChannel();
- //// self.initialize();
-        // session start & stop control
-        var startbtn = React.findDOMNode(self.refs.startBroadcast);
-        startbtn.addEventListener('click', function(){
-          // here, need to make sure we request to be initiator
-          // only one initiator at a time 
-          initiator = 0;
-          self.initialize();
-          console.log("Start the broadcast and notify audiences!");
-          self.sendMessage({type: 'broadcast'});
-        }, false);
-        var stopbtn = React.findDOMNode(self.refs.stopBroadcast);
-        stopbtn.addEventListener('click', function(){
-          self.stop();
-        }, false);
-
-      });
+      // start the session to begin accepting server info
+      self.openChannel();
+//// self.initialize();
+      // session start & stop control
+      var startbtn = React.findDOMNode(self.refs.startBroadcast);
+      startbtn.addEventListener('click', function(){
+        // here, need to make sure we request to be initiator
+        // only one initiator at a time 
+        initiator = 0;
+        self.initialize();
+        console.log("Start the broadcast and notify audiences!");
+        self.sendMessage({type: 'broadcast'});
+      }, false);
+      var stopbtn = React.findDOMNode(self.refs.stopBroadcast);
+      stopbtn.addEventListener('click', function(){
+        self.stop();
+      }, false);
     }.bind(this);
     xhr.send(); 
   },
@@ -222,8 +220,6 @@ var Broadcast = React.createClass({
     }
     pc.onaddstream = this.onRemoteStreamAdded;
     pc.onremovestream = this.onRemoteStreamRemoved;
-    pc.onsignalingstatechange = this.onSignalingStateChanged;
-    pc.oniceconnectionstatechange = this.onIceConnectionStateChanged;
   },
   // function that try to start connections when ready 
   maybeStart: function() {
@@ -271,14 +267,7 @@ var Broadcast = React.createClass({
     pc.createAnswer(this.setLocalAndSendMessage,
                     this.onCreateSessionDescriptionError, sdpConstraints);
   },
-  mergeConstraints: function(cons1, cons2) {
-    var merged = cons1;
-    for (var name in cons2.mandatory) {
-      merged.mandatory[name] = cons2.mandatory[name];
-    }
-    merged.optional.concat(cons2.optional);
-    return merged;
-  },
+
   setLocalAndSendMessage: function(sessionDescription) {
 ////// double check if: if may produce a bug
     sessionDescription.sdp = this.maybePreferAudioReceiveCodec(sessionDescription.sdp);
@@ -289,7 +278,7 @@ var Broadcast = React.createClass({
   setRemote: function(message) {
     // Set Opus in Stereo, if stereo enabled.
     if (stereo)
-      message.sdp = this.addStereo(message.sdp);
+      message.sdp = getWithStereoIfPossible(message.sdp);
     message.sdp = this.maybePreferAudioSendCodec(message.sdp);
     pc.setRemoteDescription(new RTCSessionDescription(message),
          this.onSetRemoteDescriptionSuccess, this.onSetSessionDescriptionError);
@@ -331,7 +320,7 @@ var Broadcast = React.createClass({
     } else if (message.type === 'candidate') {
       var candidate = new RTCIceCandidate({sdpMLineIndex: message.label,
                                            candidate: message.candidate});
-      this.noteIceCandidate("Remote", this.iceCandidateType(message.candidate));
+      this.noteIceCandidate("Remote", getIceCandidateType(message.candidate));
       pc.addIceCandidate(candidate,
                          this.onAddIceCandidateSuccess, this.onAddIceCandidateError);
     } else if (message.type === 'bye') {
@@ -390,8 +379,6 @@ var Broadcast = React.createClass({
   },
   messageError: function (msg) {
     console.log(msg);
-    infoDivErrors.push(msg);
-    this.updateInfoDiv();
   },
   onUserMediaSuccess: function (stream) {
     console.log('User has granted access to local media.');
@@ -420,22 +407,13 @@ var Broadcast = React.createClass({
   onSetSessionDescriptionError: function(error) {
     this.messageError('Failed to set session description: ' + error.toString());
   },
-  iceCandidateType: function(candidateSDP) {
-    if (candidateSDP.indexOf("typ relay ") >= 0)
-      return "TURN";
-    if (candidateSDP.indexOf("typ srflx ") >= 0)
-      return "STUN";
-    if (candidateSDP.indexOf("typ host ") >= 0)
-      return "HOST";
-    return "UNKNOWN";
-  },
   onIceCandidate: function(event) {
     if (event.candidate) {
       this.sendMessage({type: 'candidate',
                    label: event.candidate.sdpMLineIndex,
                    id: event.candidate.sdpMid,
                    candidate: event.candidate.candidate});
-      this.noteIceCandidate("Local", this.iceCandidateType(event.candidate.candidate));
+      this.noteIceCandidate("Local", getIceCandidateType(event.candidate.candidate));
     } else {
       console.log('End of candidates.');
     }
@@ -450,12 +428,8 @@ var Broadcast = React.createClass({
   onRemoteStreamRemoved: function(event) {
     console.log('Remote stream removed.');
   },
-  onSignalingStateChanged: function(event) {
-    this.updateInfoDiv();
-  },
-  onIceConnectionStateChanged: function(event) {
-    this.updateInfoDiv();
-  },
+
+
   onHangup: function() {
     console.log('Hanging up.');
     this.transitionToDone();
@@ -474,8 +448,6 @@ var Broadcast = React.createClass({
   stop: function () {
     started = false;
     signalingReady = false;
-    isAudioMuted = false;
-    isVideoMuted = false;
     pc.close();
     pc = null;
     video.pause();
@@ -527,97 +499,6 @@ var Broadcast = React.createClass({
   enterFullScreen: function () {
     //container.webkitRequestFullScreen();
   },
-  noteIceCandidate: function (location, type) {
-    if (gatheredIceCandidateTypes[location][type])
-      return;
-    gatheredIceCandidateTypes[location][type] = 1;
-    this.updateInfoDiv();
-  },
-  getInfoDiv: function () {
-    return React.findDOMNode(this.refs.infoDiv);
-  },
-  updateInfoDiv: function () {
-    var contents = "<pre>Gathered ICE Candidates\n";
-    for (var endpoint in gatheredIceCandidateTypes) {
-      contents += endpoint + ":\n";
-      for (var type in gatheredIceCandidateTypes[endpoint])
-        contents += "  " + type + "\n";
-    }
-    if (pc != null) {
-      contents += "Gathering: " + pc.iceGatheringState + "\n";
-      contents += "</pre>\n";
-      contents += "<pre>PC State:\n";
-      contents += "Signaling: " + pc.signalingState + "\n";
-      contents += "ICE: " + pc.iceConnectionState + "\n";
-    }
-    var div = this.getInfoDiv();
-    div.innerHTML = contents + "</pre>";
-
-    for (var msg in infoDivErrors) {
-      div.innerHTML += '<p style="background-color: red; color: yellow;">' +
-                       infoDivErrors[msg] + '</p>';
-    }
-    if (infoDivErrors.length)
-      this.showInfoDiv();
-  },
-  toggleInfoDiv: function() {
-    var div = this.getInfoDiv();
-    if (div.style.display == "block") {
-      div.style.display = "none";
-    } else {
-      this.showInfoDiv();
-    }
-  },
-  showInfoDiv: function() {
-    var div = this.getInfoDiv();
-    div.style.display = "block";
-  },
-  toggleVideoMute: function() {
-    // Call the getVideoTracks method via adapter.js.
-    videoTracks = localStream.getVideoTracks();
-
-    if (videoTracks.length === 0) {
-      console.log('No local video available.');
-      return;
-    }
-
-    if (isVideoMuted) {
-      for (i = 0; i < videoTracks.length; i++) {
-        videoTracks[i].enabled = true;
-      }
-      console.log('Video unmuted.');
-    } else {
-      for (i = 0; i < videoTracks.length; i++) {
-        videoTracks[i].enabled = false;
-      }
-      console.log('Video muted.');
-    }
-
-    isVideoMuted = !isVideoMuted;
-  },
-  toggleAudioMute: function() {
-    // Call the getAudioTracks method via adapter.js.
-    audioTracks = localStream.getAudioTracks();
-
-    if (audioTracks.length === 0) {
-      console.log('No local audio available.');
-      return;
-    }
-
-    if (isAudioMuted) {
-      for (i = 0; i < audioTracks.length; i++) {
-        audioTracks[i].enabled = true;
-      }
-      console.log('Audio unmuted.');
-    } else {
-      for (i = 0; i < audioTracks.length; i++){
-        audioTracks[i].enabled = false;
-      }
-      console.log('Audio muted.');
-    }
-
-    isAudioMuted = !isAudioMuted;
-  },
 
   maybePreferAudioSendCodec: function(sdp) {
     if (audio_send_codec == '') {
@@ -625,7 +506,7 @@ var Broadcast = React.createClass({
       return sdp;
     }
     console.log('Prefer audio send codec: ' + audio_send_codec);
-    return this.preferAudioCodec(sdp, audio_send_codec);
+    return getPreferredAudioCodec(sdp, audio_send_codec);
   },
   maybePreferAudioReceiveCodec: function(sdp) {
     if (audio_receive_codec == '') {
@@ -633,121 +514,7 @@ var Broadcast = React.createClass({
       return sdp;
     }
     console.log('Prefer audio receive codec: ' + audio_receive_codec);
-    return this.preferAudioCodec(sdp, audio_receive_codec);
-  },
-
-  // Set |codec| as the default audio codec if it's present.
-  // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
-  preferAudioCodec: function (sdp, codec) {
-    var fields = codec.split('/');
-    if (fields.length != 2) {
-      console.log('Invalid codec setting: ' + codec);
-      return sdp;
-    }
-    var name = fields[0];
-    var rate = fields[1];
-    var sdpLines = sdp.split('\r\n');
-
-    // Search for m line.
-    for (var i = 0; i < sdpLines.length; i++) {
-        if (sdpLines[i].search('m=audio') !== -1) {
-          var mLineIndex = i;
-          break;
-        }
-    }
-    if (mLineIndex === null)
-      return sdp;
-
-    // If the codec is available, set it as the default in m line.
-    for (var i = 0; i < sdpLines.length; i++) {
-      if (sdpLines[i].search(name + '/' + rate) !== -1) {
-        var regexp = new RegExp(':(\\d+) ' + name + '\\/' + rate, 'i');
-        var payload = this.extractSdp(sdpLines[i], regexp);
-        if (payload)
-          sdpLines[mLineIndex] = this.setDefaultCodec(sdpLines[mLineIndex],
-                                                 payload);
-        break;
-      }
-    }
-
-    // Remove CN in m line and sdp.
-    sdpLines = this.removeCN(sdpLines, mLineIndex);
-
-    sdp = sdpLines.join('\r\n');
-    return sdp;
-  },
-
-  // Set Opus in stereo if stereo is enabled.
-  addStereo: function(sdp) {
-    var sdpLines = sdp.split('\r\n');
-
-    // Find opus payload.
-    for (var i = 0; i < sdpLines.length; i++) {
-      if (sdpLines[i].search('opus/48000') !== -1) {
-        var opusPayload = this.extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
-        break;
-      }
-    }
-    var fmtpLineIndex;
-    // Find the payload in fmtp line.
-    for (var i = 0; i < sdpLines.length; i++) {
-      if (sdpLines[i].search('a=fmtp') !== -1) {
-        var payload = this.extractSdp(sdpLines[i], /a=fmtp:(\d+)/ );
-        if (payload === opusPayload) {
-          fmtpLineIndex = i;
-          break;
-        }
-      }
-    }
-    // No fmtp line found.
-    if (fmtpLineIndex === null)
-      return sdp;
-
-    // Append stereo=1 to fmtp line.
-    // sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
-
-    sdp = sdpLines.join('\r\n');
-    return sdp;
-  },
-
-  extractSdp: function(sdpLine, pattern) {
-    var result = sdpLine.match(pattern);
-    return (result && result.length == 2)? result[1]: null;
-  },
-
-  // Set the selected codec to the first in m line.
-  setDefaultCodec: function(mLine, payload) {
-    var elements = mLine.split(' ');
-    var newLine = new Array();
-    var index = 0;
-    for (var i = 0; i < elements.length; i++) {
-      if (index === 3) // Format of media starts from the fourth.
-        newLine[index++] = payload; // Put target payload to the first.
-      if (elements[i] !== payload)
-        newLine[index++] = elements[i];
-    }
-    return newLine.join(' ');
-  },
-
-  // Strip CN from sdp before CN constraints is ready.
-  removeCN: function(sdpLines, mLineIndex) {
-    var mLineElements = sdpLines[mLineIndex].split(' ');
-    // Scan from end for the convenience of removing an item.
-    for (var i = sdpLines.length-1; i >= 0; i--) {
-      var payload = this.extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
-      if (payload) {
-        var cnPos = mLineElements.indexOf(payload);
-        if (cnPos !== -1) {
-          // Remove CN payload from m line.
-          mLineElements.splice(cnPos, 1);
-        }
-        // Remove CN line in sdp
-        sdpLines.splice(i, 1);
-      }
-    }
-
-    sdpLines[mLineIndex] = mLineElements.join(' ');
-    return sdpLines;
+    return getPreferredAudioCodec(sdp, audio_receive_codec);
   },
 
   render: function() {
@@ -763,7 +530,6 @@ var Broadcast = React.createClass({
         </div>
 
         <div ref="status"></div>
-        <div ref="infoDiv"></div>
         
       </div>
     );
