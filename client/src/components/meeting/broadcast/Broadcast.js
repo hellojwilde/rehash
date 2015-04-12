@@ -3,7 +3,12 @@ var WebRTCAdapter = require('helpers/WebRTCAdapter');
 var WebRTCConstraints = require('helpers/WebRTCConstraints');
 
 var {getUserMedia} = WebRTCAdapter;
-var {mergeConstraints, getWithStereoIfPossible, getPreferredAudioCodec, getIceCandidateType} = WebRTCConstraints;
+var {
+  mergeConstraints, 
+  getWithStereoIfPossible, 
+  getPreferredAudioCodec, 
+  getIceCandidateType
+} = WebRTCConstraints;
 
 
 require('3rdparty/bootstrap/css/bootstrap.css');
@@ -399,7 +404,6 @@ var Broadcast = React.createClass({
   onRemoteStreamRemoved: function(event) {
     console.log('Remote stream removed.');
   },
-
 
   onHangup: function() {
     console.log('Hanging up.');
