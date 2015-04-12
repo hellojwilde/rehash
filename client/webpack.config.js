@@ -2,7 +2,7 @@ var webpack = require('webpack');
 
 module.exports = {
   entry: [
-    'webpack-dev-server/client?http://0.0.0.0:3000',
+    'webpack-dev-server/client?http://0.0.0.0:3001',
     'webpack/hot/only-dev-server',
     './src/index.js'
   ],
@@ -11,7 +11,7 @@ module.exports = {
   },
   output: {
     path: __dirname + '/dist',
-    publicPath: 'http://localhost:3000/dist/',
+    publicPath: 'http://localhost:3001/dist/',
     filename: 'bundle.js'
   },
   module: {
