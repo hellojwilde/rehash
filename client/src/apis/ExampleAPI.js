@@ -140,7 +140,8 @@ function sendAjaxRequest(reqData){
 }
 
 var ExampleAPI = {
-  // TODO: Figure out a credential to support here.
+  // Integrate with twitter login 
+  // instead of waiting for data to come in, need call back 
   currentUserLogin: function() {
     var reqData = {
       format: 'json',
@@ -148,7 +149,10 @@ var ExampleAPI = {
       request: 'currentUserLogin'
     };
     var result = sendAjaxRequest(reqData);
-    result.id = Number(result.id);
+    console.log(result);
+    result['id'] = Number(result['id']);
+    // need to move this to the server side 
+    window.location.replace(result.redirect);
     return Promise.resolve({
       user: result,
       participating: [],
@@ -172,7 +176,7 @@ var ExampleAPI = {
       request: 'userFetch'
     };
     var result = sendAjaxRequest(reqData);
-    result.id = Number(result.id);
+    result['id'] = Number(result['id']);
     console.log(result);
     return Promise.resolve(result);
     //return Promise.resolve(USERS[userId]);
@@ -186,11 +190,15 @@ var ExampleAPI = {
     };
     var result = sendAjaxRequest(reqData);
     // convert datetime string to moment
-    console.log(result.start);
-    result.start = moment(result.start);
-    result.id = 0;
+    result['start'] = moment(result['start']);
+    //result.id = meetingId;
+    result['id'] = Number(result['id']);
+    result['host']['id'] = Number(result['host']['id']);
+    for (var i = 0; i < result.attendees.length ;i++ ){
+      result['attendees'][i]['id'] = Number(result['attendees'][i]['id']);
+    }
 
-    console.log(result.start);
+    console.log(result);
     return Promise.resolve(result);
   },
 
@@ -213,7 +221,7 @@ var ExampleAPI = {
       // note here the attendees shall be a list of numerical user ids to maintain atomicity 
       attendees: []
     };
-    var meetingId = Number(sendAjaxRequest(mReqData).id);
+    var meetingId = Number(sendAjaxRequest(mReqData)['id']);
     var aReqData = {
       format: 'json',
       request: 'agendacreate',
@@ -239,7 +247,7 @@ var ExampleAPI = {
     }
     var result = sendAjaxRequest(reqData);
     result.topics = AGENDAS[0].topics;
-    result.meetingId = Number(result.meetingId);
+    result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(AGENDAS[0]);
   }
@@ -254,7 +262,7 @@ module.exports = ExampleAPI;
   need to recover if going to use them.  
 
   3. creat the logging system 
-
+  4. transactional!
 */
 
 
