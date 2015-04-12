@@ -16,6 +16,16 @@ var HeaderExplain = React.createClass({
                 world over video.
               </h2>
             </div>
+            <div className="col-xs-4">
+              <button className="HeaderExplain-button btn btn-block btn-default">
+                <span 
+                  aria-hidden="true" 
+                  className="glyphicon glyphicon-plus">
+                </span>
+                {' '}
+                Create Rehash
+              </button>
+            </div>
           </div>
         </div>
       </div>

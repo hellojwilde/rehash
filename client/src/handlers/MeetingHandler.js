@@ -20,9 +20,11 @@ var MeetingHandler = React.createClass({
 
     return (
       <FluxComponent 
-        connectToStores={['meeting']}
-        stateGetter={([meetingStore]) => ({
-          meeting: meetingStore.getById(meetingId)
+        connectToStores={['meeting', 'currentUser']}
+        stateGetter={([meetingStore, currentUserStore]) => ({
+          meeting: meetingStore.getById(meetingId),
+          isParticipant: currentUserStore.isParticipant(meetingId),
+          isHost: currentUserStore.isHost(meetingId)
         })}
         render={(state) => <MeetingView {...state} />}
       />

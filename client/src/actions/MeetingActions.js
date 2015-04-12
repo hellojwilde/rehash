@@ -11,6 +11,12 @@ class MeetingActions extends Actions {
   }
 
   fetch(meetingId) {
+    var meetingStore = this.registry.getStore('meeting');
+    var meeting = meetingStore.getById(meetingId);
+    if (meeting) {
+      return Promise.resolve(meeting);
+    }
+
     return this.api.meetingFetch(meetingId);
   }
 
