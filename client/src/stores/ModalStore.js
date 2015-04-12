@@ -1,10 +1,10 @@
 var {Store} = require('flummox');
 
 class ModalStore extends Store {
-  constructor(flux) {
+  constructor(registry) {
     super();
 
-    var modalActionIds = flux.getActionIds('modal');
+    var modalActionIds = registry.getActionIds('modal');
 
     this.register(modalActionIds.push, this.handleModalPush);
     this.register(modalActionIds.pop, this.handleModalPop);

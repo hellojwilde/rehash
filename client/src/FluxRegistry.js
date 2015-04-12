@@ -6,6 +6,8 @@ var MeetingActions = require('actions/MeetingActions');
 var MeetingStore = require('stores/MeetingStore');
 var ModalActions = require('actions/ModalActions');
 var ModalStore = require('stores/ModalStore');
+var UserActions = require('actions/UserActions');
+var UserStore = require('stores/UserStore');
 var {Flummox} = require('flummox');
 
 class FluxRegistry extends Flummox {
@@ -16,10 +18,12 @@ class FluxRegistry extends Flummox {
     this.createActions('explore', ExploreActions, this, ExampleAPI);
     this.createActions('meeting', MeetingActions, this, ExampleAPI);
     this.createActions('modal', ModalActions);
+    this.createActions('user', UserActions, this, ExampleAPI);
 
     this.createStore('currentUser', CurrentUserStore, this);
     this.createStore('meeting', MeetingStore, this);
     this.createStore('modal', ModalStore, this);
+    this.createStore('user', UserStore, this);
   }
 }
 

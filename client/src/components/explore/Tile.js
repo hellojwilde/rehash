@@ -1,6 +1,6 @@
 var React = require('react');
-var LinkNoClobber = require('components/explore/LinkNoClobber');
-var MeetingScheduleLabel = require('components/meeting/MeetingScheduleLabel');
+var LinkNoClobber = require('components/common/LinkNoClobber');
+var ScheduleLabel = require('components/common/ScheduleLabel');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Tile.css');
@@ -39,7 +39,7 @@ var Tile = React.createClass({
         <div 
           className='Tile' 
           style={{backgroundImage: `url(${backgroundImageUrl})`}}>
-          <MeetingScheduleLabel 
+          <ScheduleLabel 
             className="Tile-schedule"
             isBroadcasting={isBroadcasting}
             start={start}

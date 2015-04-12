@@ -1,5 +1,5 @@
 var React = require('react');
-var LinkNoClobber = require('components/explore/LinkNoClobber');
+var LinkNoClobber = require('components/common/LinkNoClobber');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGridDetail.css');
@@ -16,7 +16,7 @@ var TileGridDetail = React.createClass({
     var height = 0.8 * (window.innerHeight || DEFAULT_HEIGHT);
 
     return (
-      <div className="TileGridDetail" style={{height}}>
+      <div className="TileGridDetail" style={{height: height}}>
         {this.props.children}
 
         <div className="TileGridDetail-header">

@@ -4,11 +4,11 @@ var _ = require('lodash');
 var moment = require('moment');
 
 class MeetingStore extends Store {
-  constructor(flux) {
+  constructor(registry) {
     super();
 
-    var meetingActionIds = flux.getActionIds('meeting');
-    var exploreActionIds = flux.getActionIds('explore');
+    var meetingActionIds = registry.getActionIds('meeting');
+    var exploreActionIds = registry.getActionIds('explore');
 
     this.register(meetingActionIds.fetch, this.handleMeetingFetch);
     this.register(exploreActionIds.fetch, this.handleExploreFetch);

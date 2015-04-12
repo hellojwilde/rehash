@@ -1,6 +1,6 @@
 var React = require('react');
 
-var MeetingDuringView = React.createClass({
+var DuringMeeting = React.createClass({
 
   render: function() {
     return (
@@ -10,4 +10,4 @@ var MeetingDuringView = React.createClass({
 
 });
 
-module.exports = MeetingDuringView;
+module.exports = DuringMeeting;

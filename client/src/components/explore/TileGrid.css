@@ -1,3 +1,18 @@
 .TileGrid {
   margin: 20px 0;
 }
+
+.TileGrid-transition {
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.TileGrid-transition-enter,
+.TileGrid-transition-leave {
+  transition: height 0.2s ease-in-out;
+}
+
+.TileGrid-transition-enter:not(.TileGrid-transition-enter-active),
+.TileGrid-transition-leave.TileGrid-transition-leave-active {
+  height: 20px !important;
+}

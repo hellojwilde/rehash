@@ -1,7 +1,11 @@
 var HeaderExplain = require('components/explore/HeaderExplain');
-var HeaderUserLinks = require('components/explore/HeaderUserLinks');
+var LinkNoClobber = require('components/common/LinkNoClobber');
+var LoginButton = require('components/common/LoginButton');
+var CreateButton = require('components/common/CreateButton');
 var React = require('react');
+var ScrollListenerMixin = require('react-scroll-components/ScrollListenerMixin');
 
+var getLinearInterpolation = require('helpers/getLinearInterpolation');
 var getUniqueId = require('react-pick/lib/helpers/getUniqueId');
 var joinClasses = require('react/lib/joinClasses');
 var userPropType = require('types/userPropType');
@@ -11,6 +15,8 @@ require('./Header.css');
 
 var Header = React.createClass({
 
+  mixins: [ScrollListenerMixin],
+
   propTypes: {
     currentUser: userPropType
   },
@@ -18,12 +24,67 @@ var Header = React.createClass({
   getInitialState: function() {
     return {
       id: getUniqueId('Header'),
+      transition: {start: 0, end: Infinity, scale: 1},
       isExpanded: false
     };
   },
 
+  handleCreateButtonRef: function(button) {
+    if (!button) {
+      return;
+    }
+
+    var headerRect = this.refs['header'].getDOMNode().getBoundingClientRect();
+    var buttonRect = button.getDOMNode().getBoundingClientRect();
+    var scrollTop = window.scrollY;
+
+    this.setState({
+      transition: {
+        start: (buttonRect.top + scrollTop) - headerRect.height,
+        end: (buttonRect.bottom + scrollTop) - headerRect.height,
+        scale: headerRect.height / buttonRect.height
+      }
+    });
+  },
+
   handleToggleClick: function() {
     this.setState({isExpanded: !this.state.isExpanded});
+  },
+
+  renderUserNav: function() {
+    if (this.props.currentUser) {
+      return [
+        <li key="name">
+          <p className="navbar-text">
+            {this.props.currentUser.name}
+          </p>
+        </li>,
+        <li key="logout"><a href="/user/logout">Log out</a></li>
+      ];
+    } else {
+      return [
+        <li key="login"><LoginButton/></li>
+      ];
+    }
+  },
+
+  renderCreateButton: function() {
+    var buttonTop = getLinearInterpolation(
+      this.state.scrollTop, 
+      this.state.transition.start,
+      this.state.transition.end,
+      45,
+      0
+    );
+
+    return (
+      <li className="Header-create">
+        <CreateButton 
+          style={{top:buttonTop}} 
+          className="Header-create-button navbar-btn"
+        />
+      </li>
+    );
   },
 
   render: function() {
@@ -33,6 +94,7 @@ var Header = React.createClass({
       <div className="Header">
         <nav 
           {...otherProps}
+          ref="header"
           className={joinClasses(
             className, 
             'navbar navbar-default navbar-fixed-top'
@@ -51,7 +113,11 @@ var Header = React.createClass({
                 <span className="icon-bar"></span>
               </button>
 
-              <a className="navbar-brand Header-brand" href="#">Rehash</a>
+              <LinkNoClobber
+                className="navbar-brand Header-brand" 
+                to="explore">
+                Rehash
+              </LinkNoClobber>
             </div>
 
             <div 
@@ -61,12 +127,17 @@ var Header = React.createClass({
                 'collapse navbar-collapse navbar-right',
                 this.state.isExpanded && 'in'
               )}>
-              <HeaderUserLinks currentUser={this.props.currentUser}/>
+              <ul className="nav navbar-nav">
+                {this.renderCreateButton()}
+                {this.renderUserNav()}
+              </ul>
             </div> 
           </div>
         </nav>
 
-        {(this.props.currentUser === null) ? <HeaderExplain/> : null}
+        {(this.props.currentUser === null) 
+          ? <HeaderExplain createButtonRef={this.handleCreateButtonRef}/>
+          : null}
       </div>
     );
   }

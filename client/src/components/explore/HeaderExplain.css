@@ -13,12 +13,6 @@
   margin: 20px 0 0;
 }
 
-.HeaderExplain-button .glyphicon {
-  font-size: 0.5em;
-  vertical-align: middle;
-  margin-bottom: 0.5em;
-}
-
 @media (min-width: 768px) {
   .HeaderExplain-button {
     font-size: 18px;

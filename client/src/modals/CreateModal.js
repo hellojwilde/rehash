@@ -1,3 +1,4 @@
+var DocumentTitle = require('react-document-title');
 var Modal = require('components/modal/Modal');
 var ModalBody = require('components/modal/ModalBody');
 var ModalHeader = require('components/modal/ModalHeader');
@@ -91,80 +92,86 @@ var CreateModal = React.createClass({
   },
 
   render: function() {
+    var title = this.state.title !== ''
+      ? `Create "${this.state.title}" - Rehash`
+      : 'Create - Rehash';
+
     return (
-      <Modal>
-        <ModalHeader onCancel={this.props.onCancel}>
-          Create Meeting
-        </ModalHeader>
-        <ModalBody>
-          <Validated 
-            className="form-horizontal"
-            values={{title: this.state.title, start: this.state.start}} 
-            rules={{
-              title: ValidationRules.isRequired, 
-              start: [ValidationRules.isRequired, ValidationRules.isMomentInFuture]
-            }}
-            onValidationResults={this.handleValidationResults}>
-            <ValidatedGroup resultsFor="title" results={this.state.validationResults}>
-              <label 
-                className="col-sm-2 control-label" 
-                htmlFor="CreateModalTitle">
-                Title
-              </label>
-              <div className="col-sm-10">
-                <input 
-                  name="CreateModalTitle"
-                  className="form-control"
-                  type="text"
-                  valueLink={this.linkState('title')}
-                />
-              </div>
-            </ValidatedGroup>
-
-            <div className="form-group">
-              <label 
-                className="col-sm-2 control-label" 
-                htmlFor="CreateModalSummary">
-                Summary
-              </label>
-              <div className="col-sm-10">
-                <textarea 
-                  name="CreateModalSummary"
-                  className="form-control"
-                  rows="3"
-                  valueLink={this.linkState('summary')}
-                />
-              </div>
-            </div>
-
-            <ValidatedGroup resultsFor="start" results={this.state.validationResults}>
-              <label className="col-sm-2 control-label" htmlFor="CreateModalDate">Start</label>
-              <div className="col-sm-10">
-                <DateInput 
-                  name="CreateModalStartDate"
-                  className="form-control"
-                  value={this.state.startDate}
-                  onChange={this.handleStartDateChange}
-                />
-                <TimeInput 
-                  name="CreateModalStartTime"
-                  className="form-control"
-                  value={this.state.startTime}
-                  onChange={this.handleStartTimeChange}
-                />
-              </div>
-            </ValidatedGroup>
-          </Validated>
-        </ModalBody>
-        <ModalFooter>
-          <button 
-            className="btn btn-primary" 
-            onClick={this.handleCreateClick}
-            disabled={!areAllResultsValid(this.state.validationResults)}>
+      <DocumentTitle title={title}>
+        <Modal>
+          <ModalHeader onCancel={this.props.onCancel}>
             Create Meeting
-          </button>
-        </ModalFooter>
-      </Modal>
+          </ModalHeader>
+          <ModalBody>
+            <Validated 
+              className="form-horizontal"
+              values={{title: this.state.title, start: this.state.start}} 
+              rules={{
+                title: ValidationRules.isRequired, 
+                start: [ValidationRules.isRequired, ValidationRules.isMomentInFuture]
+              }}
+              onValidationResults={this.handleValidationResults}>
+              <ValidatedGroup resultsFor="title" results={this.state.validationResults}>
+                <label 
+                  className="col-sm-2 control-label" 
+                  htmlFor="CreateModalTitle">
+                  Title
+                </label>
+                <div className="col-sm-10">
+                  <input 
+                    name="CreateModalTitle"
+                    className="form-control"
+                    type="text"
+                    valueLink={this.linkState('title')}
+                  />
+                </div>
+              </ValidatedGroup>
+
+              <div className="form-group">
+                <label 
+                  className="col-sm-2 control-label" 
+                  htmlFor="CreateModalSummary">
+                  Summary
+                </label>
+                <div className="col-sm-10">
+                  <textarea 
+                    name="CreateModalSummary"
+                    className="form-control"
+                    rows="3"
+                    valueLink={this.linkState('summary')}
+                  />
+                </div>
+              </div>
+
+              <ValidatedGroup resultsFor="start" results={this.state.validationResults}>
+                <label className="col-sm-2 control-label" htmlFor="CreateModalDate">Start</label>
+                <div className="col-sm-10">
+                  <DateInput 
+                    name="CreateModalStartDate"
+                    className="form-control"
+                    value={this.state.startDate}
+                    onChange={this.handleStartDateChange}
+                  />
+                  <TimeInput 
+                    name="CreateModalStartTime"
+                    className="form-control"
+                    value={this.state.startTime}
+                    onChange={this.handleStartTimeChange}
+                  />
+                </div>
+              </ValidatedGroup>
+            </Validated>
+          </ModalBody>
+          <ModalFooter>
+            <button 
+              className="btn btn-primary" 
+              onClick={this.handleCreateClick}
+              disabled={!areAllResultsValid(this.state.validationResults)}>
+              Create Meeting
+            </button>
+          </ModalFooter>
+        </Modal>
+      </DocumentTitle>
     );
   }
 

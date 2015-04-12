@@ -3,6 +3,10 @@ var {Store} = require('flummox');
 var _ = require('lodash');
 
 class CurrentUserStore extends Store {
+  static deserialize(json) {
+    return json;
+  } 
+
   constructor(registry) {
     super();
 
