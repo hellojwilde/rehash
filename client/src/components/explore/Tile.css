@@ -2,6 +2,7 @@
   color: white;
   height: 200px;
   position: relative;
+  border-radius: 6px;
 }
 
 .Tile-schedule {
