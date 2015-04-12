@@ -2,14 +2,13 @@ var React = require('react');
 var WebRTCAdapter = require('helpers/WebRTCAdapter');
 var WebRTCConstraints = require('helpers/WebRTCConstraints');
 
-var {getUserMedia} = WebRTCAdapter;
+var {getUserMedia, attachMediaStream, reattachMediaStream} = WebRTCAdapter;
 var {
   mergeConstraints, 
   getWithStereoIfPossible, 
   getPreferredAudioCodec, 
   getIceCandidateType
 } = WebRTCConstraints;
-
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Broadcast.css');
@@ -29,7 +28,6 @@ var audio_send_codec;
 var audio_receive_codec;
 
 // additional variables for webrtc connection
-var video;
 var channel;
 var hasLocalStream
 var localStream;
@@ -51,10 +49,8 @@ var Broadcast = React.createClass({
   propTypes: {
     meetingId: React.PropTypes.number.isRequired
   },
-  componentDidMount: function() {
-    video = React.findDOMNode(this.refs.broadcast_video);
-    video.poster = "http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?";
 
+  componentDidMount: function() {
     // if disconnect, request to delete on server
     window.addEventListener("beforeunload", function (e) {
       //this.sendMessage({type: 'bye'});
@@ -67,9 +63,9 @@ var Broadcast = React.createClass({
     });
 
     var xhr = new XMLHttpRequest();
-    url = "requestBroadcastData";
+    url = `/meeting/${this.props.meetingId}/requestBroadcastData`;
     xhr.open('GET', url, true);
-    xhr.onload = function() {
+    xhr.onload = () => {
       var data = JSON.parse(xhr.responseText);
 
       // convert to number
@@ -87,10 +83,8 @@ var Broadcast = React.createClass({
       audio_receive_codec=data['audio_receive_codec'];
 
       console.log("NOTE HERE : " + JSON.stringify(data['pc_config'].iceServers[0].urls));
-      // to set the data here! 
-      var self = this;
       // start the session to begin accepting server info
-      self.openChannel();
+      this.openChannel();
     }.bind(this);
     xhr.send(); 
   },
@@ -296,7 +290,6 @@ var Broadcast = React.createClass({
     } else if (message.type === 'candidate') {
       var candidate = new RTCIceCandidate({sdpMLineIndex: message.label,
                                            candidate: message.candidate});
-      this.noteIceCandidate("Remote", getIceCandidateType(message.candidate));
       pc.addIceCandidate(candidate,
                          this.onAddIceCandidateSuccess, this.onAddIceCandidateError);
     } else if (message.type === 'bye') {
@@ -358,6 +351,7 @@ var Broadcast = React.createClass({
   },
   onUserMediaSuccess: function (stream) {
     console.log('User has granted access to local media.');
+    var video = this.refs['video'].getDOMNode();
     video.muted=true;
     attachMediaStream(video, stream);
     video.muted=true;
@@ -389,12 +383,12 @@ var Broadcast = React.createClass({
                    label: event.candidate.sdpMLineIndex,
                    id: event.candidate.sdpMid,
                    candidate: event.candidate.candidate});
-      this.noteIceCandidate("Local", getIceCandidateType(event.candidate.candidate));
     } else {
       console.log('End of candidates.');
     }
   },
   onRemoteStreamAdded: function(event) {
+    var video = this.refs['video'].getDOMNode();
     console.log('Remote stream added.');
     attachMediaStream(video, event.stream);
     remoteStream = event.stream;
@@ -421,6 +415,7 @@ var Broadcast = React.createClass({
     // this.stop();
   },
   stop: function () {
+    var video = this.refs['video'].getDOMNode();
     started = false;
     signalingReady = false;
     pc.close();
@@ -456,9 +451,10 @@ var Broadcast = React.createClass({
     // remoteVideo.style.opacity = 0;
   },
   transitionToDone: function () {
+    var video = this.refs['video'].getDOMNode();
     // localVideo.style.opacity = 0;
     // remoteVideo.style.opacity = 0;
-    videoideo.style.opacity = 0;
+    video.style.opacity = 0;
   },
   enterFullScreen: function () {
     //container.webkitRequestFullScreen();
@@ -497,7 +493,10 @@ var Broadcast = React.createClass({
   render: function() {
     return (
       <div className="panel panel-default broadcast">
-        <video className="broadcast_video" ref="broadcast_video">
+        <video 
+          className="broadcast_video" 
+          ref="video"
+          poster="http://static1.squarespace.com/static/511b9e98e4b0d00cab6bb783/547a5522e4b0306d2b1e2c5f/547a574de4b0d64f97a6a39f/1417303893172/buffering-animation.gif?">
         </video>
         <div className="btnrow">
           <button 
