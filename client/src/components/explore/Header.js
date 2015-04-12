@@ -4,6 +4,7 @@ var LoginButton = require('components/common/LoginButton');
 var CreateButton = require('components/common/CreateButton');
 var React = require('react');
 var ScrollListenerMixin = require('react-scroll-components/ScrollListenerMixin');
+var Logo = require('components/common/Logo');
 
 var getLinearInterpolation = require('helpers/getLinearInterpolation');
 var getUniqueId = require('react-pick/lib/helpers/getUniqueId');
@@ -113,11 +114,7 @@ var Header = React.createClass({
                 <span className="icon-bar"></span>
               </button>
 
-              <LinkNoClobber
-                className="navbar-brand Header-brand" 
-                to="explore">
-                Rehash
-              </LinkNoClobber>
+              <Logo className="navbar-brand"/>
             </div>
 
             <div 

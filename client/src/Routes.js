@@ -1,6 +1,7 @@
 var AppHandler = require('handlers/AppHandler');
 var ExploreHandler = require('handlers/ExploreHandler');
 var MeetingHandler = require('handlers/MeetingHandler');
+var StandaloneMeetingHandler = require('handlers/StandaloneMeetingHandler');
 var React = require('react');
 var {Route} = require('react-router');
 
@@ -13,11 +14,13 @@ var Routes = (
         path="/explore/meeting/:meetingId"
       />
     </Route>
-    <Route 
-      name="meeting" 
-      handler={MeetingHandler} 
-      path="/meeting/:meetingId"
-    />
+    <Route handler={StandaloneMeetingHandler}>
+      <Route 
+        name="meeting" 
+        handler={MeetingHandler} 
+        path="/meeting/:meetingId"
+      />
+    </Route>
   </Route>
 );
 

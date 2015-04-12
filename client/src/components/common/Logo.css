@@ -1,0 +1,14 @@
+.Logo {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-size: 20px;
+  color: white;
+  text-shadow: black 0px 1px 1px;
+}
+
+.Logo:hover,
+.Logo:active,
+.Logo:focus {
+  color: white;
+  text-decoration: underline;
+}
