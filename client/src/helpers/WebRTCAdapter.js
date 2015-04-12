@@ -226,3 +226,12 @@ function requestUserMedia(constraints) {
     }
   });
 }
+
+module.exports = {
+  getUserMedia,
+  requestUserMedia,
+  attachMediaStream,
+  reattachMediaStream,
+  webrtcDetectedBrowser,
+  webrtcDetectedVersion
+};
