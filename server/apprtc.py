@@ -886,8 +886,8 @@ app = webapp2.WSGIApplication([
     (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
     (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
-    (r'/user/login', LoginHandler)
-    (r'/user/logout', LogoutHandler)
+    (r'/user/login', LoginHandler),
+    (r'/user/logout', LogoutHandler),
     (r'/twitterauthorized/(\d+)', TwitterAuthorized),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
