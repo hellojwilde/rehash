@@ -1,9 +1,43 @@
 .HeaderExplain {
-  padding: 40px 0 20px;
+  padding: 20px 0;
   border-bottom: 1px solid #eee;
 }
 
 .HeaderExplain-heading {
   font-weight: 300;
   margin: 0;
+  font-size: 24px;
 }
+
+.HeaderExplain-button {
+  margin: 20px 0 0;
+}
+
+.HeaderExplain-button .glyphicon {
+  font-size: 0.5em;
+  vertical-align: middle;
+  margin-bottom: 0.5em;
+}
+
+@media (min-width: 768px) {
+  .HeaderExplain-button {
+    font-size: 18px;
+    margin: 5px 0 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .HeaderExplain {
+    padding: 40px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .HeaderExplain-heading {
+    font-size: 32px;
+  }
+
+  .HeaderExplain-button {
+    font-size: 28px;
+  }
+}
+

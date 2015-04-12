@@ -10,11 +10,21 @@ var HeaderExplain = React.createClass({
       <div className="HeaderExplain">
         <div className="container">
           <div className="row">
-            <div className="col-xs-8">
+            <div className="col-sm-8">
               <h2 className="HeaderExplain-heading">
                 Rehash brings you together with amazing people from around the
                 world over video.
               </h2>
+            </div>
+            <div className="col-sm-4">
+              <button className="HeaderExplain-button btn btn-lg btn-block btn-default">
+                <span 
+                  aria-hidden="true" 
+                  className="glyphicon glyphicon-plus">
+                </span>
+                {' '}
+                Create Rehash
+              </button>
             </div>
           </div>
         </div>

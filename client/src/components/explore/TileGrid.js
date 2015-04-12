@@ -5,14 +5,19 @@ var Tile = require('./Tile');
 var _ = require('lodash');
 var meetingPropType = require('types/meetingPropType');
 
-// TODO (jwilde): Eventually figure out how we're going to change the number
-// of columns dynamically as the grid layout needs to change for different 
-// screen sizes.
-
-const COLUMNS = 3;
-
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGrid.css');
+
+function getColumnsForWindow() {
+  var width = window.innerWidth;
+  if (width > 768) {
+    return 3;
+  } else if (width > 992){
+    return 2;
+  } else {
+    return 1;
+  }
+}
 
 var TileGrid = React.createClass({
 
@@ -44,7 +49,7 @@ var TileGrid = React.createClass({
 
   render: function() {
     var {meetings, detailMeetingId, detail} = this.props;
-    var rows = _.chunk(meetings, COLUMNS);
+    var rows = _.chunk(meetings, getColumnsForWindow);
 
     return (
       <div className="TileGrid">
@@ -58,7 +63,7 @@ var TileGrid = React.createClass({
             <div className="TileGrid-row" key={idx}>
               <div className="container">
                 <div className="row">
-                  <div className="col-xs-4">
+                  <div className="col-md-4 col-sm-6">
                     {meetingsForRow.map((meeting, idx) => (
                       <Tile key={idx} {...meeting} />
                     ))}
