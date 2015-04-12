@@ -1,5 +1,5 @@
 var React = require('react');
-var LinkNoClobber = require('components/explore/LinkNoClobber');
+var LinkNoClobber = require('components/common/LinkNoClobber');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGridDetail.css');

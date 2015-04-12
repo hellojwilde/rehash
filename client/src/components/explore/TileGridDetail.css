@@ -4,8 +4,14 @@
 }
 
 .TileGridDetail-header {
+  padding: 10px 0;
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
+}
+
+.TileGridDetail-header a,
+.TileGridDetail-header a:hover {
+  color: white;
 }

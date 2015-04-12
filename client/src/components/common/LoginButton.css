@@ -1,0 +1,10 @@
+.LoginButton-twitter {
+  overflow: hidden;
+  width: 1.2em;
+  text-indent: -999px;
+  display: inline-block;
+  height: 1.2em;
+  background: url('./Twitter_logo_white_16.png');
+  background-size: contain;
+  vertical-align: text-bottom;
+}

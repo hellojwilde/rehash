@@ -17,22 +17,24 @@ var MeetingBeforeView = React.createClass({
 
     return (
       <div className="MeetingBeforeView">
-        <div className="container">
-          <div className="row">
-            <div className="col-xs-8">
-              Agenda goes here
-            </div>
-            <div className="col-xs-4 MeetingBeforeView-description">
-              <div>
-                <MeetingScheduleLabel 
-                  start={meeting.start} 
-                  isBroadcasting={meeting.isBroadcasting}
-                />
+        <div className="MeetingBeforeView-layout">
+          <div className="container">
+            <div className="row">
+              <div className="col-xs-8">
+                Agenda goes here
+              </div>
+              <div className="col-xs-4 MeetingBeforeView-description">
+                <div>
+                  <MeetingScheduleLabel 
+                    start={meeting.start} 
+                    isBroadcasting={meeting.isBroadcasting}
+                  />
 
-                <h2>{meeting.title}</h2>
-                <p>{meeting.description}</p>
+                  <h2>{meeting.title}</h2>
+                  <p>{meeting.description}</p>
 
-                List of attendees and/or picture of broadcast goes here
+                  List of attendees and/or picture of broadcast goes here
+                </div>
               </div>
             </div>
           </div>

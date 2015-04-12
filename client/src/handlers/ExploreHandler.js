@@ -32,12 +32,15 @@ var ExploreHandler = React.createClass({
           connectToStores={['meeting']}
           stateGetter={([meetingStore]) => ({
             meetings: meetingStore.getAll()
-          })}>
-          <TileGrid 
-            detailMeetingId={+meetingId}
-            detail={<RouteHandler/>}
-          />
-        </FluxComponent>
+          })}
+          render={(state) => (
+            <TileGrid 
+              {...state}
+              detailMeetingId={+meetingId}
+              detail={<RouteHandler/>}
+            />
+          )}
+        />
         <Footer/>
       </div>
     );

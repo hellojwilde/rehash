@@ -1,5 +1,5 @@
 var React = require('react');
-var LinkNoClobber = require('components/explore/LinkNoClobber');
+var LinkNoClobber = require('components/common/LinkNoClobber');
 var MeetingScheduleLabel = require('components/meeting/MeetingScheduleLabel');
 
 require('3rdparty/bootstrap/css/bootstrap.css');

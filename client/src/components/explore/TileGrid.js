@@ -35,16 +35,17 @@ var TileGrid = React.createClass({
     };
   },
 
-  componentDidUpdate: function(prevProps, prevState) {
-    if (this.props.detail !== prevProps.detail &&
-        this.refs['detail']) {
-      var detailOffset = 0.1 * window.innerHeight;
-      var detailRect = this.refs['detail'].getDOMNode().getBoundingClientRect();
-
-      // XXX If we don't put this in a setTimeout, the scroll doesn't 
-      // consistently fire. Unclear why this is the case.
-      setTimeout(() => window.scrollBy(0, detailRect.top - detailOffset), 0);
+  scrollToDetail: function() {
+    if (!this.refs['detail']) {
+      return;
     }
+
+    var detailOffset = 0.1 * window.innerHeight;
+    var detailRect = this.refs['detail'].getDOMNode().getBoundingClientRect();
+
+    // XXX If we don't put this in a setTimeout, the scroll doesn't 
+    // consistently fire. Unclear why this is the case.
+    setTimeout(() => window.scrollBy(0, detailRect.top - detailOffset), 0);
   },
 
   render: function() {

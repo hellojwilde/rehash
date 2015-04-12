@@ -1,4 +1,5 @@
 var React = require('react');
+var CreateButton = require('components/common/CreateButton');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./HeaderExplain.css');
@@ -17,14 +18,7 @@ var HeaderExplain = React.createClass({
               </h2>
             </div>
             <div className="col-sm-4">
-              <button className="HeaderExplain-button btn btn-lg btn-block btn-default">
-                <span 
-                  aria-hidden="true" 
-                  className="glyphicon glyphicon-plus">
-                </span>
-                {' '}
-                Create Rehash
-              </button>
+              <CreateButton className="HeaderExplain-button btn-lg btn-block"/>
             </div>
           </div>
         </div>

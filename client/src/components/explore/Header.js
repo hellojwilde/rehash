@@ -1,5 +1,6 @@
 var HeaderExplain = require('components/explore/HeaderExplain');
 var HeaderUserLinks = require('components/explore/HeaderUserLinks');
+var LinkNoClobber = require('components/common/LinkNoClobber');
 var React = require('react');
 
 var getUniqueId = require('react-pick/lib/helpers/getUniqueId');
@@ -51,7 +52,11 @@ var Header = React.createClass({
                 <span className="icon-bar"></span>
               </button>
 
-              <a className="navbar-brand Header-brand" href="#">Rehash</a>
+              <LinkNoClobber
+                className="navbar-brand Header-brand" 
+                to="explore">
+                Rehash
+              </LinkNoClobber>
             </div>
 
             <div 
