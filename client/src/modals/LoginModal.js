@@ -23,7 +23,7 @@ var LoginModal = React.createClass({
   getDefaultProps: function() {
     return {
       message: null,
-      redirect: null
+      redirect: null,
       onComplete: function() {},
       onCancel: function() {}
     };
