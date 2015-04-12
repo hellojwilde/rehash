@@ -846,17 +846,21 @@ class LoginHandler(webapp2.RequestHandler):
     if ':' in session['redirect']:
       self.redirect('/WillBeHandledByRouteErrorHandler')
 
-    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'])
+    auth = tweepy.OAuthHandler(
+      OAUTH_CONFIG['tw']['consumer_key'], 
+      OAUTH_CONFIG['tw']['consumer_secret'], 
+      OAUTH_CONFIG['tw']['callback_url']
+    )
+
     if session.get('auth') == None:
       ### get request token and save in session
       try: 
         redirect_url = str(auth.get_authorization_url())
+        session['twitter_request_token'] = auth.request_token
       except tweepy.TweepError:
-        logging.info('Error! Failed to get request token.')
-      session['twitter_request_token'] = auth.request_token
-      self.redirect(redirect_url)
-    else: 
-      self.redirect(session['redirect'])
+        logging.info('Error! Failed to get request token. ')
+
+    self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
