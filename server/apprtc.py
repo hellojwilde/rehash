@@ -384,11 +384,10 @@ class MainPage(webapp2.RequestHandler):
     self.response.out.write(template.render(template_values))
 
 ### Handle the case where clients request to join existing room
-class MeetingJoin(webapp2.RequestHandler):
+class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
     page = 'index.html'
-    template_values = {
-    }
+    template_values = {}
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
     # page = 'index.html'
@@ -397,13 +396,6 @@ class MeetingJoin(webapp2.RequestHandler):
     # environment = jinja2.Environment(loader=loader)
     # template = environment.get_template(page)
     # self.response.out.write(template.render(template_values))
-
-class MeetingBroadcast(webapp2.RequestHandler):
-  def get(self, room_key):
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write(template.render(template_values))
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
@@ -880,8 +872,8 @@ class LogoutHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
-    (r'/meeting/(\d+)', MeetingJoin),
-    (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
+    (r'/meeting/(\d+)', MeetingPage),
+    (r'/explore/meeting/(\d+)', MeetingPage),
     (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
     (r'/user/login', LoginHandler),
