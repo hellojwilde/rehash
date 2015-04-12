@@ -1,5 +1,6 @@
-var React = require('react');
+var ArrowMask = require('components/explore/ArrowMask');
 var LinkNoClobber = require('components/common/LinkNoClobber');
+var React = require('react');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./TileGridDetail.css');
@@ -14,15 +15,18 @@ var TileGridDetail = React.createClass({
 
   render: function() {
     var height = 0.8 * (window.innerHeight || DEFAULT_HEIGHT);
+    var column = this.props.column;
 
     return (
       <div className="TileGridDetail" style={{height: height}}>
-        {this.props.children}
+        <div style={{height: height}}>
+          {this.props.children}
+        </div>
 
         <div className="TileGridDetail-header">
-          {/* TODO (jwilde): Implement the arrow pointing at the tile... */}
+          <ArrowMask column={this.props.column}/>
 
-          <div className="container">
+          <div className="container TileGridDetail-header-controls">
             <LinkNoClobber to="explore" className="pull-right btn btn-link">
               <span className="glyphicon glyphicon-remove"></span>
             </LinkNoClobber>
