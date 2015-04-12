@@ -11,9 +11,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 
 import sys
 sys.path.insert(0, 'libs')
-### need to add path for tweepy to properly import
 sys.path.insert(0, 'libs/tweepy')
-
 import cgi
 import logging
 import os
@@ -25,8 +23,6 @@ import webapp2
 import threading
 import datetime
 import copy
-
-#import ssl
 import requests
 import tweepy
 
@@ -34,6 +30,7 @@ from config import OAUTH_CONFIG
 from google.appengine.api import channel
 from google.appengine.ext import db
 from google.appengine.ext import ndb
+from gaesessions import get_current_session
 
 ### Environment stores configuration and global objects, 
 ### used to load templates from the filesystem
@@ -386,6 +383,13 @@ class MainPage(webapp2.RequestHandler):
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
+    # session = get_current_session()
+    # if session.get('userId') == None:
+    #   logging.info('client has not login yet')
+    #   # logging.info(session['sid'])
+    #   session['userId'] = 'User Id here'
+    # else: 
+    #   logging.info(session['userId'])
     page = 'index.html'
     template_values = {}
     template = jinja_environment.get_template(page)
@@ -694,7 +698,8 @@ class APIHandler(webapp2.RequestHandler):
               'attendees': attendees
       }
       response.out.write(json.dumps(data))
-      self.add_log('meetingfetch', data)
+      # self.add_log('meetingfetch', data)
+
     else:
       logging.info('MEETING pushed ')
       meeting = MeetingModel(id = request.get('meetingId'))
@@ -793,13 +798,14 @@ class APIHandler(webapp2.RequestHandler):
     response.out.write(json.dumps(topics))
     self.add_log('agendafetch', topics)
 
+### handle post-login case
+### save username, etc on ndb
 class TwitterAuthorized(webapp2.RequestHandler):
-  def get(self, userId):
-    logging.info('GET: ' + userId)
-    user = UserModel.get_by_id(str(userId))
-
+  def get(self):
+    ### also need to handle the case where request token is no longer valid
+    session = get_current_session()
     auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'])
-    auth.request_token = json.loads(user.request_token)
+    auth.request_token = session['twitter_request_token']
     verifier = self.request.GET.get('oauth_verifier')
 
     print(OAUTH_CONFIG['tw']['consumer_key'])
@@ -809,65 +815,47 @@ class TwitterAuthorized(webapp2.RequestHandler):
 
     try:
       auth.get_access_token(verifier)
+      print 'Success! '
     except tweepy.TweepError:
       print 'Error! Failed to get access token.'
+      self.redirect('/user/login')
 
-    user.access_token = auth.access_token
-    user.access_token_secret = auth.access_token_secret
-    user.put()
-    logging.info('Access Token: ' + str(user.access_token))
+    ### save tokens to session
+    session['access_token'] = auth.access_token
+    session['access_token_secret'] = auth.access_token_secret
+    session['auth'] = auth
 
     api = tweepy.API(auth)
     personal_info = api.me()
     print(personal_info.id)
-    # api.update_status(status='oauth test')
-
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write('helloWorld' + verifier)
+    
+    # page = 'index.html'
+    # template_values = {}
+    # template = jinja_environment.get_template(page)
+    self.response.out.write('authorized!')
 
 class LoginHandler(webapp2.RequestHandler):
   def get(self):
-    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'] + request.get('userId'))
-    try: 
-      redirect_url = str(auth.get_authorization_url())
-    except tweepy.TweepError:
-      logging.info('Error! Failed to get request token.')
-    logging.info(redirect_url)
-    # instance.redirect(redirect_url)
-
-    user = UserModel.get_by_id(request.get('userId')) 
-    if user: 
-      data = {'id': request.get('userId'),
-              'photoUrl': user.photoUrl, 
-              'photoThumbnailUrl': user.photoThumbnailUrl,
-              'name': user.name,
-              'affiliation': user.affiliation,
-              'bio': user.bio, 
-              'redirect': redirect_url
-      }
-      user.request_token = json.dumps(auth.request_token)
-      user.put()
-      response.out.write(json.dumps(data))
-      self.add_log('currentuserlogin', data)
-    ### For testing only 
+    ### check if already have session 
+    session = get_current_session()
+    if session.get('auth') == None:
+      ### get request token and save in session
+      auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'])
+      try: 
+        redirect_url = str(auth.get_authorization_url())
+      except tweepy.TweepError:
+        logging.info('Error! Failed to get request token.')
+      session['twitter_request_token'] = auth.request_token
+      self.redirect(redirect_url)
     else: 
-      data = {'error': 'not found'}
-      response.out.write(json.dumps(data))
-      user = UserModel(id = request.get('userId'))
-      #user.id = self.request.get('userId')
-      user.photoUrl = 'http://placehold.it/400x300'
-      user.photoThumbnailUrl = 'http://placehold.it/50x50'
-      user.name = 'Jonathan Wilde'
-      user.affiliation = 'Tufts University'
-      user.bio = ''
-      user.put()
-
+      self.redirect('/twitterauthorized')
 
 class LogoutHandler(webapp2.RequestHandler):
-  def post(self):
-    return
+  def get(self):
+    session = get_current_session()
+    session.clear()
+    ### will redefine the redirect route, 
+    self.redirect('/meeting/0')
 
 
 app = webapp2.WSGIApplication([
@@ -878,7 +866,7 @@ app = webapp2.WSGIApplication([
     (r'/api', APIHandler),
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
-    (r'/twitterauthorized/(\d+)', TwitterAuthorized),
+    (r'/twitterauthorized', TwitterAuthorized),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)

@@ -9,7 +9,7 @@ OAUTH_CONFIG = {
     'user_auth_url': 'http://twitter.com/oauth/authorize', 
     'default_api_prefix': 'http://twitter.com',
     'default_api_suffix': '.json',
-
-    'callback_url': 'http://localhost:3000/twitterauthorized/',
+    'account_url': 'https://api.twitter.com/1.1/account/verify_credentials.json',
+    'callback_url': 'http://localhost:3000/twitterauthorized',
   }
 }
