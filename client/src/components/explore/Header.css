@@ -15,6 +15,19 @@
   background-color: #222;
 }
 
+.Header .navbar-btn {
+  border-color: transparent;
+  box-shadow: black 0px 1px 1px;
+}
+
+.Header .navbar-toggle {
+  border-color: #666;
+}
+
+.Header .navbar.navbar-default .navbar-collapse {
+  border-color: transparent;
+}
+
 .Header-brand {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
