@@ -829,15 +829,18 @@ class TwitterAuthorized(webapp2.RequestHandler):
     personal_info = api.me()
     print(personal_info.id)
     
+    self.redirect(session['redirect'])
+
     # page = 'index.html'
     # template_values = {}
     # template = jinja_environment.get_template(page)
-    self.response.out.write('authorized!')
+    # self.response.out.write('authorized!')
 
 class LoginHandler(webapp2.RequestHandler):
   def get(self):
     ### check if already have session 
     session = get_current_session()
+    session['redirect'] = self.request.get('redirect')
     if session.get('auth') == None:
       ### get request token and save in session
       auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'])
@@ -848,7 +851,7 @@ class LoginHandler(webapp2.RequestHandler):
       session['twitter_request_token'] = auth.request_token
       self.redirect(redirect_url)
     else: 
-      self.redirect('/twitterauthorized')
+      self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
