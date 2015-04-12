@@ -14,5 +14,5 @@
 
 .TileGrid-transition-enter:not(.TileGrid-transition-enter-active),
 .TileGrid-transition-leave.TileGrid-transition-leave-active {
-  height: 20px !important;
+  height: 0px !important;
 }

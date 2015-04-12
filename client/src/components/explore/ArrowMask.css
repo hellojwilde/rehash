@@ -1,0 +1,60 @@
+.ArrowMask,
+.ArrowMask-row,
+.ArrowMask-cell {
+  display: flex;
+  flex-direction: row;
+}
+
+.ArrowMask-container-margin,
+.ArrowMask-row-left-margin,
+.ArrowMask-row-right-margin,
+.ArrowMask-cell-fill {
+  background: white;
+}
+
+.ArrowMask-container-margin,
+.ArrowMask-cell-fill {
+  flex: 1;
+}
+
+.ArrowMask-container {
+  margin: 0;
+}
+
+.ArrowMask-row {
+  /* XXX There's 1px on either side of the row with the default styling. */
+  margin: 0 -16px;
+}
+
+.ArrowMask-row-left-margin-col-0,
+.ArrowMask-row-right-margin-col-2 {
+  flex: 0;
+}
+
+.ArrowMask-row-left-margin-col-1,
+.ArrowMask-row-left-margin-col-2,
+.ArrowMask-row-right-margin-col-0,
+.ArrowMask-row-right-margin-col-1 {
+  flex: 1;
+}
+
+.ArrowMask-cell {
+  padding: 0;
+}
+
+.ArrowMask-cell-arrow-left,
+.ArrowMask-cell-arrow-right {
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.ArrowMask-cell-arrow-left {
+  border-width: 15px 15px 0 0;
+  border-color: white transparent transparent transparent;
+}
+
+.ArrowMask-cell-arrow-right {
+  border-width: 0 15px 15px 0;
+  border-color: transparent white transparent transparent;
+}

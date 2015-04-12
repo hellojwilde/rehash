@@ -1,10 +1,8 @@
 .TileGridDetail {
   position: relative;
-  height: 500px;
 }
 
 .TileGridDetail-header {
-  padding: 15px 0;
   position: absolute;
   top: 0;
   right: 0;
@@ -14,4 +12,8 @@
 .TileGridDetail-header a,
 .TileGridDetail-header a:hover {
   color: white;
+}
+
+.TileGridDetail-header-controls {
+  padding: 15px 0;
 }
