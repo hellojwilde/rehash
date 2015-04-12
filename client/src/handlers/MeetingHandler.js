@@ -1,4 +1,5 @@
 var React = require('react');
+var DocumentTitle = require('react-document-title');
 var Meeting = require('components/meeting/Meeting')
 var FluxComponent = require('flummox/component');
 
@@ -26,7 +27,11 @@ var MeetingHandler = React.createClass({
           isParticipant: currentUserStore.isParticipant(meetingId),
           isHost: currentUserStore.isHost(meetingId)
         })}
-        render={(state) => <Meeting {...state} />}
+        render={(state) => (
+          <DocumentTitle title={`${state.meeting.title} - Rehash`}>
+            <Meeting {...state} />
+          </DocumentTitle>
+        )}
       />
     );
   }

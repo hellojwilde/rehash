@@ -24,7 +24,7 @@ var AgendaList = React.createClass({
           <div>
             <p><span className="glyphicon glyphicon-list"/></p>
             <p>The host hasn't added an agenda yet.</p>
-            <p>They should get on that.</p>
+            <p>Tell them to get on that.</p>
           </div>
         </div>
       );

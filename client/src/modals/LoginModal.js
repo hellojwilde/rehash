@@ -1,3 +1,4 @@
+var DocumentTitle = require('react-document-title');
 var Modal = require('components/modal/Modal');
 var ModalBody = require('components/modal/ModalBody');
 var ModalHeader = require('components/modal/ModalHeader');
@@ -28,16 +29,18 @@ var LoginModal = React.createClass({
 
   render: function() {
     return (
-      <Modal>
-        <ModalHeader onCancel={this.props.onCancel}>Log In</ModalHeader>
-        <ModalBody>
-          {this.props.message && (
-            <p className="alert alert-info">{this.props.message}</p>
-          )}
+      <DocumentTitle title="Log In - Rehash">
+        <Modal>
+          <ModalHeader onCancel={this.props.onCancel}>Log In</ModalHeader>
+          <ModalBody>
+            {this.props.message && (
+              <p className="alert alert-info">{this.props.message}</p>
+            )}
 
-          <LoginButton className="btn btn-primary btn-lg btn-block"/>
-        </ModalBody>
-      </Modal>
+            <LoginButton className="btn btn-primary btn-lg btn-block"/>
+          </ModalBody>
+        </Modal>
+      </DocumentTitle>
     );
   }
 
