@@ -9,6 +9,11 @@
 This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
+import sys
+sys.path.insert(0, 'libs')
+### need to add path for tweepy to properly import
+sys.path.insert(0, 'libs/tweepy')
+
 import cgi
 import logging
 import os
@@ -20,6 +25,13 @@ import webapp2
 import threading
 import datetime
 import copy
+
+#import ssl
+import urllib3
+import requests
+import tweepy
+
+from config import OAUTH_CONFIG
 from google.appengine.api import channel
 from google.appengine.ext import db
 from google.appengine.ext import ndb
@@ -504,6 +516,9 @@ class UserModel(ndb.Model):
   name = ndb.StringProperty()
   affiliation = ndb.StringProperty()
   bio = ndb.StringProperty()
+  request_token = ndb.StringProperty()
+  access_token = ndb.StringProperty()
+  access_token_secret = ndb.StringProperty()
 
 class MeetingModel(ndb.Model):
   #id = ndb.IntegerProperty()
@@ -543,7 +558,7 @@ class APIHandler(webapp2.RequestHandler):
     if self.request.get('request').lower() == 'userfetch':
       self.userfetch(self.request, self.response)
     elif self.request.get('request').lower() == 'currentuserlogin':
-      self.currentuserlogin(self.request, self.response)
+      self.currentuserlogin(self.request, self.response, self)
     elif self.request.get('request').lower() == 'meetingfetch':
       self.meetingfetch(self.request, self.response)
     elif self.request.get('request').lower() == 'meetingcreate':
@@ -553,6 +568,10 @@ class APIHandler(webapp2.RequestHandler):
       self.agendacreate(self.request, self.response)
     elif self.request.get('request').lower() == 'agendafetch':
       self.agendafetch(self.request, self.response)
+
+  @classmethod
+  def twitter_login(self):
+    logging.info('request token inside callback function!!!!!!!!!!!!!!!!!!')
 
   @classmethod
   def add_user(self, id, request):
@@ -609,18 +628,30 @@ class APIHandler(webapp2.RequestHandler):
       user.put()
 
   @classmethod
-  def currentuserlogin(self, request, response):
-    user = UserModel.get_by_id(request.get('userId'))
+  def currentuserlogin(self, request, response, instance):
+    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'] + request.get('userId'))
+    try: 
+      redirect_url = str(auth.get_authorization_url())
+    except tweepy.TweepError:
+      logging.info('Error! Failed to get request token.')
+    logging.info(redirect_url)
+    # instance.redirect(redirect_url)
+
+    user = UserModel.get_by_id(request.get('userId')) 
     if user: 
       data = {'id': request.get('userId'),
               'photoUrl': user.photoUrl, 
               'photoThumbnailUrl': user.photoThumbnailUrl,
               'name': user.name,
               'affiliation': user.affiliation,
-              'bio': user.bio
+              'bio': user.bio, 
+              'redirect': redirect_url
       }
+      user.request_token = json.dumps(auth.request_token)
+      user.put()
       response.out.write(json.dumps(data))
       self.add_log('currentuserlogin', data)
+    ### For testing only 
     else: 
       data = {'error': 'not found'}
       response.out.write(json.dumps(data))
@@ -632,6 +663,7 @@ class APIHandler(webapp2.RequestHandler):
       user.affiliation = 'Tufts University'
       user.bio = ''
       user.put()
+
 
   @classmethod
   def meetingfetch(self, request, response):
@@ -768,12 +800,48 @@ class APIHandler(webapp2.RequestHandler):
     response.out.write(json.dumps(topics))
     self.add_log('agendafetch', topics)
 
+class TwitterAuthorized(webapp2.RequestHandler):
+  def get(self, userId):
+    logging.info('GET: ' + userId)
+    user = UserModel.get_by_id(str(userId))
+
+    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'])
+    auth.request_token = json.loads(user.request_token)
+    verifier = self.request.GET.get('oauth_verifier')
+
+    print(OAUTH_CONFIG['tw']['consumer_key'])
+    print(OAUTH_CONFIG['tw']['consumer_secret'])
+    print(auth.request_token)
+    print(verifier)
+
+    try:
+      auth.get_access_token(verifier)
+    except tweepy.TweepError:
+      print 'Error! Failed to get access token.'
+
+    user.access_token = auth.access_token
+    user.access_token_secret = auth.access_token_secret
+    user.put()
+    logging.info('Access Token: ' + str(user.access_token))
+
+    api = tweepy.API(auth)
+    personal_info = api.me()
+    print(personal_info.id)
+    # api.update_status(status='oauth test')
+
+    page = 'index.html'
+    template_values = {}
+    template = jinja_environment.get_template(page)
+    self.response.out.write('helloWorld' + verifier)
+
+
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
     (r'/meeting/(\d+)', MeetingJoin),
     (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
     (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
+    (r'/twitterauthorized/(\d+)', TwitterAuthorized),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)

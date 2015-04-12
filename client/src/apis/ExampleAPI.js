@@ -125,6 +125,7 @@ function sendAjaxRequest(reqData) {
 }
 
 var ExampleAPI = {
+
   /**
    * Given a user id, this fetches a user object. 
    * Useful for profile popups and pages.
@@ -138,7 +139,6 @@ var ExampleAPI = {
       userId: userId,
       request: 'userFetch'
     };
-
     return sendAjaxRequest(reqData);
   },
 
@@ -172,10 +172,13 @@ var ExampleAPI = {
       .then((result) => {
         // TODO: make sure we're including a real result id here.
         // convert datetime string to moment
+
+        // double check
         result.start = moment(result.start);
         result.id = 0;
         return result;
       });
+
   },
 
   /**
@@ -232,32 +235,47 @@ var ExampleAPI = {
       // note here the attendees shall be a list of numerical user ids to maintain atomicity 
       attendees: []
     };
-    
+
     var aReqData = {
       format: 'json',
       request: 'agendacreate',
       meetingId: meetingId,
       topics: []
     };
-
     return sendAjaxRequest(mReqData)
       .then((result) => {
         var meetingId = Number(result.id);
         return sendAjaxRequest(aReqData)
           .then(() => meetingId)
       });
+  },
+
+  // await on decision
+  agendaFetch: function(meetingId) {
+    var reqData = {
+      format: 'json',
+      request: 'agendafetch',
+      meetingId: meetingId
+    }
+    var result = sendAjaxRequest(reqData);
+    result.topics = AGENDAS[0].topics;
+    result['meetingId'] = Number(result['meetingId']);
+    console.log(result);
+    return Promise.resolve(AGENDAS[0]);
+  // =======
+  //     return sendAjaxRequest(mReqData)
+  //       .then((result) => {
+  //         var meetingId = Number(result.id);
+  //         return sendAjaxRequest(aReqData)
+  //           .then(() => meetingId)
+  //       });
+  // >>>>>>> b4043d752e225c764fe1f726f72f3bc03698faef
   }
 };
 
 module.exports = ExampleAPI;
 
-/*
-  Notes: all ids are stored as string in the database for consistency, 
-  need to recover if going to use them.  
 
-  3. creat the logging system 
-
-*/
 
 
 
