@@ -873,10 +873,8 @@ class LoginHandler(webapp2.RequestHandler):
       user.put()
 
 
-
-
 class LogoutHandler(webapp2.RequestHandler):
-  def get(self):
+  def post(self):
     return
 
 
