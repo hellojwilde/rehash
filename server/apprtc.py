@@ -512,9 +512,6 @@ class UserModel(ndb.Model):
   name = ndb.StringProperty()
   affiliation = ndb.StringProperty()
   bio = ndb.StringProperty()
-  request_token = ndb.StringProperty()
-  access_token = ndb.StringProperty()
-  access_token_secret = ndb.StringProperty()
 
 class MeetingModel(ndb.Model):
   #id = ndb.IntegerProperty()
@@ -818,29 +815,37 @@ class TwitterAuthorized(webapp2.RequestHandler):
       print 'Success! '
     except tweepy.TweepError:
       print 'Error! Failed to get access token.'
-      self.redirect('/user/login')
+      self.redirect('/user/login?redirect=' + session['redirect'])
 
     ### save tokens to session
     session['access_token'] = auth.access_token
     session['access_token_secret'] = auth.access_token_secret
     session['auth'] = auth
 
-    api = tweepy.API(auth)
-    personal_info = api.me()
-    print(personal_info.id)
-    
     self.redirect(session['redirect'])
 
-    # page = 'index.html'
-    # template_values = {}
-    # template = jinja_environment.get_template(page)
-    # self.response.out.write('authorized!')
+    ### add to data base if not exist already 
+    api = tweepy.API(auth)
+    me = api.me()
+    me_id_str = me.id_str
+    user = UserModel.get_by_id(me_id_str)
+    if not user: 
+      user = UserModel(id = me_id_str)
+      user.photoUrl = me.profile_image_url.replace('_normal','_bigger')
+      user.photoThumbnailUrl = me.profile_image_url
+      user.name = me.name
+      user.put()
 
 class LoginHandler(webapp2.RequestHandler):
   def get(self):
     ### check if already have session 
     session = get_current_session()
     session['redirect'] = self.request.get('redirect')
+
+    ### prevent injected url redirect to other sites
+    if ':' in session['redirect']:
+      self.redirect('/WillBeHandledByRouteErrorHandler')
+
     auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'])
     if session.get('auth') == None:
       ### get request token and save in session
@@ -858,7 +863,11 @@ class LogoutHandler(webapp2.RequestHandler):
     session = get_current_session()
     session.clear()
     ### will redefine the redirect route, 
-    self.redirect('/meeting/0')
+    self.redirect(OAUTH_CONFIG['internal']['logout_redirect_url'])
+
+class RouteErrorHandler(webapp2.RequestHandler):
+  def get(self):
+    self.response.out.write('INVALID URL. Redirect URL may have been modified')
 
 
 app = webapp2.WSGIApplication([
@@ -872,5 +881,7 @@ app = webapp2.WSGIApplication([
     (r'/twitterauthorized', TwitterAuthorized),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
-    ('/_ah/channel/disconnected/', DisconnectPage)
+    ('/_ah/channel/disconnected/', DisconnectPage),
+    ### all other unmapped url shall be directed to error page 
+    (r'.*', RouteErrorHandler)
   ], debug=True)

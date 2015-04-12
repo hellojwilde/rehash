@@ -11,5 +11,8 @@ OAUTH_CONFIG = {
     'default_api_suffix': '.json',
     'account_url': 'https://api.twitter.com/1.1/account/verify_credentials.json',
     'callback_url': 'http://localhost:3000/twitterauthorized',
+  },
+  'internal': {
+    'logout_redirect_url': '/meeting/0',
   }
 }
