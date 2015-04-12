@@ -66,7 +66,6 @@ var Broadcast = React.createClass({
     xhr.open('GET', url, true);
     xhr.onload = function() {
       var data = JSON.parse(xhr.responseText);
-      var display = React.findDOMNode(this.refs.broadcast_json);
 
       // convert to number
       initiator=Number(data['initiator']);
@@ -87,27 +86,11 @@ var Broadcast = React.createClass({
       var self = this;
       // start the session to begin accepting server info
       self.openChannel();
-//// self.initialize();
-      // session start & stop control
-      var startbtn = React.findDOMNode(self.refs.startBroadcast);
-      startbtn.addEventListener('click', function(){
-        // here, need to make sure we request to be initiator
-        // only one initiator at a time 
-        initiator = 0;
-        self.initialize();
-        console.log("Start the broadcast and notify audiences!");
-        self.sendMessage({type: 'broadcast'});
-      }, false);
-      var stopbtn = React.findDOMNode(self.refs.stopBroadcast);
-      stopbtn.addEventListener('click', function(){
-        self.stop();
-      }, false);
     }.bind(this);
     xhr.send(); 
   },
 
   initialize: function() {
-    this.resetStatus();
     this.maybeRequestTurn();
     signalingReady = initiator;
 
@@ -186,13 +169,6 @@ var Broadcast = React.createClass({
     turnDone = true;
     this.maybeStart();
   },
-  resetStatus: function() {
-    if (!initiator) {
-      this.setStatus('Join Room: '+ roomKey);
-    } else {
-      this.setStatus('Initializing...');
-    }
-  },
   doGetUserMedia: function() {                   
     try {
       getUserMedia({audio: true, video: true}, this.onUserMediaSuccess, this.onUserMediaError);
@@ -227,7 +203,6 @@ var Broadcast = React.createClass({
     // we want it to be able to restart and reinitiate and continue creating connections 
     if (signalingReady && channelReady && turnDone &&
         (localStream || !hasLocalStream)) {
-      this.setStatus('Connecting...');
       console.log('Creating PeerConnection.');
       this.createPeerConnection();
 
@@ -244,10 +219,6 @@ var Broadcast = React.createClass({
       else
         this.calleeStart();
     }
-  },
-  setStatus: function(state) {
-    var status = React.findDOMNode(this.refs.status);
-    status.innerHTML = state;
   },
   doCall: function() {
     var constraints = this.mergeConstraints(offerConstraints, sdpConstraints);
@@ -468,17 +439,9 @@ var Broadcast = React.createClass({
     //reattachMediaStream(miniVideo, localVideo);
     //remoteVideo.style.opacity = 1;
     // if initiator, retain the local video
-    if(initiator) {
+    if (initiator) {
       attachMediaStream(video, remoteStream);
     }
-    this.setStatus('Broadcasting Started');
-
-    //video.play();
-    //setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
-    // Reset window display according to the asperio of remote video.
-    //window.onresize();
-    this.setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
-              onclick=\'onHangup()\' />');
   },
   transitionToWaiting: function() {
     // setTimeout(function() {
@@ -487,14 +450,11 @@ var Broadcast = React.createClass({
     //              remoteVideo.src = '' }, 500);
     // miniVideo.style.opacity = 0;
     // remoteVideo.style.opacity = 0;
-    this.resetStatus();
   },
   transitionToDone: function () {
     // localVideo.style.opacity = 0;
     // remoteVideo.style.opacity = 0;
     videoideo.style.opacity = 0;
-    this.setStatus('You have left the call. <a href=' + roomKey + '>\
-              Click here</a> to rejoin.');
   },
   enterFullScreen: function () {
     //container.webkitRequestFullScreen();
@@ -517,20 +477,36 @@ var Broadcast = React.createClass({
     return getPreferredAudioCodec(sdp, audio_receive_codec);
   },
 
+  handleStartClick: function() {
+    // here, need to make sure we request to be initiator
+    // only one initiator at a time 
+    initiator = 0;
+    this.initialize();
+    console.log("Start the broadcast and notify audiences!");
+    this.sendMessage({type: 'broadcast'});
+  },
+
+  handleStopClick: function() {
+    this.stop();
+  },
+
   render: function() {
     return (
       <div className="panel panel-default broadcast">
         <video className="broadcast_video" ref="broadcast_video">
         </video>
         <div className="btnrow">
-          <div className="btn btn-success btnstart" ref="startBroadcast">START</div>
-          <div className="btn btn-success btnstop" ref="stopBroadcast">STOP</div>
-        </div>
-        <div className="broadcast_json">
-        </div>
-
-        <div ref="status"></div>
-        
+          <button 
+            className="btn btn-success btnstart" 
+            onClick={this.handleStartClick}>
+            START
+          </button>
+          <button 
+            className="btn btn-success btnstop"
+            onClick={this.handleStopClick}>
+            STOP
+          </button>
+        </div>        
       </div>
     );
   }
