@@ -16,7 +16,7 @@ var TileGridDetail = React.createClass({
     var height = 0.8 * (window.innerHeight || DEFAULT_HEIGHT);
 
     return (
-      <div className="TileGridDetail" style={{height}}>
+      <div className="TileGridDetail" style={{height: height}}>
         {this.props.children}
 
         <div className="TileGridDetail-header">

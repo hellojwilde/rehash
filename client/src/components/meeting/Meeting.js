@@ -1,10 +1,10 @@
-var MeetingBeforeView = require('components/meeting/MeetingBeforeView');
-var MeetingDuringView = require('components/meeting/MeetingDuringView');
+var BeforeMeeting = require('components/meeting/BeforeMeeting');
+var DuringMeeting = require('components/meeting/DuringMeeting');
 var React = require('react');
 
 var meetingPropType = require('types/meetingPropType');
 
-var MeetingView = React.createClass({
+var Meeting = React.createClass({
 
   propTypes: {
     meeting: meetingPropType.isRequired
@@ -12,10 +12,7 @@ var MeetingView = React.createClass({
 
   getInitialState: function() {
     var {isBroadcasting} = this.props.meeting;
-    
-    return {
-      view: isBroadcasting ? MeetingDuringView : MeetingBeforeView
-    };
+    return {view: isBroadcasting ? DuringMeeting : BeforeMeeting};
   },
 
   handleRequestViewChange: function(newView) {
@@ -24,12 +21,9 @@ var MeetingView = React.createClass({
 
   render: function() {
     var View = this.state.view;
-
-    return (
-      <View {...this.props}/>
-    );
+    return <View {...this.props}/>;
   }
 
 });
 
-module.exports = MeetingView;
+module.exports = Meeting;

@@ -1,0 +1,9 @@
+.AttendeePreview {
+  display: flex;
+  margin: 10px 0;
+}
+
+.AttendeePreview-thumbnail,
+.AttendeePreview-placeholder {
+  border-radius: 4px;
+}

@@ -1,6 +1,8 @@
-var React = require('react');
+var React = require('react/addons');
 var TileGridDetail = require('./TileGridDetail');
 var Tile = require('./Tile');
+
+var {CSSTransitionGroup} = React.addons;
 
 var _ = require('lodash');
 var meetingPropType = require('types/meetingPropType');
@@ -35,17 +37,23 @@ var TileGrid = React.createClass({
     };
   },
 
-  scrollToDetail: function() {
-    if (!this.refs['detail']) {
+  handleDetailRef: function(detail) {
+    if (!detail) {
       return;
     }
 
-    var detailOffset = 0.1 * window.innerHeight;
-    var detailRect = this.refs['detail'].getDOMNode().getBoundingClientRect();
+    var detailNode = detail.getDOMNode();
 
-    // XXX If we don't put this in a setTimeout, the scroll doesn't 
-    // consistently fire. Unclear why this is the case.
-    setTimeout(() => window.scrollBy(0, detailRect.top - detailOffset), 0);
+    // XXX Sometimes the animation breaks when we call the scroll animation
+    // without the requisite setTimeout, so adding a setTimeout around it.
+    setTimeout(() => {
+      $('body').animate({
+        scrollTop: (
+          $(detailNode).offset().top -
+          (window.innerHeight - parseInt(detailNode.style.height, 10)) + 20
+        )
+      }, 300);
+    }, 0);
   },
 
   render: function() {
@@ -72,11 +80,19 @@ var TileGrid = React.createClass({
                 </div>
               </div>
 
-              {rowContainsDetail && (
-                <TileGridDetail ref="detail" column={idx}>
-                  {detail}
-                </TileGridDetail>
-              )}
+              <CSSTransitionGroup 
+                className="TileGrid-transition"
+                component="div"
+                transitionName="TileGrid-transition">
+                {rowContainsDetail && (
+                  <TileGridDetail 
+                    ref={this.handleDetailRef}
+                    key="detail" 
+                    column={idx}>
+                    {detail}
+                  </TileGridDetail>
+                )}
+              </CSSTransitionGroup>
             </div>
           );
         })}
