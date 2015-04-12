@@ -1,10 +1,10 @@
 var {Actions} = require('flummox');
 
 class AgendaActions extends Actions {
-  constructor(flux, api) {
+  constructor(registry, api) {
     super();
 
-    this.flux = flux;
+    this.registry = registry;
     this.api = api;
   }
 
