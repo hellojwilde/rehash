@@ -809,6 +809,7 @@ class TwitterAuthorized(webapp2.RequestHandler):
     print(OAUTH_CONFIG['tw']['consumer_secret'])
     print(auth.request_token)
     print(verifier)
+    print(session['redirect'])
 
     try:
       auth.get_access_token(verifier)
@@ -857,10 +858,12 @@ class LoginHandler(webapp2.RequestHandler):
       try: 
         redirect_url = str(auth.get_authorization_url())
         session['twitter_request_token'] = auth.request_token
+        self.redirect(redirect_url)
       except tweepy.TweepError:
         logging.info('Error! Failed to get request token. ')
+        self.redirect('/meeting/0')
 
-    self.redirect(session['redirect'])
+    # self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
