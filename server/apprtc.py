@@ -27,7 +27,6 @@ import datetime
 import copy
 
 #import ssl
-import urllib3
 import requests
 import tweepy
 
@@ -388,7 +387,8 @@ class MainPage(webapp2.RequestHandler):
 class MeetingJoin(webapp2.RequestHandler):
   def get(self, room_key):
     page = 'index.html'
-    template_values = {}
+    template_values = {
+    }
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
     # page = 'index.html'
@@ -528,6 +528,7 @@ class MeetingModel(ndb.Model):
   host = ndb.StringProperty()
   highlights = ndb.JsonProperty()
   attendees = ndb.StringProperty(repeated=True)
+  isBroadcasting = ndb.BooleanProperty()
 
 class AgendaModel(ndb.Model):
   meetingId = ndb.StringProperty()
@@ -834,6 +835,50 @@ class TwitterAuthorized(webapp2.RequestHandler):
     template = jinja_environment.get_template(page)
     self.response.out.write('helloWorld' + verifier)
 
+class LoginHandler(webapp2.RequestHandler):
+  def get(self):
+    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'] + request.get('userId'))
+    try: 
+      redirect_url = str(auth.get_authorization_url())
+    except tweepy.TweepError:
+      logging.info('Error! Failed to get request token.')
+    logging.info(redirect_url)
+    # instance.redirect(redirect_url)
+
+    user = UserModel.get_by_id(request.get('userId')) 
+    if user: 
+      data = {'id': request.get('userId'),
+              'photoUrl': user.photoUrl, 
+              'photoThumbnailUrl': user.photoThumbnailUrl,
+              'name': user.name,
+              'affiliation': user.affiliation,
+              'bio': user.bio, 
+              'redirect': redirect_url
+      }
+      user.request_token = json.dumps(auth.request_token)
+      user.put()
+      response.out.write(json.dumps(data))
+      self.add_log('currentuserlogin', data)
+    ### For testing only 
+    else: 
+      data = {'error': 'not found'}
+      response.out.write(json.dumps(data))
+      user = UserModel(id = request.get('userId'))
+      #user.id = self.request.get('userId')
+      user.photoUrl = 'http://placehold.it/400x300'
+      user.photoThumbnailUrl = 'http://placehold.it/50x50'
+      user.name = 'Jonathan Wilde'
+      user.affiliation = 'Tufts University'
+      user.bio = ''
+      user.put()
+
+
+
+
+class LogoutHandler(webapp2.RequestHandler):
+  def get(self):
+    return
+
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
@@ -841,6 +886,8 @@ app = webapp2.WSGIApplication([
     (r'/meeting/(\d+)/broadcast', MeetingBroadcast),
     (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
+    (r'/user/login', LoginHandler)
+    (r'/user/logout', LogoutHandler)
     (r'/twitterauthorized/(\d+)', TwitterAuthorized),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),

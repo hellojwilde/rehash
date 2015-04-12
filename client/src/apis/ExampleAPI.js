@@ -116,7 +116,6 @@ function sendAjaxRequest(reqData) {
           handleAjaxError(data.error, reject);
           return;
         }
-
         resolve(data);
       },
       error: handleAjaxError
