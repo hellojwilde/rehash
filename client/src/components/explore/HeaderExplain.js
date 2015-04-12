@@ -6,6 +6,10 @@ require('./HeaderExplain.css');
 
 var HeaderExplain = React.createClass({
 
+  propTypes: {
+    createButtonRef: React.PropTypes.func
+  },
+
   render: function() {
     return (
       <div className="HeaderExplain">
@@ -18,7 +22,10 @@ var HeaderExplain = React.createClass({
               </h2>
             </div>
             <div className="col-sm-4">
-              <CreateButton className="HeaderExplain-button btn-lg btn-block"/>
+              <CreateButton 
+                ref={this.props.createButtonRef} 
+                className="HeaderExplain-button btn-lg btn-block"
+              />
             </div>
           </div>
         </div>

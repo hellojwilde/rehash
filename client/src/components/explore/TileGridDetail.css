@@ -1,10 +1,10 @@
 .TileGridDetail {
   position: relative;
-  margin: 30px 0;
+  margin: 20px 0;
 }
 
 .TileGridDetail-header {
-  padding: 10px 0;
+  padding: 15px 0;
   position: absolute;
   top: 0;
   right: 0;

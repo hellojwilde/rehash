@@ -28,6 +28,14 @@
   border-color: transparent;
 }
 
+.Header-create{
+  overflow: hidden;
+}
+
+.Header-create-button {
+  position: relative;
+}
+
 .Header-brand {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
