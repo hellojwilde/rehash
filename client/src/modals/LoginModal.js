@@ -10,11 +10,12 @@ require('3rdparty/bootstrap/css/bootstrap.css');
 var LoginModal = React.createClass({
 
   contextTypes: {
-    flux: React.PropTypes.object
+    flux: React.PropTypes.object.isRequired
   },
 
   propTypes: {
     message: React.PropTypes.string,
+    redirect: React.PropTypes.string,
     onComplete: React.PropTypes.func,
     onCancel: React.PropTypes.func
   },
@@ -22,6 +23,7 @@ var LoginModal = React.createClass({
   getDefaultProps: function() {
     return {
       message: null,
+      redirect: null
       onComplete: function() {},
       onCancel: function() {}
     };
@@ -37,7 +39,10 @@ var LoginModal = React.createClass({
               <p className="alert alert-info">{this.props.message}</p>
             )}
 
-            <LoginButton className="btn btn-primary btn-lg btn-block"/>
+            <LoginButton 
+              redirect={this.props.redirect} 
+              className="btn btn-primary btn-lg btn-block"
+            />
           </ModalBody>
         </Modal>
       </DocumentTitle>
