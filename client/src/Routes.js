@@ -1,24 +1,23 @@
-var MeetingHandler = require('handlers/MeetingHandler');
-var MeetingInviteHandler = require('handlers/MeetingInviteHandler');
-var MeetingBroadcastHandler = require('handlers/MeetingBroadcastHandler');
 var AppHandler = require('handlers/AppHandler');
+var ExploreHandler = require('handlers/ExploreHandler');
+var MeetingHandler = require('handlers/MeetingHandler');
 var React = require('react');
-var {Route, DefaultRoute} = require('react-router');
+var {Route} = require('react-router');
 
 var Routes = (
   <Route handler={AppHandler}>
-    <Route handler={MeetingHandler}>
+    <Route name="explore" handler={ExploreHandler} path="/">
       <Route 
-        name="meeting-invite" 
-        path="/meeting/:meetingId"
-        handler={MeetingInviteHandler}
-      />
-      <Route 
-        name="meeting-broadcast"
-        path="/meeting/:meetingId/broadcast"
-        handler={MeetingBroadcastHandler}
+        name="explore_meeting" 
+        handler={MeetingHandler} 
+        path="/explore/meeting/:meetingId"
       />
     </Route>
+    <Route 
+      name="meeting" 
+      handler={MeetingHandler} 
+      path="/meeting/:meetingId"
+    />
   </Route>
 );
 

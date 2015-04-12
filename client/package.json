@@ -13,17 +13,19 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "classnames": "^1.2.0",
     "flummox": "^3.2.1",
+    "lodash": "^3.6.0",
     "moment": "^2.9.0",
-    "object-assign": "^2.0.0",
     "react": "^0.13.1",
     "react-document-title": "^1.0.2",
     "react-pick": "^0.5.0",
     "react-pick-datetime": "^0.5.1",
     "react-router": "^0.13.1",
-    "react-scroll-components": "hellojwilde/react-scroll-components#patch-1"
+    "react-scroll-components": "^0.2.1"
   },
   "devDependencies": {
+    "autoprefixer-loader": "^1.2.0",
     "babel-core": "^4.7.16",
     "babel-loader": "^4.2.0",
     "css-loader": "^0.9.1",

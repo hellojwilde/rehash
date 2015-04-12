@@ -1,0 +1,11 @@
+.TileGridDetail {
+  position: relative;
+  margin: 30px 0;
+}
+
+.TileGridDetail-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}

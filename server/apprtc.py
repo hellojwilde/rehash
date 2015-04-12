@@ -378,9 +378,12 @@ class MessagePage(webapp2.RequestHandler):
 
 ### are they inherent staff of webrtc?
 class MainPage(webapp2.RequestHandler):
-  """The main UI page, renders the 'index.html' template."""
   def get(self):
-    return
+    page = 'index.html'
+    template_values = {}
+    template = jinja_environment.get_template(page)
+    self.response.out.write(template.render(template_values))
+
 ### Handle the case where clients request to join existing room
 class MeetingJoin(webapp2.RequestHandler):
   def get(self, room_key):

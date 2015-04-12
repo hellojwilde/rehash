@@ -1,5 +1,5 @@
+var _ = require('lodash');
 var moment = require('moment');
-var assign = require('object-assign');
 
 var USERS = {
   0: {
@@ -58,20 +58,6 @@ var MEETINGS = {
        on Philippine youth.',
     start: moment().subtract(10, 'm'),
     host: USERS[4],
-    highlights: [
-      {
-        type: 'TOPIC',
-        content: 'Challenges with competition for an outsourcing job'
-      },
-      {
-        type: 'QUESTION',
-        content: 'What sorts of ethical challenges were there in reporting?'
-      },
-      {
-        type: 'QUESTION',
-        content: 'What changes need to happen to the outsourcing industry?'
-      }
-    ],
     attendees: [
       USERS[5], 
       USERS[6],
@@ -111,105 +97,133 @@ var AGENDAS = {
 }
 
 // Test implementation
-var baseurl = '/api';
+const BASE_URL = '/api';
 
-function handleAjaxError(emessage){
+function handleAjaxError(emessage, callback){
   console.log('AJAX ERROR: '+ emessage);
+  callback(emessage);
 }
 
-function sendAjaxRequest(reqData){
-  var result;
-  $.ajax({
-    url: baseurl,
-    method: 'POST',
-    data: reqData,
-    dataType: 'json',
-    // double check if making it sync have unintended impacts
-    async: false,
-    success: function(data) {
-      if (data.error == 'not found'){
-        handleAjaxError(data.error);
-      }
-      result = data;
-    },
-    error: handleAjaxError
+function sendAjaxRequest(reqData) {
+  return new Promise(function(resolve, reject) {
+    $.ajax({
+      url: BASE_URL,
+      method: 'POST',
+      data: reqData,
+      dataType: 'json',
+      success: function(data) {
+        if (data.error == 'not found') {
+          handleAjaxError(data.error, reject);
+          return;
+        }
+
+        resolve(data);
+      },
+      error: handleAjaxError
+    });
   });
-  console.log('test');
-  console.log(result);
-  return result;
 }
 
 var ExampleAPI = {
-  // Integrate with twitter login 
-  // instead of waiting for data to come in, need call back 
-  currentUserLogin: function() {
-    var reqData = {
-      format: 'json',
-      userId: 0,
-      request: 'currentUserLogin'
-    };
-    var result = sendAjaxRequest(reqData);
-    console.log(result);
-    result['id'] = Number(result['id']);
-    // need to move this to the server side 
-    window.location.replace(result.redirect);
-    return Promise.resolve({
-      user: result,
-      participating: [],
-      hosting: []
-    });
-    // return Promise.resolve({
-    //   user: USERS[0],
-    //   participating: [],
-    //   hosting: []
-    // });
-  },
 
-  currentUserLogout: function() {
-    return Promise.resolve({});
-  },
-
+  /**
+   * Given a user id, this fetches a user object. 
+   * Useful for profile popups and pages.
+   * 
+   * @param  {string} userId Unlike meeting ids, the userId is a string.
+   * @return {Promise}       Resolves to the user object.
+   */
   userFetch: function(userId) {
     var reqData = {
       format: 'json',
       userId: userId,
       request: 'userFetch'
     };
-    var result = sendAjaxRequest(reqData);
-    result['id'] = Number(result['id']);
-    console.log(result);
-    return Promise.resolve(result);
-    //return Promise.resolve(USERS[userId]);
+    return sendAjaxRequest(reqData);
   },
 
+  /**
+   * On the homepage (i.e. the explore UI), we have a set of upcoming meetings.
+   * This fetches the set of meetings to display for that.
+   * 
+   * @return {Promise} Resolves to an array of meeting objects.
+   */
+  exploreFetch: function() {
+    // TODO: Make request against remote endpoint.
+    return Promise.resolve(_.values(MEETINGS));
+  },
+
+  /**
+   * If the user jumps to a standalone meeting page (e.g. from a tweet),
+   * we won't have the meeting already cached from the explore page.
+   * This fetches a single specific meeting to display in the app.
+   * 
+   * @param  {number} meetingId The id of the meeting to fetch.
+   * @return {Promise}          Resolves to a meeting object.
+   */
   meetingFetch: function(meetingId) {
     var reqData = {
       format: 'json',
       meetingId: meetingId, 
       request: 'meetingFetch'
     };
-    var result = sendAjaxRequest(reqData);
-    // convert datetime string to moment
-    result['start'] = moment(result['start']);
-    //result.id = meetingId;
-    result['id'] = Number(result['id']);
-    result['host']['id'] = Number(result['host']['id']);
-    for (var i = 0; i < result.attendees.length ;i++ ){
-      result['attendees'][i]['id'] = Number(result['attendees'][i]['id']);
-    }
+    
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        // TODO: make sure we're including a real result id here.
+        // convert datetime string to moment
 
-    console.log(result);
-    return Promise.resolve(result);
+        // double check
+        result.start = moment(result.start);
+        result.id = 0;
+        return result;
+      });
+
   },
 
+  /**
+   * "Joining" is an action that indicates that the user somehow "attended"
+   * a given meeting, including by:
+   *
+   *  - By being marked as the host for an event.
+   *  - Clicking the "subscribe" button before the event starts.
+   *  - Viewing the meeting while logged in.
+   *
+   * This is kind of a funky API call, in that it's associated with a user id.
+   * If we call this over ajax, the server will have access to the cookies that
+   * we're using to maintain the user's session.
+   *
+   * If the server uses something like GAE sessions to maintain the current 
+   * sign-in status...
+   *
+   *    <https://github.com/dound/gae-sessions>
+   *
+   * ...we can have the server pull the user ID from that session information.
+   * There's no need to provide a user ID here.
+   * 
+   * @param  {number} meetingId The id of the meeting to mark the current user 
+   *                            as joined to.
+   * @return {Promise}          Resolves to sort of message indicating that the
+   *                            join attempt didn't entirely fail.
+   */
   meetingJoin: function(meetingId) {
-    // need to pass in userId to add uses to attendees or hosts 
-    // log on host, so need to update this function
     return Promise.resolve(meetingId);
   },
 
-  // for datetime structure, think about saving on gae as string
+  /**
+   * When we create the meeting initially, we want to force the user to set
+   * a title and start time, and encourage them to set description and cover
+   * photo so that we have a nice-looking, sortable tile to display in the feed
+   * immediately.
+   *
+   * This should set up a blank agenda, along with an attendee list containing 
+   * the user that created the meeting.
+   * 
+   * @param  {object} meeting  A meeting object without an id.
+   * @return {Promise}         Resolves to the id that the meeting was saved as.
+   */
   meetingCreate: function(meeting) {
+    // for datetime structure, think about saving on gae as string
     // dates are all saved as strings
     var mReqData = {
       format: 'json',
@@ -221,21 +235,19 @@ var ExampleAPI = {
       // note here the attendees shall be a list of numerical user ids to maintain atomicity 
       attendees: []
     };
-    var meetingId = Number(sendAjaxRequest(mReqData)['id']);
+
     var aReqData = {
       format: 'json',
       request: 'agendacreate',
       meetingId: meetingId,
       topics: []
     };
-    sendAjaxRequest(aReqData);
-
-    return Promise.resolve(meetingId);
-    // MEETINGS[meetingId] = assign(meeting, {
-    //   id: meetingId,
-    //   highlights: [],
-    //   attendees: []
-    // });
+    return sendAjaxRequest(mReqData)
+      .then((result) => {
+        var meetingId = Number(result.id);
+        return sendAjaxRequest(aReqData)
+          .then(() => meetingId)
+      });
   },
 
   // await on decision
@@ -250,20 +262,20 @@ var ExampleAPI = {
     result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(AGENDAS[0]);
+  // =======
+  //     return sendAjaxRequest(mReqData)
+  //       .then((result) => {
+  //         var meetingId = Number(result.id);
+  //         return sendAjaxRequest(aReqData)
+  //           .then(() => meetingId)
+  //       });
+  // >>>>>>> b4043d752e225c764fe1f726f72f3bc03698faef
   }
 };
 
 module.exports = ExampleAPI;
 
 
-
-/*
-  Notes: all ids are stored as string in the database for consistency, 
-  need to recover if going to use them.  
-
-  3. creat the logging system 
-  4. transactional!
-*/
 
 
 

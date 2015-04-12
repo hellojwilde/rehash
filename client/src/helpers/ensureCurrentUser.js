@@ -1,8 +1,8 @@
 var LoginModal = require('modals/LoginModal');
 
 function ensureCurrentUser(flux, message) {
-  var modalActions = flux.getActions('modal'),
-      currentUserStore = flux.getStore('currentUser');
+  var modalActions = flux.getActions('modal');
+  var currentUserStore = flux.getStore('currentUser');
 
   return new Promise(function(resolve, reject) {
     var currentUser = currentUserStore.getCurrentUser();

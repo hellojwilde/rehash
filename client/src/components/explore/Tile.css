@@ -1,0 +1,28 @@
+.Tile {
+  color: white;
+  height: 200px;
+  position: relative;
+}
+
+.Tile-schedule {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.Tile-main {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+}
+
+.Tile-main-description {
+  /* TODO(jwilde): Move over to a more intelligent way of managing overflow so
+                   we can display at least two lines of the description. */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+  margin: 0;
+}

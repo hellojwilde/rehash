@@ -1,20 +1,14 @@
-var DocumentTitle = require('react-document-title');
-var FluxComponent = require('flummox/component');
-var FluxRegistry = require('FluxRegistry');
-var MeetingHeader = require('components/meeting/common/MeetingHeader');
-var HostNav = require('components/meeting/host/HostNav');
 var React = require('react');
-var {RouteHandler} = require('react-router');
+var MeetingView = require('components/meeting/MeetingView')
+var FluxComponent = require('flummox/component');
 
 var MeetingHandler = React.createClass({
 
   statics: {
-    ensureDataAvailable: function(state) {
+    ensureDataAvailable: function(state, registry) {
       var {meetingId} = state.params;
-      var meetingActions = FluxRegistry.getActions('meeting');
-
-      return meetingActions.fetch(meetingId);
-    },
+      return registry.getActions('meeting').fetch(+meetingId)
+    }
   },
 
   contextTypes: {
@@ -22,36 +16,15 @@ var MeetingHandler = React.createClass({
   },
 
   render: function() {
+    var {meetingId} = this.context.router.getCurrentParams();
+
     return (
       <FluxComponent 
-        connectToStores={['meeting', 'currentUser']}
-        stateGetter={([meetingStore, currentUserStore]) => {
-          var {meetingId} = this.context.router.getCurrentParams();
-          return {
-            meeting: meetingStore.getById(meetingId),
-            isParticipant: currentUserStore.isParticipant(meetingId),
-            isHost: currentUserStore.isHost(meetingId),
-            currentUser: currentUserStore.getCurrentUser()
-          };
-        }}
-        render={(storeState) => {
-          var {meeting, currentUser, isParticipant, isHost} = storeState;
-
-          return (
-            <DocumentTitle title={meeting.title}>
-              <div className="MeetingHandler">
-                <MeetingHeader 
-                  {...meeting} 
-                  currentUser={currentUser} 
-                  isParticipant={isParticipant}
-                  isHost={isHost}
-                />
-                {isHost && <HostNav/>}
-                <RouteHandler {...this.props} />
-              </div>
-            </DocumentTitle>
-          );
-        }}
+        connectToStores={['meeting']}
+        stateGetter={([meetingStore]) => ({
+          meeting: meetingStore.getById(meetingId)
+        })}
+        render={(state) => <MeetingView {...state} />}
       />
     );
   }
