@@ -353,10 +353,6 @@ class DisconnectPage(webapp2.RequestHandler):
           #room.remove_user(user) #, we also remove user on_message, if do it here, remove 2
           logging.info('User ' + user + ' removed from room ' + room_key)
           logging.info('Room ' + room_key + ' has state ' + str(room))
-          #if other_user and other_user != user:
-            #channel.send_message(make_client_id(room, other_user),
-            #                     '{"type":"bye"}')
-            #logging.info('Sent BYE to ' + other_user)
     logging.warning('User ' + user + ' disconnected from room ' + room_key)
 
 ### Got message from clients here? 
@@ -372,7 +368,6 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
-### are they inherent staff of webrtc?
 class MainPage(webapp2.RequestHandler):
   def get(self):
     page = 'index.html'
@@ -383,23 +378,10 @@ class MainPage(webapp2.RequestHandler):
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-    # session = get_current_session()
-    # if session.get('userId') == None:
-    #   logging.info('client has not login yet')
-    #   # logging.info(session['sid'])
-    #   session['userId'] = 'User Id here'
-    # else: 
-    #   logging.info(session['userId'])
     page = 'index.html'
     template_values = {}
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
-    # page = 'index.html'
-    # template_values = {}
-    # loader = jinja2.FileSystemLoader('../client')
-    # environment = jinja2.Environment(loader=loader)
-    # template = environment.get_template(page)
-    # self.response.out.write(template.render(template_values))
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
@@ -467,7 +449,6 @@ class RequestBroadcastData(webapp2.RequestHandler):
         room.add_user(user)
         #initiator = 1
 
-
     if turn_server == 'false':
       turn_server = None
       turn_url = ''
@@ -499,6 +480,10 @@ class RequestBroadcastData(webapp2.RequestHandler):
 
 
 ### Collection of dataModels
+# Log all transactions that calls any of APIHandler methods
+# Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
+# For methods that involves a write, written data is stored as data
+# FOr methods that involves a fetch, response data is stored as data 
 class LogModel(ndb.Model):
   datetime = ndb.DateTimeProperty(auto_now_add=True)
   #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
@@ -512,6 +497,8 @@ class UserModel(ndb.Model):
   name = ndb.StringProperty()
   affiliation = ndb.StringProperty()
   bio = ndb.StringProperty()
+  attend = ndb.IntegerProperty(repeated=True)
+  host = ndb.IntegerProperty(repeated=True)
 
 class MeetingModel(ndb.Model):
   #id = ndb.IntegerProperty()
@@ -533,11 +520,12 @@ class TopicsModel(ndb.Model):
   questions = ndb.StringProperty(repeated=True)
 
 class QuestionModel(ndb.Model):
+  meetingId = ndb.StringProperty()
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
 
-class AnswerModel(ndb.Model):
-  content = ndb.StringProperty()
+# class AnswerModel(ndb.Model):
+#   content = ndb.StringProperty()
 
 class AdaptJsonEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -558,10 +546,14 @@ class APIHandler(webapp2.RequestHandler):
     elif self.request.get('request').lower() == 'meetingcreate':
       self.meetingcreate(self.request, self.response)
     elif self.request.get('request').lower() == 'agendacreate':
-      # agenda can be integrated with meetings?
       self.agendacreate(self.request, self.response)
     elif self.request.get('request').lower() == 'agendafetch':
       self.agendafetch(self.request, self.response)
+    elif self.request.get('request').lower() == 'explorefetch':
+      self.explorefetch(self.request, self.response)
+    elif self.request.get('request').lower() == 'meetingjoin':
+      self.meetingjoin(self.request, self.response)
+
 
   @classmethod
   def twitter_login(self):
@@ -596,73 +588,9 @@ class APIHandler(webapp2.RequestHandler):
     for each in LogModel.query():
       logging.info('LOGGED into ndb: ' + method)
 
-  @classmethod
-  def userfetch(self, request, response):
-    user = UserModel.get_by_id(request.get('userId'))
-    if user: 
-      data = {'id': request.get('userId'),
-              'photoUrl': user.photoUrl, 
-              'photoThumbnailUrl': user.photoThumbnailUrl,
-              'name': user.name,
-              'affiliation': user.affiliation,
-              'bio': user.bio
-      }
-      response.out.write(json.dumps(data))
-      self.add_log('userfetch', data)
-    else: 
-      data = {'error': 'not found'}
-      response.out.write(json.dumps(data))
-      user = UserModel(id = request.get('userId'))
-      #user.id = request.get('userId')
-      user.photoUrl = 'http://placehold.it/400x300'
-      user.photoThumbnailUrl = 'http://placehold.it/50x50'
-      user.name = 'Jonathan Wilde'
-      user.affiliation = 'Tufts University'
-      user.bio = ''
-      user.put()
-
-  @classmethod
-  def currentuserlogin(self, request, response, instance):
-    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'], OAUTH_CONFIG['tw']['callback_url'] + request.get('userId'))
-    try: 
-      redirect_url = str(auth.get_authorization_url())
-    except tweepy.TweepError:
-      logging.info('Error! Failed to get request token.')
-    logging.info(redirect_url)
-    # instance.redirect(redirect_url)
-
-    user = UserModel.get_by_id(request.get('userId')) 
-    if user: 
-      data = {'id': request.get('userId'),
-              'photoUrl': user.photoUrl, 
-              'photoThumbnailUrl': user.photoThumbnailUrl,
-              'name': user.name,
-              'affiliation': user.affiliation,
-              'bio': user.bio, 
-              'redirect': redirect_url
-      }
-      user.request_token = json.dumps(auth.request_token)
-      user.put()
-      response.out.write(json.dumps(data))
-      self.add_log('currentuserlogin', data)
-    ### For testing only 
-    else: 
-      data = {'error': 'not found'}
-      response.out.write(json.dumps(data))
-      user = UserModel(id = request.get('userId'))
-      #user.id = self.request.get('userId')
-      user.photoUrl = 'http://placehold.it/400x300'
-      user.photoThumbnailUrl = 'http://placehold.it/50x50'
-      user.name = 'Jonathan Wilde'
-      user.affiliation = 'Tufts University'
-      user.bio = ''
-      user.put()
-
-
-  @classmethod
-  def meetingfetch(self, request, response):
-    logging.info('MEETING FETCH ')
-    meeting = MeetingModel.get_by_id(request.get('meetingId'))
+  @classmethod 
+  def build_meeting(self, meeting):
+    # meeting = MeetingModel.get_by_id(meetingId)
     if meeting: 
       attendees = []
       # construct attendees list to be sent back
@@ -686,7 +614,7 @@ class APIHandler(webapp2.RequestHandler):
               'bio': instance.bio
       }
 
-      data = {'id': request.get('meetingId'),
+      data = {'id': meeting.id(),
               'title': meeting.title, 
               'description': meeting.description,
               'start': meeting.start,
@@ -694,40 +622,44 @@ class APIHandler(webapp2.RequestHandler):
               'highlights': meeting.highlights,
               'attendees': attendees
       }
-      response.out.write(json.dumps(data))
-      # self.add_log('meetingfetch', data)
+      return data
+    else: 
+      response.out.write('Meeting not found')
+      logging.info('build_meeting failed')
 
-    else:
-      logging.info('MEETING pushed ')
-      meeting = MeetingModel(id = request.get('meetingId'))
-      meeting.title ='The Philippines\'s Outsourcing Wave'
-      meeting.description = 'Coleen Jose will discuss the process of reporting on the rapid \
-                             increase in outsourcing operations in the Philippines and the impacts \
-                             on Philippine youth.'
-      meeting.start = '2015-03-03 12:12:12 Z'
-      APIHandler.add_user('4', request)
-      APIHandler.add_user('5', request)
-      APIHandler.add_user('6', request)
-      APIHandler.add_user('7', request)
-      APIHandler.add_user('8', request)
-      meeting.host = '4'
-      meeting.highlights = [ \
-                              { \
-                                'type': 'TOPIC', \
-                                'content': 'Challenges with competition for an outsourcing job' \
-                              }, \
-                              { \
-                                'type': 'QUESTION', \
-                                'content': 'What sorts of ethical challenges were there in reporting?' \
-                              }, \
-                              { \
-                                'type': 'QUESTION', \
-                                'content': 'What changes need to happen to the outsourcing industry?' \
-                              } \
-                            ]
-      meeting.attendes = ['5', '6', '7', '8']
-      meeting.put()
-      logging.info('INSERT MEETING')
+  @classmethod
+  def userfetch(self, request, response):
+    user = UserModel.get_by_id(request.get('userId'))
+    if user: 
+      data = {'id': request.get('userId'),
+              'photoUrl': user.photoUrl, 
+              'photoThumbnailUrl': user.photoThumbnailUrl,
+              'name': user.name,
+              'affiliation': user.affiliation,
+              'bio': user.bio
+      }
+      response.out.write(json.dumps(data))
+      self.add_log('userfetch', data)
+    else: 
+      data = {'error': 'NotFound'}
+      response.out.write(json.dumps(data))
+
+  @classmethod
+  def meetingfetch(self, request, response):
+    logging.info('MEETING FETCH ')
+    data = self.build_meeting(MeetingModel.get_by_id(request.get('meetingId')))
+    response.out.write(json.dumps(data))
+    self.add_log('meetingcreate', data)
+
+  @classmethod
+  def explorefetch(self, request, response):
+    meetingArr = []
+    q = MyModel.query()
+    for meeting in q.iter():
+      data = self.build_meeting(meeting)
+      meetingArr.append(data)
+    response.out.write(json.dumps(data))
+    self.add_log('meetingcreate', data)  
 
   @classmethod
   def meetingcreate(self, request, response):
@@ -751,6 +683,22 @@ class APIHandler(webapp2.RequestHandler):
 
     ### need to amplify the data collected! 
     self.add_log('meetingcreate', data)
+
+  @classmethod
+  def meetingjoin(self, request, response):
+    session = get_current_session()
+    if not session['id']:
+      #response.out.write('User not logged in yet')
+      logging.info('User to join meeting not logged in')
+    else: 
+      meeting = MeetingModel.get_by_id(request.get('meetingId'))
+      meeting.attendees.append(session['id'])
+      meeting.put()
+      response.out.write(request.get('meetingId'))
+      data = {'meetingId': request.get('meetingId')
+              'userId': request.get(session['id'])
+      }
+      self.add_log('meetingjoin', data)
 
   @classmethod
   def agendacreate(self, request, response):
@@ -795,8 +743,7 @@ class APIHandler(webapp2.RequestHandler):
     response.out.write(json.dumps(topics))
     self.add_log('agendafetch', topics)
 
-### handle post-login case
-### save username, etc on ndb
+### after login case
 class TwitterAuthorized(webapp2.RequestHandler):
   def get(self):
     ### also need to handle the case where request token is no longer valid
@@ -804,31 +751,30 @@ class TwitterAuthorized(webapp2.RequestHandler):
     auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'])
     auth.request_token = session['twitter_request_token']
     verifier = self.request.GET.get('oauth_verifier')
-
+    ### for testing purposes
     print(OAUTH_CONFIG['tw']['consumer_key'])
     print(OAUTH_CONFIG['tw']['consumer_secret'])
     print(auth.request_token)
     print(verifier)
     print(session['redirect'])
-
+    ### request access token 
     try:
       auth.get_access_token(verifier)
       print 'Success! '
     except tweepy.TweepError:
       print 'Error! Failed to get access token.'
       self.redirect('/user/login?redirect=' + session['redirect'])
-
     ### save tokens to session
     session['access_token'] = auth.access_token
     session['access_token_secret'] = auth.access_token_secret
     session['auth'] = auth
-
     self.redirect(session['redirect'])
-
-    ### add to data base if not exist already 
+    ### add user to data base if not exist already 
     api = tweepy.API(auth)
     me = api.me()
     me_id_str = me.id_str
+    ### save user id to session for meetingjoin etc
+    session['id'] = me_id_str
     user = UserModel.get_by_id(me_id_str)
     if not user: 
       user = UserModel(id = me_id_str)

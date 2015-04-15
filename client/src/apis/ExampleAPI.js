@@ -149,7 +149,14 @@ var ExampleAPI = {
    */
   exploreFetch: function() {
     // TODO: Make request against remote endpoint.
-    return Promise.resolve(_.values(MEETINGS));
+    var reqData = {
+      format: 'json',
+      userId: userId,
+      request: 'exploreFetch'
+    };
+
+    return sendAjaxRequest(reqData);
+    // return Promise.resolve(_.values(MEETINGS));
   },
 
   /**
@@ -174,7 +181,7 @@ var ExampleAPI = {
 
         // double check
         result.start = moment(result.start);
-        result.id = 0;
+        result.id = Number(result.id);
         return result;
       });
 
@@ -205,8 +212,14 @@ var ExampleAPI = {
    * @return {Promise}          Resolves to sort of message indicating that the
    *                            join attempt didn't entirely fail.
    */
+  // Need to make sure the user has signed in before this is called
   meetingJoin: function(meetingId) {
-    return Promise.resolve(meetingId);
+    var reqData = {
+      format: 'json',
+      meetingId: meetingId, 
+      request: 'meetingjoin'
+    };
+    return sendAjaxRequest(reqData);
   },
 
   /**
@@ -249,7 +262,31 @@ var ExampleAPI = {
       });
   },
 
-  // await on decision
+
+
+  //
+  //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
+  //
+
+  /**
+   * @param  {int} meetingId   
+   *         {object} topics   Array of topics
+   * @return {Promise}         Resolves to the id that the topics are added to
+   */
+  agendaAdd: function(meetingId, topics){
+    var reqData = {
+      format: 'json',
+      request: 'agendaAdd',
+      meetingId: meetingId, 
+      topics: topics
+    };
+    return sendAjaxRequest(reqData);
+  }
+
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of topics 
+   */
   agendaFetch: function(meetingId) {
     var reqData = {
       format: 'json',
@@ -261,14 +298,78 @@ var ExampleAPI = {
     result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(AGENDAS[0]);
-  // =======
-  //     return sendAjaxRequest(mReqData)
-  //       .then((result) => {
-  //         var meetingId = Number(result.id);
-  //         return sendAjaxRequest(aReqData)
-  //           .then(() => meetingId)
-  //       });
-  // >>>>>>> b4043d752e225c764fe1f726f72f3bc03698faef
+  }
+
+  /**
+   * @param  {int} meetingId   
+   *         {object} question Includes string of question and timestamp
+   * @return {Promise}         Resolves to the dict containing question id (int or string?)
+   */
+  questionAdd: function(meetingId, question){
+    var reqData = {
+      format: 'json',
+      request: 'questionAdd',
+      meetingId: meetingId, 
+      question: question
+    };
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        result.id = Number(result.id);
+        return result;
+      });
+  }
+
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of questions on a meeting
+   */
+  questionFetch: function(meetingId) {
+    var reqData = {
+      format: 'json',
+      request: 'questionfetch',
+      meetingId: meetingId
+    }
+    var result = sendAjaxRequest(reqData);
+    result.topics = AGENDAS[0].topics;
+    result['meetingId'] = Number(result['meetingId']);
+    console.log(result);
+    return Promise.resolve(result);
+  }
+
+  /**
+   * @param  {int} questionId   
+   *         {object} question Includes string of answer and timestamp
+   * @return {Promise}         Resolves to the id that the questions are added to
+   */
+  answerAdd: function(questionId, answer){
+    var reqData = {
+      format: 'json',
+      request: 'questionAdd', 
+      questionId: questionId, 
+      answer: answer
+    };
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        result.id = Number(result.id);
+        return result;
+      });
+  }
+
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of questions on a meeting
+   */
+  answerFetch: function(questionId) {
+    var reqData = {
+      format: 'json',
+      request: 'questionfetch',
+      questionId: questionId
+    }
+    var result = sendAjaxRequest(reqData);
+    result.topics = AGENDAS[0].topics;
+    result['questionId'] = Number(result['questionId']);
+    console.log(result);
+    return Promise.resolve(result);
   }
 };
 
