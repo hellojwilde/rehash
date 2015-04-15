@@ -11,7 +11,9 @@ var Meeting = React.createClass({
   },
 
   getInitialState: function() {
-    var {isBroadcasting} = this.props.meeting;
+    // var {isBroadcasting} = this.props.meeting;
+    // temporary, need to convert back!
+    var isBroadcasting = false;
     return {view: isBroadcasting ? DuringMeeting : BeforeMeeting};
   },
 

@@ -82,9 +82,12 @@ var Broadcast = React.createClass({
       audio_send_codec=data['audio_send_codec'];
       audio_receive_codec=data['audio_receive_codec'];
 
-      console.log("NOTE HERE : " + JSON.stringify(data['pc_config'].iceServers[0].urls));
       // start the session to begin accepting server info
-      this.openChannel();
+      // this.openChannel();
+      // openChannel() earlier! 
+      this.maybeStart();
+      this.sendMessage({type: 'ready'});
+
     }.bind(this);
     xhr.send(); 
   },
@@ -305,12 +308,15 @@ var Broadcast = React.createClass({
   onChannelOpened: function () {
     console.log('Channel opened.');
     channelReady = true;
-    this.maybeStart();
-    this.sendMessage({type: 'ready'});
+
+    // since channel is created much earlier, this might not be ready yet;
+    // thus, call from didMount function
+    // this.maybeStart();
+    // this.sendMessage({type: 'ready'});
   },
-  onChannelMessage: function(message) {
-    console.log('S->C: ' + message.data);
-    var msg = JSON.parse(message.data);
+  onChannelMessage: function(msg) {
+    // console.log('S->C: ' + message.data);
+    // var msg = JSON.parse(message.data);
     // Since the turn response is async and also GAE might disorder the
     // Message delivery due to possible datastore query at server side,
     // So callee needs to cache messages before peerConnection is created.
@@ -340,12 +346,12 @@ var Broadcast = React.createClass({
     }
 
   },
-  onChannelError: function () {
-    this.messageError('Channel error.');
-  },
-  onChannelClosed: function () {
-    console.log('Channel closed.');
-  },
+  // onChannelError: function () {
+  //   this.messageError('Channel error.');
+  // },
+  // onChannelClosed: function () {
+  //   console.log('Channel closed.');
+  // },
   messageError: function (msg) {
     console.log(msg);
   },
@@ -515,4 +521,14 @@ var Broadcast = React.createClass({
   }
 });
 
-module.exports = Broadcast;
+// exports for ChannelAPI only
+module.exports = {
+  Broadcast.onChannelMessage,
+  Broadcast.onChannelOpened
+}
+
+
+
+
+
+

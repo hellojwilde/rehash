@@ -28,7 +28,8 @@ var MeetingHandler = React.createClass({
           isHost: currentUserStore.isHost(meetingId)
         })}
         render={(state) => (
-          <DocumentTitle title={`${state.meeting.title} - Rehash`}>
+          // <DocumentTitle title={`${state.meeting.title} - Rehash`}>
+          <DocumentTitle title={`- Rehash`}>
             <Meeting {...state} />
           </DocumentTitle>
         )}
