@@ -5,7 +5,11 @@ var _ = require('lodash');
 class CurrentUserStore extends Store {
   static deserialize(json) {
     return json;
-  } 
+  }
+
+  static serialize(state) {
+    return state;
+  }
 
   constructor(registry) {
     super();

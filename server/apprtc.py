@@ -212,7 +212,7 @@ def make_offer_constraints():
   return constraints
 
 
-def render_page_with_initial_store_data(self, extra_initial_store_data={}):
+def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
   initial_store_data = {}
 
@@ -221,8 +221,12 @@ def render_page_with_initial_store_data(self, extra_initial_store_data={}):
 
   initial_store_data.update(extra_initial_store_data)
 
-  template_values = {'initial_store_data': json.dumps(initial_store_data)}
   template = jinja_environment.get_template('index.html')
+  template_values = {
+    'is_usingwebpack': self.request.get('usewebpack') == 'true',
+    'initial_store_data': json.dumps(initial_store_data)
+  }
+  
   self.response.out.write(template.render(template_values))
 
 
@@ -383,12 +387,12 @@ class MessagePage(webapp2.RequestHandler):
 ### are they inherent staff of webrtc?
 class MainPage(webapp2.RequestHandler):
   def get(self):
-    render_page_with_initial_store_data(self)
+    fetch_initial_store_data_and_render(self)
 
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-    render_page_with_initial_store_data(self)
+    fetch_initial_store_data_and_render(self)
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
@@ -508,7 +512,6 @@ class MeetingModel(ndb.Model):
   description = ndb.StringProperty()
   start = ndb.StringProperty()
   host = ndb.StringProperty()
-  highlights = ndb.JsonProperty()
   attendees = ndb.StringProperty(repeated=True)
   isBroadcasting = ndb.BooleanProperty()
 
@@ -680,7 +683,6 @@ class APIHandler(webapp2.RequestHandler):
               'description': meeting.description,
               'start': meeting.start,
               'host': host,
-              'highlights': meeting.highlights,
               'attendees': attendees
       }
       response.out.write(json.dumps(data))
@@ -700,21 +702,7 @@ class APIHandler(webapp2.RequestHandler):
       APIHandler.add_user('7', request)
       APIHandler.add_user('8', request)
       meeting.host = '4'
-      meeting.highlights = [ \
-                              { \
-                                'type': 'TOPIC', \
-                                'content': 'Challenges with competition for an outsourcing job' \
-                              }, \
-                              { \
-                                'type': 'QUESTION', \
-                                'content': 'What sorts of ethical challenges were there in reporting?' \
-                              }, \
-                              { \
-                                'type': 'QUESTION', \
-                                'content': 'What changes need to happen to the outsourcing industry?' \
-                              } \
-                            ]
-      meeting.attendes = ['5', '6', '7', '8']
+      meeting.attendees = ['5', '6', '7', '8']
       meeting.put()
       logging.info('INSERT MEETING')
 
@@ -732,7 +720,6 @@ class APIHandler(webapp2.RequestHandler):
     meeting.title = request.get('title')
     meeting.description = request.get('description')
     meeting.start = request.get('start')
-    meeting.highlights = copy.deepcopy(request.get('highlights'))
     meeting.topics = copy.deepcopy(request.get('topics'))
     meeting.put()
     data = {'id': meetingId}

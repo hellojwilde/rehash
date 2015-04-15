@@ -2,50 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Debrief</title>
+  <title>Rehash</title>
   <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'/>
-
   <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
-  
-  <!--<link rel="stylesheet" href="css/video.css" />-->
+  <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'/>
 </head>
 <body>
-  <script type="text/javascript">
-    window.initialStoreData = {{ initial_store_data }};
-    // var isBroadcasting = {{ isBroadcasting }};
-  </script>
+  <noscript>
+    You'll need JavaScript enabled in your browser to use Rehash. :/
+  </noscript>
 
   <script src="/js/jquery-2.1.3.min.js"></script>
-  <script>
-    var url="";
-    var urlParams;
-    (window.onpopstate = function () {
-        var match,
-            pl     = /\+/g,  // Regex for replacing addition symbol with a space
-            search = /([^&=]+)=?([^&]*)/g,
-            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
-            query  = window.location.search.substring(1);
-
-        urlParams = {};
-        while (match = search.exec(query))
-           urlParams[decode(match[1])] = decode(match[2]);
-    })();
-    if (urlParams["usewebpack"]=="true"){
-      url = "http://localhost:3001/dist/bundle.js"
-    }else{
-      url = "/dist/bundle.js"
-    }
-    $.getScript( url, function( data, textStatus, jqxhr ) {
-      console.log( data ); // Data returned
-      console.log( textStatus ); // Success
-      console.log( jqxhr.status ); // 200
-      console.log( "Load was performed." );
-    });
-  </script>
-  
-
-
   <script src="/_ah/channel/jsapi"></script>  
 
+  <script type="text/javascript">
+    window.initialStoreData = '{{ initial_store_data }}';
+  </script>
+  {% if is_usingwebpack %}
+  <script src="http://localhost:3001/dist/bundle.js"></script>
+  {% else %}
+  <script src="/dist/bundle.js"></script>
+  {% endif %}
 </body>
 </html>
