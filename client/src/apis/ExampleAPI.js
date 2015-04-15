@@ -101,7 +101,7 @@ const BASE_URL = '/api';
 
 function handleAjaxError(emessage, callback){
   console.log('AJAX ERROR: '+ emessage);
-  callback(emessage);
+  typeof callback === 'function' && callback(emessage);
 }
 
 function sendAjaxRequest(reqData) {
@@ -151,7 +151,6 @@ var ExampleAPI = {
     // TODO: Make request against remote endpoint.
     var reqData = {
       format: 'json',
-      userId: userId,
       request: 'exploreFetch'
     };
 
@@ -281,7 +280,7 @@ var ExampleAPI = {
       topics: topics
     };
     return sendAjaxRequest(reqData);
-  }
+  },
 
   /**
    * @param  {int} meetingId   
@@ -298,7 +297,7 @@ var ExampleAPI = {
     result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(AGENDAS[0]);
-  }
+  },
 
   /**
    * @param  {int} meetingId   
@@ -317,7 +316,7 @@ var ExampleAPI = {
         result.id = Number(result.id);
         return result;
       });
-  }
+  },
 
   /**
    * @param  {int} meetingId   
@@ -334,7 +333,7 @@ var ExampleAPI = {
     result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(result);
-  }
+  },
 
   /**
    * @param  {int} questionId   
@@ -353,7 +352,7 @@ var ExampleAPI = {
         result.id = Number(result.id);
         return result;
       });
-  }
+  },
 
   /**
    * @param  {int} meetingId   
