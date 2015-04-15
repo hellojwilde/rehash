@@ -408,12 +408,12 @@ class LogModel(ndb.Model):
 
 class UserModel(ndb.Model):
   id = ndb.StringProperty()
-  photo_url = ndb.StringProperty()
-  photo_thumbnail_url = ndb.StringProperty()
+  photoUrl = ndb.StringProperty()
+  photoThumbnailUrl = ndb.StringProperty()
   name = ndb.StringProperty()
   screen_name = ndb.StringProperty()
   location = ndb.StringProperty()
-  description = ndb.StringProperty()
+  bio = ndb.StringProperty()
   attend = ndb.IntegerProperty(repeated=True)
   host = ndb.IntegerProperty(repeated=True)
 
@@ -530,7 +530,7 @@ class APIHandler(webapp2.RequestHandler):
               'bio': instance.bio
       }
 
-      data = {'id': meeting.id(),
+      data = {'id': meeting.key.id(),
               'title': meeting.title, 
               'description': meeting.description,
               'start': meeting.start,
@@ -698,12 +698,12 @@ class TwitterAuthorized(webapp2.RequestHandler):
     if not user: 
       user = UserModel()
       user.key = user_key
-      user.photo_url = me.profile_image_url.replace('_normal','_bigger')
-      user.photo_thumbnail_url = me.profile_image_url
+      user.photoUrl = me.profile_image_url.replace('_normal','_bigger')
+      user.photoThumbnailUrl = me.profile_image_url
       user.name = me.name
       user.screen_name = me.screen_name
       user.location = me.location
-      user.description = me.description
+      user.bio = me.description
       user.put()
 
 class LoginHandler(webapp2.RequestHandler):
