@@ -12,7 +12,7 @@ var SubscribeButton = React.createClass({
   propTypes: {
     meetingId: React.PropTypes.number.isRequired,
     isHost: React.PropTypes.bool.isRequired,
-    isParticipant: React.PropTypes.bool.isRequired
+    isAttendee: React.PropTypes.bool.isRequired
   },
 
   handleClick: function() {
@@ -28,8 +28,8 @@ var SubscribeButton = React.createClass({
   },
 
   render: function() {
-    var {isHost, isParticipant, ...otherProps} = this.props;
-    var isSubscribed = isHost || isParticipant;
+    var {isHost, isAttendee, ...otherProps} = this.props;
+    var isSubscribed = isHost || isAttendee;
 
     return (
       <IconButton

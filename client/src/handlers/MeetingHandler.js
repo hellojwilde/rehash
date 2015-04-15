@@ -24,7 +24,7 @@ var MeetingHandler = React.createClass({
         connectToStores={['meeting', 'currentUser']}
         stateGetter={([meetingStore, currentUserStore]) => ({
           meeting: meetingStore.getById(meetingId),
-          isParticipant: currentUserStore.isParticipant(meetingId),
+          isAttendee: currentUserStore.isAttendee(meetingId),
           isHost: currentUserStore.isHost(meetingId)
         })}
         render={(state) => (

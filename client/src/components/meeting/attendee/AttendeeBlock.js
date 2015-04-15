@@ -10,11 +10,11 @@ var AttendeeBlock = React.createClass({
   propTypes: {
     meeting: meetingPropType.isRequired,
     isHost: React.PropTypes.bool.isRequired,
-    isParticipant: React.PropTypes.bool.isRequired
+    isAttendee: React.PropTypes.bool.isRequired
   },
 
   render: function() {
-    var {meeting, isHost, isParticipant} = this.props;
+    var {meeting, isHost, isAttendee} = this.props;
     var attendees = [meeting.host].concat(meeting.attendees);
 
     return (
@@ -26,7 +26,7 @@ var AttendeeBlock = React.createClass({
         <SubscribeButton
           meetingId={meeting.id}
           isHost={isHost}
-          isParticipant={isParticipant}
+          isAttendee={isAttendee}
         />
       </div>
     );

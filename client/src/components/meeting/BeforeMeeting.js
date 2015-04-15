@@ -12,7 +12,7 @@ var BeforeMeeting = React.createClass({
 
   propTypes: {
     isHost: React.PropTypes.bool.isRequired,
-    isParticipant: React.PropTypes.bool.isRequired,
+    isAttendee: React.PropTypes.bool.isRequired,
     meeting: meetingPropType.isRequired
   },
 

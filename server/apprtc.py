@@ -211,12 +211,24 @@ def make_offer_constraints():
   constraints = { 'mandatory': {}, 'optional': [] }
   return constraints
 
-def append_url_arguments(request, link):
-  for argument in request.arguments():
-    if argument != 'r':
-      link += ('&' + cgi.escape(argument, True) + '=' +
-                cgi.escape(request.get(argument), True))
-  return link
+
+def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
+  session = get_current_session()
+  initial_store_data = {}
+
+  # Insert user information here
+  # Insert webrtc configuration information
+
+  initial_store_data.update(extra_initial_store_data)
+
+  template = jinja_environment.get_template('index.html')
+  template_values = {
+    'is_usingwebpack': self.request.get('usewebpack') == 'true',
+    'initial_store_data': json.dumps(initial_store_data)
+  }
+  
+  self.response.out.write(template.render(template_values))
+
 
 # This database is to store the messages from the sender client when the
 # receiver client is not ready to receive the messages.
@@ -370,18 +382,19 @@ class MessagePage(webapp2.RequestHandler):
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write(template.render(template_values))
+    fetch_initial_store_data_and_render(self)
 
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
+<<<<<<< HEAD
     page = 'index.html'
     template_values = {}
     template = jinja_environment.get_template(page)
     self.response.out.write(template.render(template_values))
+=======
+    fetch_initial_store_data_and_render(self)
+>>>>>>> 6861c02527a30605cf925b9ea667e139f8803717
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
@@ -506,7 +519,6 @@ class MeetingModel(ndb.Model):
   description = ndb.StringProperty()
   start = ndb.StringProperty()
   host = ndb.StringProperty()
-  highlights = ndb.JsonProperty()
   attendees = ndb.StringProperty(repeated=True)
   isBroadcasting = ndb.BooleanProperty()
 
@@ -619,7 +631,6 @@ class APIHandler(webapp2.RequestHandler):
               'description': meeting.description,
               'start': meeting.start,
               'host': host,
-              'highlights': meeting.highlights,
               'attendees': attendees
       }
       return data
@@ -661,6 +672,7 @@ class APIHandler(webapp2.RequestHandler):
     response.out.write(json.dumps(data))
     self.add_log('meetingcreate', data)  
 
+
   @classmethod
   def meetingcreate(self, request, response):
     # create a new meeting, ensuring that meetingId has not been used
@@ -675,7 +687,6 @@ class APIHandler(webapp2.RequestHandler):
     meeting.title = request.get('title')
     meeting.description = request.get('description')
     meeting.start = request.get('start')
-    meeting.highlights = copy.deepcopy(request.get('highlights'))
     meeting.topics = copy.deepcopy(request.get('topics'))
     meeting.put()
     data = {'id': meetingId}
@@ -809,7 +820,7 @@ class LoginHandler(webapp2.RequestHandler):
         logging.info('Error! Failed to get request token. ')
         self.redirect('/meeting/0')
 
-    # self.redirect(session['redirect'])
+    self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):

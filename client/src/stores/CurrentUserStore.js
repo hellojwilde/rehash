@@ -5,7 +5,11 @@ var _ = require('lodash');
 class CurrentUserStore extends Store {
   static deserialize(json) {
     return json;
-  } 
+  }
+
+  static serialize(state) {
+    return state;
+  }
 
   constructor(registry) {
     super();
@@ -17,7 +21,7 @@ class CurrentUserStore extends Store {
 
     this.state = {
       user: null,
-      participating: {},
+      attending: {},
       hosting: {}
     };
   }
@@ -26,8 +30,8 @@ class CurrentUserStore extends Store {
     return this.state.user;
   }
 
-  isParticipant(meetingId) {
-    return _.has(this.state.participating, meetingId);
+  isAttendee(meetingId) {
+    return _.has(this.state.attending, meetingId);
   }
 
   isHost(meetingId) {
@@ -36,13 +40,13 @@ class CurrentUserStore extends Store {
 
   handleMeetingJoin(meetingId) {
     this.setState({
-      participating: _.assign(this.state.participating, {meetingId: true})
+      attending: _.assign(this.state.attending, {meetingId: true})
     });
   }
 
   handleMeetingCreate(meetingId) {
     this.setState({
-      participating: _.assign(this.state.participating, {meetingId: true}),
+      attending: _.assign(this.state.attending, {meetingId: true}),
       hosting: _.assign(this.state.hosting, {meetingId: true})
     });
   }
