@@ -13,6 +13,6 @@ OAUTH_CONFIG = {
     'callback_url': 'http://localhost:3000/twitterauthorized',
   },
   'internal': {
-    'logout_redirect_url': '/meeting/0',
+    'logout_redirect_url': '/',
   }
 }

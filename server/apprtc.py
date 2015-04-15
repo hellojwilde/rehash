@@ -59,7 +59,7 @@ def sanitize(key):
 def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
-def create_channel(room, user, duration_minutes):
+def create_channel(user, duration_minutes):
   client_id = make_client_id(room, user)
   return channel.create_channel(client_id, duration_minutes)
 
@@ -143,9 +143,36 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
   initial_store_data = {}
 
-  # Insert user information here
+  # token_timeout for channel creation, default 30min, max 1 days, min 3min.
+  token_timeout = self.request.get_range(
+    'tt',
+    min_value = 3,
+    max_value = 1440,
+    default = 30
+  )
 
-  initial_store_data.update({'webRTCStore': get_webrtc_config(self)})
+  user = None
+  user_id = None
+
+  if session.get('id'):
+    user = ndb.Key(UserModel, session['id']).get().to_dict()
+    user_id = session['id']
+  elif session.get('anonymous_user_id'):
+    user_id = session['anonymous_user_id']
+  else:
+    user_id = session['anonymous_user_id'] = generate_random(8)
+    
+  initial_store_data.update({
+    'webRTC': get_webrtc_config(self),
+    'currentUser': {
+      'user': user,
+      'id': session.get('id'),
+      'attending': [],
+      'hosting': [],
+      'channelToken': channel.create_channel(user_id, token_timeout)
+    }
+  })
+
   initial_store_data.update(extra_initial_store_data)
 
   template = jinja_environment.get_template('index.html')
@@ -380,12 +407,13 @@ class LogModel(ndb.Model):
   data = ndb.JsonProperty()
 
 class UserModel(ndb.Model):
-  #id = ndb.IntegerProperty()
-  photoUrl = ndb.StringProperty()
-  photoThumbnailUrl = ndb.StringProperty()
+  id = ndb.StringProperty()
+  photo_url = ndb.StringProperty()
+  photo_thumbnail_url = ndb.StringProperty()
   name = ndb.StringProperty()
-  affiliation = ndb.StringProperty()
-  bio = ndb.StringProperty()
+  screen_name = ndb.StringProperty()
+  location = ndb.StringProperty()
+  description = ndb.StringProperty()
   attend = ndb.IntegerProperty(repeated=True)
   host = ndb.IntegerProperty(repeated=True)
 
@@ -635,15 +663,13 @@ class TwitterAuthorized(webapp2.RequestHandler):
   def get(self):
     ### also need to handle the case where request token is no longer valid
     session = get_current_session()
-    auth = tweepy.OAuthHandler(OAUTH_CONFIG['tw']['consumer_key'], OAUTH_CONFIG['tw']['consumer_secret'])
+    auth = tweepy.OAuthHandler(
+      OAUTH_CONFIG['tw']['consumer_key'], 
+      OAUTH_CONFIG['tw']['consumer_secret']
+    )
     auth.request_token = session['twitter_request_token']
     verifier = self.request.GET.get('oauth_verifier')
-    ### for testing purposes
-    print(OAUTH_CONFIG['tw']['consumer_key'])
-    print(OAUTH_CONFIG['tw']['consumer_secret'])
-    print(auth.request_token)
-    print(verifier)
-    print(session['redirect'])
+
     ### request access token 
     try:
       auth.get_access_token(verifier)
@@ -651,23 +677,33 @@ class TwitterAuthorized(webapp2.RequestHandler):
     except tweepy.TweepError:
       print 'Error! Failed to get access token.'
       self.redirect('/user/login?redirect=' + session['redirect'])
+      return
+
     ### save tokens to session
     session['access_token'] = auth.access_token
     session['access_token_secret'] = auth.access_token_secret
     session['auth'] = auth
     self.redirect(session['redirect'])
+
     ### add user to data base if not exist already 
     api = tweepy.API(auth)
     me = api.me()
     me_id_str = me.id_str
+
     ### save user id to session for meetingjoin etc
     session['id'] = me_id_str
-    user = UserModel.get_by_id(me_id_str)
+    user_key = ndb.Key(UserModel, me_id_str)
+    user = user_key.get()
+
     if not user: 
-      user = UserModel(id = me_id_str)
-      user.photoUrl = me.profile_image_url.replace('_normal','_bigger')
-      user.photoThumbnailUrl = me.profile_image_url
+      user = UserModel()
+      user.key = user_key
+      user.photo_url = me.profile_image_url.replace('_normal','_bigger')
+      user.photo_thumbnail_url = me.profile_image_url
       user.name = me.name
+      user.screen_name = me.screen_name
+      user.location = me.location
+      user.description = me.description
       user.put()
 
 class LoginHandler(webapp2.RequestHandler):
@@ -680,23 +716,23 @@ class LoginHandler(webapp2.RequestHandler):
     if ':' in session['redirect']:
       self.redirect('/WillBeHandledByRouteErrorHandler')
 
-    auth = tweepy.OAuthHandler(
-      OAUTH_CONFIG['tw']['consumer_key'], 
-      OAUTH_CONFIG['tw']['consumer_secret'], 
-      OAUTH_CONFIG['tw']['callback_url']
-    )
-
     if session.get('auth') == None:
       ### get request token and save in session
+      auth = tweepy.OAuthHandler(
+        OAUTH_CONFIG['tw']['consumer_key'], 
+        OAUTH_CONFIG['tw']['consumer_secret'], 
+        OAUTH_CONFIG['tw']['callback_url']
+      )
+
       try: 
         redirect_url = str(auth.get_authorization_url())
         session['twitter_request_token'] = auth.request_token
         self.redirect(redirect_url)
       except tweepy.TweepError:
         logging.info('Error! Failed to get request token. ')
-        self.redirect('/meeting/0')
-
-    self.redirect(session['redirect'])
+        self.redirect('/')
+    else:
+      self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
