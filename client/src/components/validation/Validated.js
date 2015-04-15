@@ -1,40 +1,8 @@
 var React = require('react');
 var {ResultTypes, ResultTypePrecedence} = require('./ValidationConstants');
 
-function mapObject(obj, fn) {
-  var newObj = {};
-  for (var k in obj) {
-    if (obj.hasOwnProperty(k)) {
-      newObj[k] = fn(obj[k], k);
-    }
-  }
-  return newObj;
-}
-
-function getResultForRules(value, rules) {
-  if (!rules) {
-    rules = [];
-  }
-
-  if (!Array.isArray(rules)) {
-    rules = [rules];
-  }
-
-  return rules.reduce(function(overallResult, rule) {
-    var result = rule(value);
-    var {type, details} = overallResult;
-
-    if (ResultTypePrecedence[result.type] > ResultTypePrecedence[type]) {
-      type = result.type;
-    }
-
-    if (result.detail !== null) {
-      details.push(result.detail);
-    }
-
-    return {type, details};
-  }, {type: ResultTypes.VALID, details: []});
-}
+var _ = require('lodash');
+var getResultForRules = require('./getResultForRules');
 
 var Validated = React.createClass({
 
@@ -53,7 +21,7 @@ var Validated = React.createClass({
   },
 
   componentWillMount: function() {
-    this.results = mapObject(this.props.values, () => ({
+    this.results = _.map(this.props.values, () => ({
       type: ResultTypes.NOT_YET_VALIDATED, 
       detail: null
     }));
@@ -63,7 +31,7 @@ var Validated = React.createClass({
 
   componentWillReceiveProps: function(nextProps) {
     var areResultsChanged = false;
-    var results = mapObject(nextProps.values, (nextValue, key) => {
+    var results = _.map(nextProps.values, (nextValue, key) => {
       var value = this.props.values[key];
 
       if (nextValue !== value) {
@@ -81,9 +49,7 @@ var Validated = React.createClass({
   },
 
   render: function() {
-    return (
-      <div {...this.props} />
-    );
+    return <div {...this.props} />;
   }
 
 });
