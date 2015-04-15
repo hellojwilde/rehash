@@ -387,14 +387,14 @@ class MainPage(webapp2.RequestHandler):
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-<<<<<<< HEAD
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write(template.render(template_values))
-=======
+# <<<<<<< HEAD
+#     page = 'index.html'
+#     template_values = {}
+#     template = jinja_environment.get_template(page)
+#     self.response.out.write(template.render(template_values))
+# =======
     fetch_initial_store_data_and_render(self)
->>>>>>> 6861c02527a30605cf925b9ea667e139f8803717
+# >>>>>>> 6861c02527a30605cf925b9ea667e139f8803717
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
