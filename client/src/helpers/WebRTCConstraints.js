@@ -1,3 +1,10 @@
+const SDP_CONSTRAINTS = {
+  'mandatory': {
+    'OfferToReceiveAudio': true,
+    'OfferToReceiveVideo': true
+  }
+};
+
 function getIceCandidateType(candidateSDP) {
   if (candidateSDP.indexOf("typ relay ") >= 0)
     return "TURN";
@@ -128,6 +135,7 @@ function getMergedConstraints(cons1, cons2) {
 }
 
 module.exports = {
+  SDP_CONSTRAINTS,
   getIceCandidateType,
   getDefaultCodec,
   getSdp,

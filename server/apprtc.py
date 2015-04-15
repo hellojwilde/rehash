@@ -31,6 +31,7 @@ from google.appengine.api import channel
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from gaesessions import get_current_session
+from webrtc_config import get_webrtc_config
 
 ### Environment stores configuration and global objects, 
 ### used to load templates from the filesystem
@@ -57,33 +58,6 @@ def sanitize(key):
 ### key().id_or_name() returns the string/number of name/id
 def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
-
-def get_default_stun_server(user_agent):
-  default_stun_server = 'stun.l.google.com:19302'
-  if 'Firefox' in user_agent:
-    default_stun_server = 'stun.services.mozilla.com'
-  return default_stun_server
-
-def get_preferred_audio_receive_codec():
-  return 'opus/48000'
-
-def get_preferred_audio_send_codec(user_agent):
-  # Empty string means no preference.
-  preferred_audio_send_codec = ''
-  # Prefer to send ISAC on Chrome for Android.
-  if 'Android' in user_agent and 'Chrome' in user_agent:
-    preferred_audio_send_codec = 'ISAC/16000'
-  return preferred_audio_send_codec
-
-def make_pc_config(stun_server, turn_server, ts_pwd):
-  servers = []
-  if turn_server:
-    turn_config = 'turn:{}'.format(turn_server)
-    servers.append({'urls':turn_config, 'credential':ts_pwd})
-  if stun_server:
-    stun_config = 'stun:{}'.format(stun_server)
-  servers.append({'urls':stun_config})
-  return {'iceServers':servers}
 
 def create_channel(room, user, duration_minutes):
   client_id = make_client_id(room, user)
@@ -165,60 +139,13 @@ def on_message(room, user, message):
     new_message.put()
     logging.info('Saved message for user ' + user)
 
-def make_media_track_constraints(constraints_string):
-  if not constraints_string or constraints_string.lower() == 'true':
-    track_constraints = True
-  elif constraints_string.lower() == 'false':
-    track_constraints = False
-  else:
-    track_constraints = {'mandatory': {}, 'optional': []}
-    for constraint_string in constraints_string.split(','):
-      constraint = constraint_string.split('=')
-      if len(constraint) != 2:
-        logging.error('Ignoring malformed constraint: ' + constraint_string)
-        continue
-      if constraint[0].startswith('goog'):
-        track_constraints['optional'].append({constraint[0]: constraint[1]})
-      else:
-        track_constraints['mandatory'][constraint[0]] = constraint[1]
-
-  return track_constraints
-
-def make_media_stream_constraints(audio, video):
-  stream_constraints = (
-      {'audio': make_media_track_constraints(audio),
-       'video': make_media_track_constraints(video)})
-  logging.info('Applying media constraints: ' + str(stream_constraints))
-  return stream_constraints
-
-def maybe_add_constraint(constraints, param, constraint):
-  if (param.lower() == 'true'):
-    constraints['optional'].append({constraint: True})
-  elif (param.lower() == 'false'):
-    constraints['optional'].append({constraint: False})
-
-  return constraints
-
-def make_pc_constraints(dtls, dscp, ipv6):
-  constraints = { 'optional': [] }
-  maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
-  maybe_add_constraint(constraints, dscp, 'googDscp')
-  maybe_add_constraint(constraints, ipv6, 'googIPv6')
-
-  return constraints
-
-def make_offer_constraints():
-  constraints = { 'mandatory': {}, 'optional': [] }
-  return constraints
-
-
 def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
   initial_store_data = {}
 
   # Insert user information here
-  # Insert webrtc configuration information
 
+  initial_store_data.update({'webRTCStore': get_webrtc_config(self)})
   initial_store_data.update(extra_initial_store_data)
 
   template = jinja_environment.get_template('index.html')
@@ -387,55 +314,15 @@ class MainPage(webapp2.RequestHandler):
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-# <<<<<<< HEAD
 #     page = 'index.html'
 #     template_values = {}
 #     template = jinja_environment.get_template(page)
 #     self.response.out.write(template.render(template_values))
-# =======
     fetch_initial_store_data_and_render(self)
-# >>>>>>> 6861c02527a30605cf925b9ea667e139f8803717
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
   def get(self, room_key):
-    ### audio and video bools, currently set to true
-    # audio = self.request.get('audio')
-    # video = self.request.get('video')
-    error_messages = []
-    audio = 'true'
-    video = 'true'
-
-    ### stun server
-    user_agent = self.request.headers['User-Agent']
-    stun_server = self.request.get('ss')
-    if not stun_server:
-      stun_server = get_default_stun_server(user_agent)
-    
-    turn_server = self.request.get('ts')
-    #turn_server = 'true'
-    ts_pwd = self.request.get('tp')
-    ### set audio send and receive codec
-    audio_send_codec = self.request.get('asc')
-    if not audio_send_codec:
-      audio_send_codec = get_preferred_audio_send_codec(user_agent)
-    audio_receive_codec = self.request.get('arc')
-    if not audio_receive_codec:
-      audio_receive_codec = get_preferred_audio_receive_codec()
-    stereo = 'false'
-    if self.request.get('stereo'):
-      stereo = self.request.get('stereo')
-
-    # Options for making pcConstraints
-    dtls = self.request.get('dtls')
-    dscp = self.request.get('dscp')
-    ipv6 = self.request.get('ipv6')
-
-    debug = self.request.get('debug')
-    if debug == 'loopback':
-      # Set dtls to false as DTLS does not work for loopback.
-      dtls = 'false'
-
     # token_timeout for channel creation, default 30min, max 1 days, min 3min.
     token_timeout = self.request.get_range('tt',
                                            min_value = 3,
@@ -470,24 +357,13 @@ class RequestBroadcastData(webapp2.RequestHandler):
       turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
 
     token = create_channel(room, user, token_timeout)
-    pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-    offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video)
 
-    data = {'token': token,
-             'me': user,
-             'room_key': room_key,
-             'initiator': initiator,
-             'pc_config': pc_config,
-             'pc_constraints': pc_constraints,
-             'offer_constraints': offer_constraints,
-             'media_constraints': media_constraints,
-             'turn_url': turn_url,
-             'stereo': stereo,
-             'audio_send_codec': audio_send_codec,
-             'audio_receive_codec': audio_receive_codec
-            }
+    data = {
+      'token': token,
+      'me': user,
+      'room_key': room_key,
+      'initiator': initiator
+    }
     logging.info('correctly established!')
     self.response.out.write(json.dumps(data))
 
@@ -706,7 +582,7 @@ class APIHandler(webapp2.RequestHandler):
       meeting.attendees.append(session['id'])
       meeting.put()
       response.out.write(request.get('meetingId'))
-      data = {'meetingId': request.get('meetingId')
+      data = {'meetingId': request.get('meetingId'),
               'userId': request.get(session['id'])
       }
       self.add_log('meetingjoin', data)
