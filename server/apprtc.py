@@ -211,12 +211,20 @@ def make_offer_constraints():
   constraints = { 'mandatory': {}, 'optional': [] }
   return constraints
 
-def append_url_arguments(request, link):
-  for argument in request.arguments():
-    if argument != 'r':
-      link += ('&' + cgi.escape(argument, True) + '=' +
-                cgi.escape(request.get(argument), True))
-  return link
+
+def render_page_with_initial_store_data(self, extra_initial_store_data={}):
+  session = get_current_session()
+  initial_store_data = {}
+
+  # Insert user information here
+  # Insert webrtc configuration information
+
+  initial_store_data.update(extra_initial_store_data)
+
+  template_values = {'initial_store_data': json.dumps(initial_store_data)}
+  template = jinja_environment.get_template('index.html')
+  self.response.out.write(template.render(template_values))
+
 
 # This database is to store the messages from the sender client when the
 # receiver client is not ready to receive the messages.
@@ -375,31 +383,12 @@ class MessagePage(webapp2.RequestHandler):
 ### are they inherent staff of webrtc?
 class MainPage(webapp2.RequestHandler):
   def get(self):
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write(template.render(template_values))
+    render_page_with_initial_store_data(self)
 
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-    # session = get_current_session()
-    # if session.get('userId') == None:
-    #   logging.info('client has not login yet')
-    #   # logging.info(session['sid'])
-    #   session['userId'] = 'User Id here'
-    # else: 
-    #   logging.info(session['userId'])
-    page = 'index.html'
-    template_values = {}
-    template = jinja_environment.get_template(page)
-    self.response.out.write(template.render(template_values))
-    # page = 'index.html'
-    # template_values = {}
-    # loader = jinja2.FileSystemLoader('../client')
-    # environment = jinja2.Environment(loader=loader)
-    # template = environment.get_template(page)
-    # self.response.out.write(template.render(template_values))
+    render_page_with_initial_store_data(self)
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
@@ -863,7 +852,7 @@ class LoginHandler(webapp2.RequestHandler):
         logging.info('Error! Failed to get request token. ')
         self.redirect('/meeting/0')
 
-    # self.redirect(session['redirect'])
+    self.redirect(session['redirect'])
 
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
