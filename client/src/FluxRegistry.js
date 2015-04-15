@@ -1,4 +1,5 @@
 var AgendaActions = require('actions/AgendaActions');
+var ChannelAPI = require('apis/ChannelAPI');
 var CurrentUserStore = require('stores/CurrentUserStore');
 var ExampleAPI = require('apis/ExampleAPI');
 var ExploreActions = require('actions/ExploreActions');
@@ -28,6 +29,8 @@ class FluxRegistry extends Flummox {
     this.createStore('modal', ModalStore, this);
     this.createStore('user', UserStore, this);
     this.createStore('webRTC', WebRTCStore, this);
+
+    new ChannelAPI(this);
   }
 }
 

@@ -20,6 +20,7 @@ class CurrentUserStore extends Store {
     this.register(meetingActionIds.create, this.handleMeetingCreate);
 
     this.state = {
+      channelToken: null,
       user: null,
       attending: {},
       hosting: {}

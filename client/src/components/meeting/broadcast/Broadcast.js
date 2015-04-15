@@ -523,9 +523,10 @@ var Broadcast = React.createClass({
 
 // exports for ChannelAPI only
 module.exports = {
-  Broadcast.onChannelMessage,
-  Broadcast.onChannelOpened
-}
+  Broadcast_onChannelMessage: Broadcast.onChannelMessage,
+  Broadcast_onChannelOpened: Broadcast.onChannelOpened,
+  Broadcast: Broadcast
+};
 
 
 
