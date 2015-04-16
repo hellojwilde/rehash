@@ -5,6 +5,9 @@ var React = require('react');
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
 var joinClasses = require('react/lib/joinClasses');
 
+const CREATE_LOGIN_MESSSAGE = 
+  'In order to create a new meeting, we\'ll need you to log in.';
+
 var CreateButton = React.createClass({
 
   contextTypes: {
@@ -12,12 +15,10 @@ var CreateButton = React.createClass({
   },
 
   handleClick: function() {
-    ensureCurrentUser(
-      this.context.flux, 
-      'In order to create a new meeting, we\'ll need you to log in.'
-    );
-
-    // TODO: In the logged in case, make it work.
+    var modalActions = this.context.flux.getActions('modal');
+    
+    ensureCurrentUser(this.context.flux, CREATE_LOGIN_MESSSAGE)
+      .then(() => modalActions.push(CreateModal, {}));
   },
 
   render: function() {
