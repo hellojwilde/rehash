@@ -20,7 +20,7 @@ var MeetingHandler = React.createClass({
     var {meetingKey} = this.context.router.getCurrentParams();
 
     return (
-      <FluxComponent 
+      <FluxComponent
         connectToStores={['meeting', 'currentUser']}
         stateGetter={([meetingStore, currentUserStore]) => ({
           meeting: meetingStore.getByKey(meetingKey)
