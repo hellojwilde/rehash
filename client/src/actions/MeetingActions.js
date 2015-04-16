@@ -11,11 +11,11 @@ class MeetingActions extends Actions {
   }
 
   fetch(meetingKey) {
-    var meetingStore = this.registry.getStore('meeting');
-    var meeting = meetingStore.getByKey(meetingKey);
-    if (meeting) {
-      return Promise.resolve(meeting);
-    }
+    // var meetingStore = this.registry.getStore('meeting');
+    // var meeting = meetingStore.getByKey(meetingKey);
+    // if (meeting) {
+    //   return Promise.resolve(meeting);
+    // }
 
     return this.api.meetingFetch(meetingKey);
   }

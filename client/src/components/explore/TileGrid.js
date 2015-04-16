@@ -25,14 +25,14 @@ var TileGrid = React.createClass({
 
   propTypes: {
     meetings: React.PropTypes.arrayOf(meetingPropType),
-    detailMeetingId: React.PropTypes.number,
+    detailMeetingKey: React.PropTypes.string,
     detail: React.PropTypes.element
   },
 
   getDefaultProps: function() {
     return {
       meetings: [],
-      detailMeetingId: null,
+      detailMeetingKey: null,
       detail: null
     };
   },
@@ -57,15 +57,15 @@ var TileGrid = React.createClass({
   },
 
   render: function() {
-    var {meetings, detailMeetingId, detail} = this.props;
+    var {meetings, detailMeetingKey, detail} = this.props;
     var rows = _.chunk(meetings, getColumnsForWindow());
 
     return (
       <div className="TileGrid">
         {rows.map((meetingsForRow, idx) => {
-          var rowContainsDetail = !!_.find(
+          var rowDetailIndex = _.findIndex(
             meetingsForRow, 
-            _.matchesProperty('id', detailMeetingId)
+            _.matchesProperty('key', detailMeetingKey)
           );
 
           return (
@@ -84,11 +84,11 @@ var TileGrid = React.createClass({
                 className="TileGrid-transition"
                 component="div"
                 transitionName="TileGrid-transition">
-                {rowContainsDetail && (
+                {rowDetailIndex !== -1 && (
                   <TileGridDetail 
                     ref={this.handleDetailRef}
                     key="detail" 
-                    column={idx}>
+                    column={rowDetailIndex}>
                     {detail}
                   </TileGridDetail>
                 )}

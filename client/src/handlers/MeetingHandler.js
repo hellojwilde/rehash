@@ -8,7 +8,7 @@ var MeetingHandler = React.createClass({
   statics: {
     ensureDataAvailable: function(state, registry) {
       var {meetingKey} = state.params;
-      return registry.getActions('meeting').fetch(meetingKey)
+      return registry.getActions('meeting').fetch(meetingKey);
     }
   },
 
@@ -17,25 +17,19 @@ var MeetingHandler = React.createClass({
   },
 
   render: function() {
-    console.log('sdfasdfjkhsadfjkahsdf')
-
     var {meetingKey} = this.context.router.getCurrentParams();
 
     return (
       <FluxComponent 
         connectToStores={['meeting', 'currentUser']}
         stateGetter={([meetingStore, currentUserStore]) => ({
-          meeting: meetingStore.getByKey(meetingKey),
-          isAttendee: currentUserStore.isAttendee(meetingKey),
-          isHost: currentUserStore.isHost(meetingKey)
+          meeting: meetingStore.getByKey(meetingKey)
         })}
-        render={(state) => {
-          console.log('dsffd', meetingKey, state)
-          // <DocumentTitle title={`${state.meeting.title} - Rehash`}>
-          return (<DocumentTitle title={`- Rehash`}>
+        render={(state) => (
+          <DocumentTitle title={`${state.meeting.title} - Rehash`}>
             <Meeting {...state} />
-          </DocumentTitle>);
-        }}
+          </DocumentTitle>
+        )}
       />
     );
   }
