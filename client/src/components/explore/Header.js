@@ -30,6 +30,10 @@ var Header = React.createClass({
     };
   },
 
+  isRenderingExplain: function() {
+    return this.props.currentUser === null;
+  },
+
   handleCreateButtonRef: function(button) {
     if (!button) {
       return;
@@ -81,7 +85,7 @@ var Header = React.createClass({
     return (
       <li className="Header-create">
         <CreateButton 
-          style={{top:buttonTop}} 
+          style={this.isRenderingExplain() ? {top:buttonTop} : {}} 
           className="Header-create-button navbar-btn"
         />
       </li>
@@ -132,9 +136,9 @@ var Header = React.createClass({
           </div>
         </nav>
 
-        {(this.props.currentUser === null) 
-          ? <HeaderExplain createButtonRef={this.handleCreateButtonRef}/>
-          : null}
+        {this.isRenderingExplain() && (
+          <HeaderExplain createButtonRef={this.handleCreateButtonRef}/>
+        )}
       </div>
     );
   }
