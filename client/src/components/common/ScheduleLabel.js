@@ -8,7 +8,13 @@ var ScheduleLabel = React.createClass({
 
   propTypes: {
     start: React.PropTypes.object.isRequired,
-    isBroadcasting: React.PropTypes.bool.isRequired
+    isBroadcasting: React.PropTypes.bool
+  },
+
+  getDefaultProps: function() {
+    return {
+      isBroadcasting: false
+    };
   },
 
   render: function() {

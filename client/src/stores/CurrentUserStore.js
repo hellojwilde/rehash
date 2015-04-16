@@ -31,24 +31,24 @@ class CurrentUserStore extends Store {
     return this.state.user;
   }
 
-  isAttendee(meetingId) {
-    return _.has(this.state.attending, meetingId);
+  isAttendee(meetingKey) {
+    return _.has(this.state.attending, meetingKey);
   }
 
-  isHost(meetingId) {
-    return _.has(this.state.hosting, meetingId);
+  isHost(meetingKey) {
+    return _.has(this.state.hosting, meetingKey);
   }
 
-  handleMeetingJoin(meetingId) {
+  handleMeetingJoin(meetingKey) {
     this.setState({
-      attending: _.assign(this.state.attending, {meetingId: true})
+      attending: _.assign(this.state.attending, {meetingKey: true})
     });
   }
 
-  handleMeetingCreate(meetingId) {
+  handleMeetingCreate(meetingKey) {
     this.setState({
-      attending: _.assign(this.state.attending, {meetingId: true}),
-      hosting: _.assign(this.state.hosting, {meetingId: true})
+      attending: _.assign(this.state.attending, {meetingKey: true}),
+      hosting: _.assign(this.state.hosting, {meetingKey: true})
     });
   }
 }

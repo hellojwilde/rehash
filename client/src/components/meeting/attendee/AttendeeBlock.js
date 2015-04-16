@@ -24,7 +24,7 @@ var AttendeeBlock = React.createClass({
           totalNumber={attendees.length}
         />
         <SubscribeButton
-          meetingId={meeting.id}
+          meetingKey={meeting.key}
           isHost={isHost}
           isAttendee={isAttendee}
         />

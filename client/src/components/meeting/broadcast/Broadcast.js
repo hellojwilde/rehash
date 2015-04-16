@@ -47,7 +47,7 @@ var sdpConstraints = {'mandatory': {
 
 var Broadcast = React.createClass({
   propTypes: {
-    meetingId: React.PropTypes.number.isRequired
+    meetingKey: React.PropTypes.number.isRequired
   },
 
   componentDidMount: function() {
@@ -63,7 +63,7 @@ var Broadcast = React.createClass({
     });
 
     var xhr = new XMLHttpRequest();
-    url = `/meeting/${this.props.meetingId}/requestBroadcastData`;
+    url = `/meeting/${this.props.meetingKey}/requestBroadcastData`;
     xhr.open('GET', url, true);
     xhr.onload = () => {
       var data = JSON.parse(xhr.responseText);
@@ -105,83 +105,7 @@ var Broadcast = React.createClass({
       this.doGetUserMedia();
     }
   },
-  openChannel: function() {
-    console.log('Opening channel.');
-    var channel = new goog.appengine.Channel(channelToken);
-    var handler = {
-      'onopen': this.onChannelOpened,
-      'onmessage': this.onChannelMessage,
-      'onerror': this.onChannelError,
-      'onclose': this.onChannelClosed
-    };
-    socket = channel.open(handler);
-  },
-  maybeRequestTurn: function() {
-    // Allow to skip turn by passing ts=false to apprtc.
-    if (turnUrl == '') {
-      turnDone = true;
-      return;
-    }
 
-    for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
-      if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
-        turnDone = true;
-        return;
-      }
-    }
-    console.log("SHOWWWING: " + len);
-    
-    var currentDomain = document.domain;
-    if (currentDomain.search('localhost') === -1 &&
-        currentDomain.search('apprtc') === -1) {
-      // Not authorized domain. Try with default STUN instead.
-      turnDone = true;
-      return;
-    }
-      // check out this part 
-    turnDone = true;
-    return;
-
-    // No TURN server. Get one from computeengineondemand.appspot.com.
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = this.onTurnResult;
-    xmlhttp.open('GET', turnUrl, true);
-    xmlhttp.send();
-  },
-  onTurnResult: function() {
-    if (xmlhttp.readyState !== 4)
-      return;
-
-    if (xmlhttp.status === 200) {
-      var turnServer = JSON.parse(xmlhttp.responseText);
-      // Create turnUris using the polyfill (adapter.js).
-      var iceServers = createIceServers(turnServer.uris,
-                                        turnServer.username,
-                                        turnServer.password);
-      if (iceServers !== null) {
-        pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
-      }
-    } else {
-      this.messageError('No TURN server; unlikely that media will traverse networks.  '
-                   + 'If this persists please report it to '
-                   + 'discuss-webrtc@googlegroups.com.'
-                   + xmlhttp.status);
-    }
-    // If TURN request failed, continue the call with default STUN.
-    turnDone = true;
-    this.maybeStart();
-  },
-  doGetUserMedia: function() {                   
-    try {
-      getUserMedia({audio: true, video: true}, this.onUserMediaSuccess, this.onUserMediaError);
-
-      console.log('Requested access to local media with mediaConstraints:\n' +
-                  '  \'' + JSON.stringify(mediaConstraints) + '\'');
-    } catch (e) {
-      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-      this.messageError('getUserMedia failed with exception: ' + e.message);
-    }
-  },
   createPeerConnection: function() {
     try {
       // Create an RTCPeerConnection via the polyfill (adapter.js).
@@ -199,6 +123,7 @@ var Broadcast = React.createClass({
     pc.onaddstream = this.onRemoteStreamAdded;
     pc.onremovestream = this.onRemoteStreamRemoved;
   },
+
   // function that try to start connections when ready 
   maybeStart: function() {
     // !started &&
@@ -222,6 +147,7 @@ var Broadcast = React.createClass({
         this.calleeStart();
     }
   },
+
   doCall: function() {
     var constraints = this.mergeConstraints(offerConstraints, sdpConstraints);
     console.log('Sending offer to peer, with constraints: \n' +
@@ -268,16 +194,6 @@ var Broadcast = React.createClass({
         this.transitionToActive();
       }
     }
-  },
-  sendMessage: function(message) {
-    var msgString = JSON.stringify(message);
-    console.log('C->S: ' + msgString);
-    // NOTE: AppRTCClient.java searches & parses this line; update there when
-    // changing here.
-    var path = '/message?r=' + roomKey + '&u=' + me;
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', path, true);
-    xhr.send(msgString);
   },
   processSignalingMessage: function(message) {
     if (!started) {
@@ -461,26 +377,6 @@ var Broadcast = React.createClass({
     // localVideo.style.opacity = 0;
     // remoteVideo.style.opacity = 0;
     video.style.opacity = 0;
-  },
-  enterFullScreen: function () {
-    //container.webkitRequestFullScreen();
-  },
-
-  maybePreferAudioSendCodec: function(sdp) {
-    if (audio_send_codec == '') {
-      console.log('No preference on audio send codec.');
-      return sdp;
-    }
-    console.log('Prefer audio send codec: ' + audio_send_codec);
-    return getPreferredAudioCodec(sdp, audio_send_codec);
-  },
-  maybePreferAudioReceiveCodec: function(sdp) {
-    if (audio_receive_codec == '') {
-      console.log('No preference on audio receive codec.');
-      return sdp;
-    }
-    console.log('Prefer audio receive codec: ' + audio_receive_codec);
-    return getPreferredAudioCodec(sdp, audio_receive_codec);
   },
 
   handleStartClick: function() {

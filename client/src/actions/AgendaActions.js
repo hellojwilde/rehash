@@ -8,8 +8,8 @@ class AgendaActions extends Actions {
     this.api = api;
   }
 
-  fetch(meetingId) {
-    return this.api.agendaFetch(meetingId);
+  fetch(meetingKey) {
+    return this.api.agendaFetch(meetingKey);
   }
 }
 

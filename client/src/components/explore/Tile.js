@@ -8,7 +8,7 @@ require('./Tile.css');
 var Tile = React.createClass({
 
   propTypes: {
-    id: React.PropTypes.number.isRequired,
+    meetingKey: React.PropTypes.string.isRequired,
     title: React.PropTypes.string.isRequired,
     start: React.PropTypes.object.isRequired,
     isBroadcasting: React.PropTypes.bool,
@@ -26,7 +26,7 @@ var Tile = React.createClass({
 
   render: function() {
     var {
-      id, 
+      meetingKey, 
       title, 
       description, 
       start, 
@@ -35,7 +35,7 @@ var Tile = React.createClass({
     } = this.props;
 
     return (
-      <LinkNoClobber to="explore_meeting" params={{meetingId: id}}>
+      <LinkNoClobber to="explore_meeting" params={{meetingKey: meetingKey}}>
         <div 
           className='Tile' 
           style={{backgroundImage: `url(${backgroundImageUrl})`}}>

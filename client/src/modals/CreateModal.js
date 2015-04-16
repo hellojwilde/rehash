@@ -70,11 +70,13 @@ var CreateModal = React.createClass({
     var {title, description, startDate, startTime} = this.state;
     var meetingActions = this.context.flux.getActions('meeting');
 
+    // TODO: Better error messaging when this fails.
+
     meetingActions.create({
       title: title,
       description: description,
       start: getCompoundDateTime(startDate, startTime)
-    }).then((meetingId) => this.props.onComplete(meetingId));
+    }).then((result) => this.props.onComplete(result));
   },
 
   handleStartDateChange: function(startDate) {

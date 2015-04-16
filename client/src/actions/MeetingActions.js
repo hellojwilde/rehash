@@ -10,27 +10,24 @@ class MeetingActions extends Actions {
     this.api = api;
   }
 
-  fetch(meetingId) {
+  fetch(meetingKey) {
     var meetingStore = this.registry.getStore('meeting');
-    var meeting = meetingStore.getById(meetingId);
+    var meeting = meetingStore.getByKey(meetingKey);
     if (meeting) {
       return Promise.resolve(meeting);
     }
 
-    return this.api.meetingFetch(meetingId);
+    return this.api.meetingFetch(meetingKey);
   }
 
-  join(meetingId) {
-    return this.api.meetingJoin(meetingId);
+  join(meetingKey) {
+    return this.api.meetingJoin(meetingKey);
   }
 
   create(meeting) {
     var currentUserStore = this.registry.getStore('currentUser');
 
-    return this.api.meetingCreate(_.assign(
-      meeting,
-      {host: currentUserStore.getCurrentUser()}
-    ));
+    return this.api.meetingCreate(meeting);
   }
 }
 

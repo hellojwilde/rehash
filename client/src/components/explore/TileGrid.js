@@ -58,7 +58,7 @@ var TileGrid = React.createClass({
 
   render: function() {
     var {meetings, detailMeetingId, detail} = this.props;
-    var rows = _.chunk(meetings, getColumnsForWindow);
+    var rows = _.chunk(meetings, getColumnsForWindow());
 
     return (
       <div className="TileGrid">
@@ -72,11 +72,11 @@ var TileGrid = React.createClass({
             <div className="TileGrid-row" key={idx}>
               <div className="container">
                 <div className="row">
-                  <div className="col-md-4 col-sm-6">
-                    {meetingsForRow.map((meeting, idx) => (
-                      <Tile key={idx} {...meeting} />
-                    ))}
-                  </div>
+                  {meetingsForRow.map((meeting, idx) => (
+                    <div key={idx} className="col-md-4 col-sm-6">
+                      <Tile {...meeting} meetingKey={meeting.key} />
+                    </div>
+                  ))}
                 </div>
               </div>
 

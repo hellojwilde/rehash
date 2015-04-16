@@ -10,11 +10,11 @@ class WebRTCActions extends Actions {
     this.api = api;
   }
 
-  connectAsHost(meetingId) {
+  connectAsHost(meetingKey) {
 
   }
 
-  connectAsAttendee(meetingId) {
+  connectAsAttendee(meetingKey) {
 
   }
 

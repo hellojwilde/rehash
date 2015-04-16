@@ -69,7 +69,7 @@ var MEETINGS = {
 
 var AGENDAS = {
   0: {
-    meetingId: 0,
+    meetingKey: 0,
     topics: [
       {
         id: 0,
@@ -148,14 +148,16 @@ var ExampleAPI = {
    * @return {Promise} Resolves to an array of meeting objects.
    */
   exploreFetch: function() {
-    // TODO: Make request against remote endpoint.
     var reqData = {
       format: 'json',
       request: 'exploreFetch'
     };
 
-    return sendAjaxRequest(reqData);
-    // return Promise.resolve(_.values(MEETINGS));
+    return sendAjaxRequest(reqData)
+      .then((result) => result.map((meeting) => {
+        meeting.start = moment.utc(meeting.start);
+        return meeting;
+      }));
   },
 
   /**
@@ -163,25 +165,20 @@ var ExampleAPI = {
    * we won't have the meeting already cached from the explore page.
    * This fetches a single specific meeting to display in the app.
    * 
-   * @param  {number} meetingId The id of the meeting to fetch.
-   * @return {Promise}          Resolves to a meeting object.
+   * @param  {number} meetingKey The id of the meeting to fetch.
+   * @return {Promise}           Resolves to a meeting object.
    */
-  meetingFetch: function(meetingId) {
+  meetingFetch: function(meetingKey) {
     var reqData = {
       format: 'json',
-      meetingId: meetingId, 
+      key: meetingKey, 
       request: 'meetingFetch'
     };
     
     return sendAjaxRequest(reqData)
-      .then((result) => {
-        // TODO: make sure we're including a real result id here.
-        // convert datetime string to moment
-
-        // double check
-        result.start = moment(result.start);
-        result.id = Number(result.id);
-        return result;
+      .then((meeting) => {
+        meeting.start = moment.utc(meeting.start);
+        return meeting;
       });
 
   },
@@ -206,19 +203,18 @@ var ExampleAPI = {
    * ...we can have the server pull the user ID from that session information.
    * There's no need to provide a user ID here.
    * 
-   * @param  {number} meetingId The id of the meeting to mark the current user 
+   * @param  {number} meetingKey The id of the meeting to mark the current user 
    *                            as joined to.
    * @return {Promise}          Resolves to sort of message indicating that the
    *                            join attempt didn't entirely fail.
    */
   // Need to make sure the user has signed in before this is called
-  meetingJoin: function(meetingId) {
-    var reqData = {
+  meetingJoin: function(meetingKey) {
+    return sendAjaxRequest({
       format: 'json',
-      meetingId: meetingId, 
+      meetingKey: meetingKey, 
       request: 'meetingjoin'
-    };
-    return sendAjaxRequest(reqData);
+    });
   },
 
   /**
@@ -231,34 +227,22 @@ var ExampleAPI = {
    * the user that created the meeting.
    * 
    * @param  {object} meeting  A meeting object without an id.
-   * @return {Promise}         Resolves to the id that the meeting was saved as.
+   * @return {Promise}         Resolves to an object of shape {key: KEY} 
+   *                           that the meeting was saved as.
    */
   meetingCreate: function(meeting) {
     // for datetime structure, think about saving on gae as string
     // dates are all saved as strings
-    var mReqData = {
+    return sendAjaxRequest({
       format: 'json',
-      request: 'meetingcreate',
+      request: 'meetingCreate',
       title: meeting.title, 
       description: meeting.description,
-      start: meeting.start.format('YYYY-MM-DD HH:mm:ss Z'), 
-      highlights: [],
+      start: moment.utc(meeting.start).toISOString(), 
       // note here the attendees shall be a list of numerical user ids to maintain atomicity 
-      attendees: []
-    };
-
-    var aReqData = {
-      format: 'json',
-      request: 'agendacreate',
-      meetingId: meetingId,
+      attendees: [],
       topics: []
-    };
-    return sendAjaxRequest(mReqData)
-      .then((result) => {
-        var meetingId = Number(result.id);
-        return sendAjaxRequest(aReqData)
-          .then(() => meetingId)
-      });
+    });
   },
 
 
@@ -268,47 +252,47 @@ var ExampleAPI = {
   //
 
   /**
-   * @param  {int} meetingId   
+   * @param  {int} meetingKey   
    *         {object} topics   Array of topics
    * @return {Promise}         Resolves to the id that the topics are added to
    */
-  agendaAdd: function(meetingId, topics){
+  agendaAdd: function(meetingKey, topics){
     var reqData = {
       format: 'json',
       request: 'agendaAdd',
-      meetingId: meetingId, 
+      meetingKey: meetingKey, 
       topics: topics
     };
     return sendAjaxRequest(reqData);
   },
 
   /**
-   * @param  {int} meetingId   
+   * @param  {int} meetingKey   
    * @return {Promise}         Resolves to the array of topics 
    */
-  agendaFetch: function(meetingId) {
+  agendaFetch: function(meetingKey) {
     var reqData = {
       format: 'json',
       request: 'agendafetch',
-      meetingId: meetingId
+      meetingKey: meetingKey
     }
     var result = sendAjaxRequest(reqData);
     result.topics = AGENDAS[0].topics;
-    result['meetingId'] = Number(result['meetingId']);
+    result['meetingKey'] = Number(result['meetingKey']);
     console.log(result);
     return Promise.resolve(AGENDAS[0]);
   },
 
   /**
-   * @param  {int} meetingId   
+   * @param  {int} meetingKey   
    *         {object} question Includes string of question and timestamp
    * @return {Promise}         Resolves to the dict containing question id (int or string?)
    */
-  questionAdd: function(meetingId, question){
+  questionAdd: function(meetingKey, question){
     var reqData = {
       format: 'json',
       request: 'questionAdd',
-      meetingId: meetingId, 
+      meetingKey: meetingKey, 
       question: question
     };
     return sendAjaxRequest(reqData)
@@ -319,18 +303,18 @@ var ExampleAPI = {
   },
 
   /**
-   * @param  {int} meetingId   
+   * @param  {int} meetingKey   
    * @return {Promise}         Resolves to the array of questions on a meeting
    */
-  questionFetch: function(meetingId) {
+  questionFetch: function(meetingKey) {
     var reqData = {
       format: 'json',
       request: 'questionfetch',
-      meetingId: meetingId
+      meetingKey: meetingKey
     }
     var result = sendAjaxRequest(reqData);
     result.topics = AGENDAS[0].topics;
-    result['meetingId'] = Number(result['meetingId']);
+    result['meetingKey'] = Number(result['meetingKey']);
     console.log(result);
     return Promise.resolve(result);
   },
@@ -355,7 +339,7 @@ var ExampleAPI = {
   },
 
   /**
-   * @param  {int} meetingId   
+   * @param  {int} meetingKey   
    * @return {Promise}         Resolves to the array of questions on a meeting
    */
   answerFetch: function(questionId) {

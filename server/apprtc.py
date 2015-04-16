@@ -25,6 +25,7 @@ import datetime
 import copy
 import requests
 import tweepy
+import dateutil.parser
 
 from config import OAUTH_CONFIG
 from google.appengine.api import channel
@@ -139,6 +140,18 @@ def on_message(room, user, message):
     new_message.put()
     logging.info('Saved message for user ' + user)
 
+
+def fetch_user_for_session(session=None):
+  if session is None:
+    session = get_current_session()
+
+  user = None
+  if session.get('id'):
+    user = ndb.Key(UserModel, session['id']).get()
+
+  return user
+
+
 def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
   initial_store_data = {}
@@ -155,7 +168,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   user_id = None
 
   if session.get('id'):
-    user = ndb.Key(UserModel, session['id']).get().to_dict()
+    user = fetch_user_for_session(session).to_dict()
     user_id = session['id']
   elif session.get('anonymous_user_id'):
     user_id = session['anonymous_user_id']
@@ -166,7 +179,6 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
     'webRTC': get_webrtc_config(self),
     'currentUser': {
       'user': user,
-      'id': session.get('id'),
       'attending': [],
       'hosting': [],
       'channelToken': channel.create_channel(user_id, token_timeout)
@@ -178,7 +190,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   template = jinja_environment.get_template('index.html')
   template_values = {
     'is_usingwebpack': self.request.get('usewebpack') == 'true',
-    'initial_store_data': json.dumps(initial_store_data)
+    'initial_store_data': json.dumps(initial_store_data, cls=APIJSONEncoder)
   }
   
   self.response.out.write(template.render(template_values))
@@ -418,16 +430,14 @@ class UserModel(ndb.Model):
   host = ndb.IntegerProperty(repeated=True)
 
 class MeetingModel(ndb.Model):
-  #id = ndb.IntegerProperty()
   title = ndb.StringProperty()
   description = ndb.StringProperty()
-  start = ndb.StringProperty()
-  host = ndb.StringProperty()
-  attendees = ndb.StringProperty(repeated=True)
+  start = ndb.DateTimeProperty()
+  host = ndb.KeyProperty(kind=UserModel)
+  attendees = ndb.KeyProperty(kind=UserModel, repeated=True)
   isBroadcasting = ndb.BooleanProperty()
 
 class AgendaModel(ndb.Model):
-  meetingId = ndb.StringProperty()
   # topics contains a list of {id: tId, content: '', questions: [qId, ]}
   topics = ndb.JsonProperty()
 
@@ -449,45 +459,41 @@ class AdaptJsonEncoder(json.JSONEncoder):
       return obj.strftime('%Y-%m-%d %H:%M:%S')
     return json.JSONEncoder.default(self, obj)
 
+
+class APIJSONEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, datetime.datetime):
+      return obj.isoformat()
+
+    if isinstance(obj, ndb.Model):
+      model_dict = obj.to_dict()
+      model_dict['key'] = obj.key
+      return model_dict
+
+    if isinstance(obj, ndb.Key):
+      return obj.urlsafe()
+
+    return json.JSONEncoder.default(self, obj)
+
+
 class APIHandler(webapp2.RequestHandler):
   def post(self):
-    logging.info('API Handler: ' + self.request.get('request'))
+    name = self.request.get('request')
+    logging.info('API Handler: ' + name)
 
-    if self.request.get('request').lower() == 'userfetch':
-      self.userfetch(self.request, self.response)
-    elif self.request.get('request').lower() == 'currentuserlogin':
-      self.currentuserlogin(self.request, self.response, self)
-    elif self.request.get('request').lower() == 'meetingfetch':
-      self.meetingfetch(self.request, self.response)
-    elif self.request.get('request').lower() == 'meetingcreate':
-      self.meetingcreate(self.request, self.response)
-    elif self.request.get('request').lower() == 'agendacreate':
-      self.agendacreate(self.request, self.response)
-    elif self.request.get('request').lower() == 'agendafetch':
-      self.agendafetch(self.request, self.response)
-    elif self.request.get('request').lower() == 'explorefetch':
-      self.explorefetch(self.request, self.response)
-    elif self.request.get('request').lower() == 'meetingjoin':
-      self.meetingjoin(self.request, self.response)
+    handlers = {
+      'userfetch': self.user_fetch,
+      'meetingfetch': self.meeting_fetch,
+      'meetingcreate': self.meeting_create,
+      'agendafetch': self.agenda_fetch,
+      'explorefetch': self.explore_fetch,
+      'meetingjoin': self.meeting_join
+    }
 
+    handler = handlers[name.lower()]
+    response = handler(self.request, self.response)
 
-  @classmethod
-  def twitter_login(self):
-    logging.info('request token inside callback function!!!!!!!!!!!!!!!!!!')
-
-  @classmethod
-  def add_user(self, id, request):
-    user = UserModel(id = id)
-    #user.id = id
-    user.photoUrl = 'http://placehold.it/400x300'
-    user.photoThumbnailUrl = 'http://placehold.it/50x50'
-    user.name = 'Coleen Jose'
-    user.affiliation = ''
-    user.bio = 'Coleen Jose is an American-Filipino multimedia journalist and \
-                documentary photographer. She writes and shoots for publications in the \
-                US and Philippines. She was a reporting fellow for E&E Publishing\'s \
-                ClimateWire in Washington, DC.'
-    user.put()
+    self.response.out.write(json.dumps(response, cls=APIJSONEncoder))
 
   @classmethod
   def add_log(self, method, data):
@@ -506,101 +512,75 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod 
   def build_meeting(self, meeting):
-    # meeting = MeetingModel.get_by_id(meetingId)
-    if meeting: 
-      attendees = []
-      # construct attendees list to be sent back
-      for attendeeId in meeting.attendees:
-        logging.info(attendeeId)
-        instance = UserModel.get_by_id(attendeeId)
-        attendee = {'id': attendeeId, 
-                'photoUrl': instance.photoUrl,
-                'photoThumbnailUrl': instance.photoThumbnailUrl,
-                'name': instance.name, 
-                'bio': instance.bio
-        }
-        attendees.append(attendee)
-        
-      # construct host object to be sent back
-      instance = UserModel.get_by_id(meeting.host)
-      host = {'id': meeting.host, 
+    attendees = []
+    # construct attendees list to be sent back
+    for attendeeId in meeting.attendees:
+      logging.info(attendeeId)
+      instance = UserModel.get_by_id(attendeeId)
+      attendee = {'id': attendeeId, 
               'photoUrl': instance.photoUrl,
               'photoThumbnailUrl': instance.photoThumbnailUrl,
               'name': instance.name, 
               'bio': instance.bio
       }
+      attendees.append(attendee)
+      
+    # construct host object to be sent back
+    instance = UserModel.get_by_id(meeting.host)
+    host = {'id': meeting.host, 
+            'photoUrl': instance.photoUrl,
+            'photoThumbnailUrl': instance.photoThumbnailUrl,
+            'name': instance.name, 
+            'bio': instance.bio
+    }
 
-      data = {'id': meeting.key.id(),
-              'title': meeting.title, 
-              'description': meeting.description,
-              'start': meeting.start,
-              'host': host,
-              'attendees': attendees
-      }
-      return data
-    else: 
-      response.out.write('Meeting not found')
-      logging.info('build_meeting failed')
+    data = {'id': meeting.key.id(),
+            'title': meeting.title, 
+            'description': meeting.description,
+            'start': meeting.start,
+            'host': host,
+            'attendees': attendees
+    }
+    return data
 
   @classmethod
-  def userfetch(self, request, response):
+  def user_fetch(self, request, response):
     user = UserModel.get_by_id(request.get('userId'))
     if user: 
-      data = {'id': request.get('userId'),
-              'photoUrl': user.photoUrl, 
-              'photoThumbnailUrl': user.photoThumbnailUrl,
-              'name': user.name,
-              'affiliation': user.affiliation,
-              'bio': user.bio
-      }
-      response.out.write(json.dumps(data))
-      self.add_log('userfetch', data)
+      return user
     else: 
-      data = {'error': 'NotFound'}
-      response.out.write(json.dumps(data))
+      return {'error': 'NotFound'}
 
   @classmethod
-  def meetingfetch(self, request, response):
-    logging.info('MEETING FETCH ')
-    data = self.build_meeting(MeetingModel.get_by_id(request.get('meetingId')))
-    response.out.write(json.dumps(data))
-    self.add_log('meetingcreate', data)
+  def explore_fetch(self, request, response):
+    meetings = []
+    query = MeetingModel.query()
+    for meeting in query.fetch(30):
+      meetings.append(meeting)
+    return meetings
 
   @classmethod
-  def explorefetch(self, request, response):
-    meetingArr = []
-    q = MyModel.query()
-    for meeting in q.iter():
-      data = self.build_meeting(meeting)
-      meetingArr.append(data)
-    response.out.write(json.dumps(data))
-    self.add_log('meetingcreate', data)  
-
+  def meeting_fetch(self, request, response):
+    return ndb.Key(urlsafe=request.get('key')).get()
 
   @classmethod
-  def meetingcreate(self, request, response):
-    # create a new meeting, ensuring that meetingId has not been used
-    meetingId = MeetingModel.query().count()
-    logging.info(meetingId)
-    meeting = MeetingModel.get_by_id(meetingId)
-    while meeting:
-      meetingId += 1
-      meeting = MeetingModel.get_by_id(meetingId)
-    # all ids about such entities are set strings for consistency 
-    meeting = MeetingModel(id = str(meetingId))
+  def meeting_create(self, request, response):
+    meeting = MeetingModel()
     meeting.title = request.get('title')
     meeting.description = request.get('description')
-    meeting.start = request.get('start')
+    meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.topics = copy.deepcopy(request.get('topics'))
-    meeting.put()
-    data = {'id': meetingId}
-    response.out.write(json.dumps(data))
+    meeting.host = fetch_user_for_session().key
+    key = meeting.put()
 
-    ### need to amplify the data collected! 
-    self.add_log('meetingcreate', data)
+    meetingAgenda = AgendaModel(parent=key)
+    meetingAgenda.topics = []
+    meetingAgenda.put()
+
+    return meeting
 
   @classmethod
-  def meetingjoin(self, request, response):
+  def meeting_join(self, request, response):
     session = get_current_session()
     if not session['id']:
       #response.out.write('User not logged in yet')
@@ -616,27 +596,7 @@ class APIHandler(webapp2.RequestHandler):
       self.add_log('meetingjoin', data)
 
   @classmethod
-  def agendacreate(self, request, response):
-    # create a new meeting, ensuring that meetingId has not been used
-    meetingId = request.get('meetingId')
-    # current assumption: 1-1 relation!
-    agendaId = meetingId
-    # agendaId = len(AgendaModel)
-    # agenda = AgendaModel.get_by_id(agendaId)
-    # while agenda:
-    #   agendaId += 1
-    #   agenda = AgendaModel.get_by_id(agendaId)
-    agenda = AgendaModel(id = agendaId)
-    agenda.meetingId = meetingId
-    agenda.topics = copy.deepcopy(request.get('topics'))
-    agenda.put()
-    data = {'id': meetingId,
-            'topics': agenda.topics
-    }
-    self.add_log('agendacreate', data)
-
-  @classmethod
-  def agendafetch(self, request, response):
+  def agenda_fetch(self, request, response):
     meetingId = request.get('meetingId')
     topics = []
     agenda = AgendaModel.get_by_id(meetingId) # meetingId and agendaId equivalent
@@ -748,9 +708,9 @@ class RouteErrorHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
-    (r'/meeting/(\d+)', MeetingPage),
-    (r'/explore/meeting/(\d+)', MeetingPage),
-    (r'/meeting/(\d+)/requestBroadcastData', RequestBroadcastData),
+    (r'/meeting/([^/]+)', MeetingPage),
+    (r'/explore/meeting/([^/]+)', MeetingPage),
+    (r'/meeting/([^/]+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),

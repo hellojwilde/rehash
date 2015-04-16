@@ -7,11 +7,12 @@ class MeetingStore extends Store {
   constructor(registry) {
     super();
 
-    var meetingActionIds = registry.getActionIds('meeting');
     var exploreActionIds = registry.getActionIds('explore');
-
-    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
+    var meetingActionIds = registry.getActionIds('meeting');
+    
     this.register(exploreActionIds.fetch, this.handleExploreFetch);
+    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
+    this.register(meetingActionIds.create, this.handleMeetingCreate);
 
     this.state = {};
   }
@@ -20,18 +21,20 @@ class MeetingStore extends Store {
     return _.values(this.state);
   }
 
-  getById(meetingId) {
-    return this.state[meetingId];
+  getByKey(meetingKey) {
+    return this.state[meetingKey];
   }
 
   handleExploreFetch(meetings) {
-    this.setState(meetings);
+    this.setState(_.indexBy(meetings, 'key'));
   }
 
   handleMeetingFetch(meeting) {
-    this.setState({
-      [meeting.id]: meeting
-    });
+    this.setState({[meeting.key]: meeting});
+  }
+
+  handleMeetingCreate(meeting) {
+    this.setState({[meeting.key]: meeting})
   }
 }
 

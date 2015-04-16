@@ -18,3 +18,5 @@ class UserActions extends Actions {
     return this.api.userFetch(userId);
   }
 }
+
+module.exports = UserActions;
