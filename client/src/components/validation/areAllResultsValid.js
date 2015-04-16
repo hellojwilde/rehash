@@ -1,16 +1,12 @@
 var {ValidResultTypes} = require('./ValidationConstants');
 
-function areAllResultsValid(results) {
-  var valid = true;
+var _ = require('lodash');
 
-  for (var k in results) {
-    if (results.hasOwnProperty(k) && 
-        ValidResultTypes[results[k].type] !== true) {
-      valid = false;
-    }
-  }
-  
-  return valid;
+function areAllResultsValid(results) {
+  return _.every(
+    results, 
+    (result) => ValidResultTypes[result.type] === true
+  );
 }
 
 module.exports = areAllResultsValid;

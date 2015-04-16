@@ -3,6 +3,7 @@ var {ResultTypes, ResultTypePrecedence} = require('./ValidationConstants');
 
 var _ = require('lodash');
 var getResultForRules = require('./getResultForRules');
+var getNormalizedRules = require('./getNormalizedRules');
 
 var Validated = React.createClass({
 
@@ -21,24 +22,32 @@ var Validated = React.createClass({
   },
 
   componentWillMount: function() {
-    this.results = _.map(this.props.values, () => ({
-      type: ResultTypes.NOT_YET_VALIDATED, 
-      detail: null
-    }));
+    this.results = _.mapValues(this.props.rules, (rules, key) => {
+      var normalized = getNormalizedRules(rules);
+
+      if (normalized.validateInitialValue) {
+        return getResultForRules(this.props.values[key], normalized);
+      } else {
+        return {
+          type: ResultTypes.NOT_YET_VALIDATED, 
+          detail: null
+        };
+      }  
+    });
 
     this.props.onValidationResults(this.results);
   },
 
   componentWillReceiveProps: function(nextProps) {
     var areResultsChanged = false;
-    var results = _.map(nextProps.values, (nextValue, key) => {
+    var results = _.mapValues(nextProps.values, (nextValue, key) => {
+      var normalized = getNormalizedRules(this.props.rules[key]);
       var value = this.props.values[key];
 
       if (nextValue !== value) {
         areResultsChanged = true;
-        return getResultForRules(nextValue, this.props.rules[key]);
+        return getResultForRules(nextValue, normalized);
       }
-
       return this.results[key];
     });
 

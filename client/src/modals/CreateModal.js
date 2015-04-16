@@ -108,7 +108,10 @@ var CreateModal = React.createClass({
               values={{title: this.state.title, start: this.state.start}} 
               rules={{
                 title: ValidationRules.isRequired, 
-                start: [ValidationRules.isRequired, ValidationRules.isMomentInFuture]
+                start: {
+                  rules: [ValidationRules.isRequired, ValidationRules.isMomentInFuture],
+                  validateInitialValue: true
+                }
               }}
               onValidationResults={this.handleValidationResults}>
               <ValidatedGroup resultsFor="title" results={this.state.validationResults}>

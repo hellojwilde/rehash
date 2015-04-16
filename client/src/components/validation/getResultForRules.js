@@ -2,16 +2,8 @@ var {ResultTypes, ResultTypePrecedence} = require('./ValidationConstants');
 
 var _ = require('lodash');
 
-function getResultForRules(value, rules) {
-  if (!rules) {
-    rules = [];
-  }
-
-  if (!_.isArray(rules)) {
-    rules = [rules];
-  }
-
-  return rules.reduce(function(overallResult, rule) {
+function getResultForRules(value, normalized) {
+  return normalized.rules.reduce((overallResult, rule) => {
     var result = rule(value);
     var {type, details} = overallResult;
 
