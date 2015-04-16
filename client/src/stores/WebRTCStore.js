@@ -1,6 +1,7 @@
-var {createIceServers} = require('helpers/WebRTCAdapter');
 var {Store} = require('flummox');
 
+var {createIceServers} = require('helpers/WebRTCAdapter');
+var {getPreferredAudioCodec} = require('helpers/WebRTCConstraints');
 var _ = require('lodash');
 
 class WebRTCStore extends Store {
@@ -17,10 +18,7 @@ class WebRTCStore extends Store {
 
     var webRTCActionIds = registry.getActionIds('webRTC');
 
-    this.register(
-      webRTCActionIds.fetchTurnIfNeeded, 
-      this.handleWebRTCFetchTurnIfNeeded
-    );
+    this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
 
     this.state = {
       pcConfig: null,
@@ -31,11 +29,31 @@ class WebRTCStore extends Store {
       stereo: null,
       audioSendCodec: null,
       audioReceiveCodec: null,
+      isTurnFetchingComplete: false
     };
   }
 
-  handleWebRTCFetchTurnIfNeeded(turnServer) {
+  getPreferredAudioSendCodec(sdp) {
+    if (audioSendCodec == '') {
+      console.log('No preference on audio send codec.');
+      return sdp;
+    }
+    console.log('Prefer audio send codec: ' + audioSendCodec);
+    return getPreferredAudioCodec(sdp, audioSendCodec);
+  }
+
+  getPreferredAudioReceiveCodec(sdp) {
+    if (audioReceiveCodec == '') {
+      console.log('No preference on audio receive codec.');
+      return sdp;
+    }
+    console.log('Prefer audio receive codec: ' + audioReceiveCodec);
+    return getPreferredAudioCodec(sdp, audioReceiveCodec);
+  }
+
+  handleWebRTCFetchTurn(turnServer) {
     if (turnServer === null) {
+      this.setState({isTurnFetchingComplete: true});
       return;
     }
 
@@ -44,9 +62,14 @@ class WebRTCStore extends Store {
 
     if (iceServers !== null) {
       this.setState({
+        isTurnFetchingComplete: true,
         pcConfig: _.clone(this.state.pcConfig).iceServers.concat(iceServers)
       });
     }
+  }
+
+  handleWebRTCReceiveMessage(message) {
+    
   }
 }
 

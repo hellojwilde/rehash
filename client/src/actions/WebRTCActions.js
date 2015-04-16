@@ -1,5 +1,7 @@
 var {Actions} = require('flummox');
 
+var {requestUserMedia} = require('helpers/WebRTCAdapter');
+
 class WebRTCActions extends Actions {
   constructor(registry, api) {
     super();
@@ -8,10 +10,23 @@ class WebRTCActions extends Actions {
     this.api = api;
   }
 
-  fetchTurnIfNeeded() {
+  connectAsHost(meetingId) {
+
+  }
+
+  connectAsAttendee(meetingId) {
+
+  }
+
+  fetchTurn() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
-      var {turnUrl} = webRTCStore.state;
+      var {pcConfig, turnUrl, isTurnFetchingComplete} = webRTCStore.state;
+
+      // Ensure that we skip fetching turn if we already have it.
+      if (isTurnFetchingComplete) {
+        return resolve(null);
+      }
 
       // Allow to skip turn by passing ts=false to apprtc.
       if (turnUrl == '') {
@@ -35,6 +50,14 @@ class WebRTCActions extends Actions {
       return resolve(null);
       //return $.ajax({url: turnUrl, dataType: 'json'});
     });
+  }
+
+  requestUserMedia() {
+    return requestUserMedia({audio: true, video: true});
+  }
+
+  receiveMessage(message) {
+
   }
 }
 
