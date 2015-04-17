@@ -21,8 +21,9 @@ var MeetingHandler = React.createClass({
 
     return (
       <FluxComponent
-        connectToStores={['meeting', 'currentUser']}
-        stateGetter={([meetingStore, currentUserStore]) => ({
+        key={meetingKey}
+        connectToStores={['meeting']}
+        stateGetter={([meetingStore]) => ({
           meeting: meetingStore.getByKey(meetingKey)
         })}
         render={(state) => (
