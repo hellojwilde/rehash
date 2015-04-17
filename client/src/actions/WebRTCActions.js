@@ -39,9 +39,7 @@ class WebRTCActions extends Actions {
         return resolve(null);
       }
 
-      // TODO: check out this part 
-      return resolve(null);
-      //return $.ajax({url: turnUrl, dataType: 'json'});
+      resolve($.ajax({url: turnUrl, dataType: 'json'}));
     });
   }
 
@@ -52,17 +50,18 @@ class WebRTCActions extends Actions {
   connectAsHost(meetingKey) {
     var webRTCActions = this.registry.getActions('webRTC');
     var webRTCStore = this.registry.getStore('webRTC');
+    var {localStream} = webRTCStore.state;
 
     invariant(
-      webRTCStore.state.localStream && !webRTCStore.state.localStream.ended,
+      localStream && !localStream.ended,
       'WebRTCActions: no localStream found; did you call prepareAsHost first?'
     );
 
     return webRTCActions.fetchTurn()
       .then(() => {
         webRTCActions._createPeer();
+        webRTCActions._createPeerLocalStream(localStream);
 
-        // TODO: attach local stream to peer connection.
         // TODO: send message saying to fetch all of the messages for the client.
       });
   }
@@ -71,7 +70,7 @@ class WebRTCActions extends Actions {
     return webRTCActions.fetchTurn()
       .then(() => {
         webRTCActions._createPeer();
-        webRTCActions._createOffer();
+        webRTCActions._createPeerOffer();
       });
   }
 
@@ -85,16 +84,16 @@ class WebRTCActions extends Actions {
 
     invariant(
       webRTCStore.state.pc !== null,
-      'PeerConnection must be started before receiving signalling messages.'
+      'PeerConnection must be started before receiving signaling messages.'
     );
 
     switch(message.type) {
       case 'offer':
-        webRTCActions._receiveSessionDescription(message);
-        webRTCActions._createAnswer();
+        webRTCActions._receivePeerDescription(message);
+        webRTCActions._createPeerAnswer();
         break;
       case 'answer':
-        webRTCActions._receiveRemoteSessionDescription(message);
+        webRTCActions._receivePeerRemoteDescription(message);
         break;
       case 'candidate':
         webRTCActions._receiveIceCandidate(message);
@@ -102,10 +101,46 @@ class WebRTCActions extends Actions {
     }
   }
 
-  _createOffer() {
+  _createPeer() {
+    var webRTCActions = this.registry.getActions('webRTC');
+    var webRTCStore = this.registry.getStore('webRTC');
+    var {pcConfig, pcConstraints, meetingKey} = webRTCStore.state;
+
+    var pc = new RTCPeerConnection(pcConfig, pcConstraints);
+    pc.onaddstream = webRTCActions._receivePeerRemoteStream;
+    pc.onicecandidate = ({candidate}) => {
+      if (!candidate) {
+        return;
+      }
+
+      this.api.sendMessage(
+        meetingKey,
+        {
+          type: 'candidate',
+          label: candidate.sdpMLineIndex,
+          id: candidate.sdpMid,
+          candidate: candidate.candidate
+        }
+      );
+    };
+
+    console.log(
+      'Created RTCPeerConnnection with:\n' +
+      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
+      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.'
+    );
+    
+    return pc;
+  }
+
+  _createPeerLocalStream(stream) {
+    return stream;
+  }
+
+  _createPeerOffer() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
-      var {offerConstraints} = webRTCStore.state;
+      var {offerConstraints, pc} = webRTCStore.state;
 
       var constraints = mergeConstraints(offerConstraints, SDP_CONSTRAINTS);
 
@@ -128,7 +163,7 @@ class WebRTCActions extends Actions {
     });
   }
 
-  _createAnswer() {
+  _createPeerAnswer() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
       var {pc, sdpConstraints, meetingKey} = webRTCStore.state;
@@ -147,7 +182,14 @@ class WebRTCActions extends Actions {
     }); 
   }
 
-  _receiveRemoteSessionDescription(message) {
+  _receivePeerIceCandidate(message) {
+    return new RTCIceCandidate({
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
+    });
+  }
+
+  _receivePeerRemoteDescription(message) {
     var webRTCStore = this.registry.getStore('webRTC');
 
     // Set Opus in Stereo, if stereo enabled.
@@ -160,55 +202,10 @@ class WebRTCActions extends Actions {
     return new RTCSessionDescription(message);
   }
 
-  _receiveIceCandidate(message) {
-    return new RTCIceCandidate({
-      sdpMLineIndex: message.label,
-      candidate: message.candidate
-    });
-  }
-
-  _createPeer() {
-    var webRTCActions = this.registry.getActions('webRTC');
-    var webRTCStore = this.registry.getStore('webRTC');
-    var {pcConfig, pcConstraints} = webRTCStore.state;
-
-    var pc = new RTCPeerConnection(pcConfig, pcConstraints);
-    pc.onicecandidate = webRTCActions._receivePeerIceCandidate;
-    pc.onaddstream = webRTCActions._receivePeerRemoteStream;
-
-    console.log(
-      'Created RTCPeerConnnection with:\n' +
-      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
-      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.'
-    );
-    
-    return pc;
-  }
-
-  _receivePeerIceCandidate(event) {
-    var webRTCStore = this.registry.getStore('webRTC');
-    var {candidate} = event;
-
-    if (candidate) {
-      this.api.sendMessage(
-        webRTCStore.state.meetingKey,
-        {
-          type: 'candidate',
-          label: candidate.sdpMLineIndex,
-          id: candidate.sdpMid,
-          candidate: candidate.candidate
-        }
-      );
-    } else {
-      console.log('End of candidates.');
-    }
-
-    return candidate;
-  }
-
   _receivePeerRemoteStream(event) {
     return event.stream;
   }
+
 }
 
 module.exports = WebRTCActions;

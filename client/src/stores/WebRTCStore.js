@@ -23,11 +23,12 @@ class WebRTCStore extends Store {
     this.register(webRTCActionIds.prepareAsHost, this.handleWebRTCPrepareAsHost);
     this.register(webRTCActionIds.disconnect, this.handleWebRTCDisconnect);
 
-    this.register(webRTCActionIds._createOffer, this.handleWebRTCCreateLocalDescription);
-    this.register(webRTCActionIds._createAnswer, this.handleWebRTCCreateLocalDescription);
-    this.register(webRTCActionIds._receiveRemoteSessionDescription, this.handleWebRTCReceiveRemoteSessionDescription)
     this.register(webRTCActionIds._createPeer, this.handleWebRTCCreatePeer);
+    this.register(webRTCActionIds._createPeerOffer, this.handleWebRTCCreateLocalDescription);
+    this.register(webRTCActionIds._createPeerAnswer, this.handleWebRTCCreateLocalDescription);
+    this.register(webRTCActionIds._createPeerLocalStream, this.handleWebRTCCreatePeerLocalStream);
     this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream)
+    this.register(webRTCActionIds._receivePeerRemoteDescription, this.handleWebRTCReceivePeerRemoteDescription);
 
     this.registry = registry;
     this.state = {
@@ -103,24 +104,28 @@ class WebRTCStore extends Store {
     }
   }
 
-  handleWebRTCReceiveRemoteSessionDescription(sessionDescription) {
-    this.state.pc.setRemoteDescription(sessionDescription);
+  handleWebRTCCreatePeer(pc) {
+    this.setState({pc: pc})
+  }
+
+  handleWebRTCCreatePeerLocalStream(stream) {
+    this.state.pc.addStream(stream);
   }
 
   handleWebRTCCreateLocalDescription(sessionDescription) {
     this.state.pc.setLocalDescription(sessionDescription);
   }
 
-  handleWebRTCReceiveIceCandidate(candidate) {
-    this.state.pc.addIceCandidate(candidate);
-  }
-
-  handleWebRTCCreatePeer(pc) {
-    this.setState({pc: pc})
-  }
-
   handleWebRTCReceivePeerRemoteStream(stream) {
     this.setState({remoteStream: stream});
+  }
+
+  handleWebRTCReceivePeerRemoteDescription(sessionDescription) {
+    this.state.pc.setRemoteDescription(sessionDescription);
+  }
+
+  handleWebRTCReceiveIceCandidate(candidate) {
+    this.state.pc.addIceCandidate(candidate);
   }
 }
 
