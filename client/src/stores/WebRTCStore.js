@@ -19,9 +19,13 @@ class WebRTCStore extends Store {
 
     var webRTCActionIds = registry.getActionIds('webRTC');
 
+    this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
     this.register(webRTCActionIds.prepareAsHost, this.handleWebRTCPrepareAsHost);
-    this.register(webRTCActionIds.receiveMessage, this.handleWebRTCReceiveMessage);
-    this.register(webRTCActionIds._fetchTurn, this.handleWebRTCFetchTurn);
+    this.register(webRTCActionIds.disconnect, this.handleWebRTCDisconnect);
+
+    this.register(webRTCActionIds._createOffer, this.handleWebRTCCreateLocalDescription);
+    this.register(webRTCActionIds._createAnswer, this.handleWebRTCCreateLocalDescription);
+    this.register(webRTCActionIds._receiveRemoteSessionDescription, this.handleWebRTCReceiveRemoteSessionDescription)
     this.register(webRTCActionIds._createPeer, this.handleWebRTCCreatePeer);
     this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream)
 
@@ -38,7 +42,6 @@ class WebRTCStore extends Store {
       turnUrl: null,
 
       // State variables representing client status.
-      isMeetingHost: null,
       isTurnFetchingComplete: false,
       localStream: null,
       meetingKey: null,
@@ -69,37 +72,18 @@ class WebRTCStore extends Store {
     this.setState({localStream: stream});
   }
 
-  handleWebRTCReceiveMessage(message) {
-    invariant(
-      this.state.pc !== null,
-      'PeerConnection must be started before receiving signalling messages.'
-    );
+  handleWebRTCDisconnect() {
+    var {localStream, pc} = this.state;
 
-    // Since the turn response is async and also GAE might disorder the
-    // message delivery due to possible datastore query at server side,
-    // So callee needs to cache messages before peerConnection is created.
+    localStream.stop();
+    pc.close();
 
-    switch(message.type) {
-      case 'offer':
-        this.setRemote(message);
-        this.doAnswer();
-        break;
-      case 'answer':
-        this.setRemote(message);
-        break;
-      case 'candidate':
-        var candidate = new RTCIceCandidate({
-          sdpMLineIndex: message.label,
-          candidate: message.candidate
-        });
-
-        pc.addIceCandidate(
-          candidate,
-          this.onAddIceCandidateSuccess, 
-          this.onAddIceCandidateError
-        );
-        break;
-    }
+    this.setState({
+      localStream: null,
+      meetingKey: null,
+      pc: null,
+      remoteStream: null
+    });
   }
 
   handleWebRTCFetchTurn(turnServer) {
@@ -117,6 +101,18 @@ class WebRTCStore extends Store {
         pcConfig: _.clone(this.state.pcConfig).iceServers.concat(iceServers)
       });
     }
+  }
+
+  handleWebRTCReceiveRemoteSessionDescription(sessionDescription) {
+    this.state.pc.setRemoteDescription(sessionDescription);
+  }
+
+  handleWebRTCCreateLocalDescription(sessionDescription) {
+    this.state.pc.setLocalDescription(sessionDescription);
+  }
+
+  handleWebRTCReceiveIceCandidate(candidate) {
+    this.state.pc.addIceCandidate(candidate);
   }
 
   handleWebRTCCreatePeer(pc) {

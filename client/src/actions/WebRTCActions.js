@@ -1,6 +1,7 @@
 var {Actions} = require('flummox');
 
 var {requestUserMedia} = require('helpers/WebRTCAdapter');
+var {SDP_CONSTRAINTS, mergeConstraints} = require('helpers/WebRTCConstraints');
 
 class WebRTCActions extends Actions {
   constructor(registry, api) {
@@ -10,41 +11,7 @@ class WebRTCActions extends Actions {
     this.api = api;
   }
 
-  prepareAsHost(meetingKey) {
-    return requestUserMedia({audio: true, video: true});
-  }
-
-  connectAsHost(meetingKey) {
-    var webRTCActions = this.registry.getActions('webRTC');
-    var webRTCStore = this.registry.getStore('webRTC');
-
-    invariant(
-      webRTCStore.state.localStream && !webRTCStore.state.localStream.ended,
-      'WebRTCActions: no localStream found; did you call prepareAsHost first?'
-    );
-
-    return webRTCActions._fetchTurn()
-      .then(() => {
-        webRTCActions._createPeer();
-      });
-  }
-
-  connectAsAttendee(meetingKey) {
-    return webRTCActions._fetchTurn()
-      .then(() => {
-        webRTCActions._createPeer();
-      });
-  }
-
-  disconnect() {
-    return null;
-  }
-
-  receiveMessage(message) {
-    return message;
-  }
-
-  _fetchTurn() {
+  fetchTurn() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
       var {pcConfig, turnUrl, isTurnFetchingComplete} = webRTCStore.state;
@@ -78,15 +45,136 @@ class WebRTCActions extends Actions {
     });
   }
 
+  prepareAsHost(meetingKey) {
+    return requestUserMedia({audio: true, video: true});
+  }
+
+  connectAsHost(meetingKey) {
+    var webRTCActions = this.registry.getActions('webRTC');
+    var webRTCStore = this.registry.getStore('webRTC');
+
+    invariant(
+      webRTCStore.state.localStream && !webRTCStore.state.localStream.ended,
+      'WebRTCActions: no localStream found; did you call prepareAsHost first?'
+    );
+
+    return webRTCActions.fetchTurn()
+      .then(() => {
+        webRTCActions._createPeer();
+
+        // TODO: attach local stream to peer connection.
+        // TODO: send message saying to fetch all of the messages for the client.
+      });
+  }
+
+  connectAsAttendee(meetingKey) {
+    return webRTCActions.fetchTurn()
+      .then(() => {
+        webRTCActions._createPeer();
+        webRTCActions._createOffer();
+      });
+  }
+
+  disconnect() {
+    return null;
+  }
+
+  receiveMessage(message) {
+    var webRTCStore = this.registry.getStore('webRTC');
+    var webRTCActions = this.registry.getActions('webRTCActions');
+
+    invariant(
+      webRTCStore.state.pc !== null,
+      'PeerConnection must be started before receiving signalling messages.'
+    );
+
+    switch(message.type) {
+      case 'offer':
+        webRTCActions._receiveSessionDescription(message);
+        webRTCActions._createAnswer();
+        break;
+      case 'answer':
+        webRTCActions._receiveRemoteSessionDescription(message);
+        break;
+      case 'candidate':
+        webRTCActions._receiveIceCandidate(message);
+        break;
+    }
+  }
+
+  _createOffer() {
+    return new Promise((resolve, reject) => {
+      var webRTCStore = this.registry.getStore('webRTC');
+      var {offerConstraints} = webRTCStore.state;
+
+      var constraints = mergeConstraints(offerConstraints, SDP_CONSTRAINTS);
+
+      console.log(
+        'Sending offer to peer, with constraints: \n' +
+        '  \'' + JSON.stringify(constraints) + '\'.'
+      );
+
+      pc.createOffer(
+        (sessionDescription) => {
+          sessionDescription.sdp = 
+            webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
+          
+          this.api.sendMessage(meetingKey, sessionDescription)
+            .then(() => resolve(sessionDescription));
+        }, 
+        (e) => reject(e), 
+        constraints
+      );
+    });
+  }
+
+  _createAnswer() {
+    return new Promise((resolve, reject) => {
+      var webRTCStore = this.registry.getStore('webRTC');
+      var {pc, sdpConstraints, meetingKey} = webRTCStore.state;
+
+      pc.createAnswer(
+        (sessionDescription) => {
+          sessionDescription.sdp = 
+            webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
+          
+          this.api.sendMessage(meetingKey, sessionDescription)
+            .then(() => resolve(sessionDescription));
+        },
+        (e) => reject(e), 
+        SDP_CONSTRAINTS
+      );
+    }); 
+  }
+
+  _receiveRemoteSessionDescription(message) {
+    var webRTCStore = this.registry.getStore('webRTC');
+
+    // Set Opus in Stereo, if stereo enabled.
+    if (webRTCStore.state.stereo) {
+      message.sdp = getWithStereoIfPossible(message.sdp);
+    } else {
+      message.sdp = webRTCStore.getPreferredAudioSendCodec(message.sdp);
+    }
+
+    return new RTCSessionDescription(message);
+  }
+
+  _receiveIceCandidate(message) {
+    return new RTCIceCandidate({
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
+    });
+  }
+
   _createPeer() {
     var webRTCActions = this.registry.getActions('webRTC');
     var webRTCStore = this.registry.getStore('webRTC');
     var {pcConfig, pcConstraints} = webRTCStore.state;
 
     var pc = new RTCPeerConnection(pcConfig, pcConstraints);
-    pc.onicecandidate = webRTCActions.receivePeerIceCandidate;
-    pc.onaddstream = this.onRemoteStreamAdded;
-    pc.onremovestream = this.onRemoteStreamRemoved;
+    pc.onicecandidate = webRTCActions._receivePeerIceCandidate;
+    pc.onaddstream = webRTCActions._receivePeerRemoteStream;
 
     console.log(
       'Created RTCPeerConnnection with:\n' +
