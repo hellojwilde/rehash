@@ -10,15 +10,41 @@ class WebRTCActions extends Actions {
     this.api = api;
   }
 
-  connectAsHost(meetingKey) {
+  prepareAsHost(meetingKey) {
+    return requestUserMedia({audio: true, video: true});
+  }
 
+  connectAsHost(meetingKey) {
+    var webRTCActions = this.registry.getActions('webRTC');
+    var webRTCStore = this.registry.getStore('webRTC');
+
+    invariant(
+      webRTCStore.state.localStream && !webRTCStore.state.localStream.ended,
+      'WebRTCActions: no localStream found; did you call prepareAsHost first?'
+    );
+
+    return webRTCActions._fetchTurn()
+      .then(() => {
+        webRTCActions._createPeer();
+      });
   }
 
   connectAsAttendee(meetingKey) {
-
+    return webRTCActions._fetchTurn()
+      .then(() => {
+        webRTCActions._createPeer();
+      });
   }
 
-  fetchTurn() {
+  disconnect() {
+    return null;
+  }
+
+  receiveMessage(message) {
+    return message;
+  }
+
+  _fetchTurn() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
       var {pcConfig, turnUrl, isTurnFetchingComplete} = webRTCStore.state;
@@ -52,12 +78,48 @@ class WebRTCActions extends Actions {
     });
   }
 
-  requestUserMedia() {
-    return requestUserMedia({audio: true, video: true});
+  _createPeer() {
+    var webRTCActions = this.registry.getActions('webRTC');
+    var webRTCStore = this.registry.getStore('webRTC');
+    var {pcConfig, pcConstraints} = webRTCStore.state;
+
+    var pc = new RTCPeerConnection(pcConfig, pcConstraints);
+    pc.onicecandidate = webRTCActions.receivePeerIceCandidate;
+    pc.onaddstream = this.onRemoteStreamAdded;
+    pc.onremovestream = this.onRemoteStreamRemoved;
+
+    console.log(
+      'Created RTCPeerConnnection with:\n' +
+      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
+      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.'
+    );
+    
+    return pc;
   }
 
-  receiveMessage(message) {
+  _receivePeerIceCandidate(event) {
+    var webRTCStore = this.registry.getStore('webRTC');
+    var {candidate} = event;
 
+    if (candidate) {
+      this.api.sendMessage(
+        webRTCStore.state.meetingKey,
+        {
+          type: 'candidate',
+          label: candidate.sdpMLineIndex,
+          id: candidate.sdpMid,
+          candidate: candidate.candidate
+        }
+      );
+    } else {
+      console.log('End of candidates.');
+    }
+
+    return candidate;
+  }
+
+  _receivePeerRemoteStream(event) {
+    return event.stream;
   }
 }
 

@@ -3,6 +3,7 @@ var {Store} = require('flummox');
 var {createIceServers} = require('helpers/WebRTCAdapter');
 var {getPreferredAudioCodec} = require('helpers/WebRTCConstraints');
 var _ = require('lodash');
+var invariant = require('react/lib/invariant');
 
 class WebRTCStore extends Store {
   static deserialize(json) {
@@ -18,19 +19,31 @@ class WebRTCStore extends Store {
 
     var webRTCActionIds = registry.getActionIds('webRTC');
 
-    this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
+    this.register(webRTCActionIds.prepareAsHost, this.handleWebRTCPrepareAsHost);
+    this.register(webRTCActionIds.receiveMessage, this.handleWebRTCReceiveMessage);
+    this.register(webRTCActionIds._fetchTurn, this.handleWebRTCFetchTurn);
+    this.register(webRTCActionIds._createPeer, this.handleWebRTCCreatePeer);
+    this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream)
 
     this.registry = registry;
     this.state = {
+      // State variables representing mostly immutable server configuration.
+      audioReceiveCodec: null,
+      audioSendCodec: null,
+      mediaConstraints: null,
+      offerConstraints: null,
       pcConfig: null,
       pcConstraints: null,
-      offerConstraints: null,
-      mediaConstraints: null,
-      turnUrl: null,
       stereo: null,
-      audioSendCodec: null,
-      audioReceiveCodec: null,
-      isTurnFetchingComplete: false
+      turnUrl: null,
+
+      // State variables representing client status.
+      isMeetingHost: null,
+      isTurnFetchingComplete: false,
+      localStream: null,
+      meetingKey: null,
+      pc: null,
+      remoteStream: null
     };
   }
 
@@ -52,6 +65,43 @@ class WebRTCStore extends Store {
     return getPreferredAudioCodec(sdp, audioReceiveCodec);
   }
 
+  handleWebRTCPrepareAsHost(stream) {
+    this.setState({localStream: stream});
+  }
+
+  handleWebRTCReceiveMessage(message) {
+    invariant(
+      this.state.pc !== null,
+      'PeerConnection must be started before receiving signalling messages.'
+    );
+
+    // Since the turn response is async and also GAE might disorder the
+    // message delivery due to possible datastore query at server side,
+    // So callee needs to cache messages before peerConnection is created.
+
+    switch(message.type) {
+      case 'offer':
+        this.setRemote(message);
+        this.doAnswer();
+        break;
+      case 'answer':
+        this.setRemote(message);
+        break;
+      case 'candidate':
+        var candidate = new RTCIceCandidate({
+          sdpMLineIndex: message.label,
+          candidate: message.candidate
+        });
+
+        pc.addIceCandidate(
+          candidate,
+          this.onAddIceCandidateSuccess, 
+          this.onAddIceCandidateError
+        );
+        break;
+    }
+  }
+
   handleWebRTCFetchTurn(turnServer) {
     if (turnServer === null) {
       this.setState({isTurnFetchingComplete: true});
@@ -69,8 +119,12 @@ class WebRTCStore extends Store {
     }
   }
 
-  handleWebRTCReceiveMessage(message) {
-    
+  handleWebRTCCreatePeer(pc) {
+    this.setState({pc: pc})
+  }
+
+  handleWebRTCReceivePeerRemoteStream(stream) {
+    this.setState({remoteStream: stream});
   }
 }
 

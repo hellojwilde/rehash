@@ -7,20 +7,24 @@ var _ = require('lodash');
 
 class ChannelAPI {
   constructor(registry) {
-    var currentUserStore = registry.getStore('currentUser');
+    this.registry = registry;
+
+    var currentUserStore = this.registry.getStore('currentUser');
+    var channel = null;
 
     currentUserStore.on('change', () => {
-      if (currentUserStore.state.channelToken === null) {
+      if (currentUserStore.state.channelToken === null ||
+          channel !== null) {
         return;
       }
 
-      console.log('we have a channel token! initialize the channel');
+      console.log('ChannelAPI: have a channel token!');
 
-      this.channel = new goog.appengine.Channel(
+      channel = new goog.appengine.Channel(
         currentUserStore.state.channelToken
       );
 
-      this.socket = this.channel.open({
+      channel.open({
         onopen: this.handleOpened,
         onmessage: this.handleMessage,
         onerror: this.handleError,
@@ -30,33 +34,25 @@ class ChannelAPI {
   }
 
   handleOpened() {
-    _.isFunction(Broadcast_onChannelOpened) && Broadcast_onChannelOpened();
-    console.log('Channel opened.');
+    console.log('ChannelAPI: opened.');
   }
 
   handleMessage(message) {
-    console.log('S->C: ' + message.data);
-    var msg = JSON.parse(message.data);
+    console.log('ChannelAPI: message: ' + message.data);
 
-    // call actions to update resprective stores
-    if(msg.type === 'userUpdate') { 
-    }
-    else if (msg.type === 'meetingUpdate') {
-    }
-    // for broadcast 
-    else{
-      // in this way, avoid setting global variables
-      // will this work? what if Broadcast object has not been established yet?
-      _.isFunction(Broadcast_onChannelMessage) && Broadcast_onChannelMessage(msg); 
+    var msg = JSON.parse(message.data);
+    if (msg.namespace) {
+      var namespaceActions = this.registry.getActions(msg.namespace); 
+      featureActions.handleMessage(msg);
     }
   }
 
   handleError() {
-    console.log('Channel error.');
+    console.log('ChannelAPI: error.');
   }
 
   handleClosed() {
-    console.log('Channel closed.');
+    console.log('ChannelAPI: closed.');
   }
 }
 
