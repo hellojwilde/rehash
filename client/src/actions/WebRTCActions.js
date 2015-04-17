@@ -62,7 +62,7 @@ class WebRTCActions extends Actions {
         webRTCActions._createPeer();
         webRTCActions._createPeerLocalStream(localStream);
 
-        // TODO: send message saying to fetch all of the messages for the client.
+        // TODO: send broadcast message saying to fetch all of the messages for the client.
       });
   }
 
@@ -109,6 +109,10 @@ class WebRTCActions extends Actions {
     var pc = new RTCPeerConnection(pcConfig, pcConstraints);
     pc.onaddstream = webRTCActions._receivePeerRemoteStream;
     pc.onicecandidate = ({candidate}) => {
+      // XXX This is fired when we've successfully added an ICE candidate
+      // to this RTCPeerConnection instance. We use this to send a message
+      // to the server when the candidate that we received has been added.
+
       if (!candidate) {
         return;
       }

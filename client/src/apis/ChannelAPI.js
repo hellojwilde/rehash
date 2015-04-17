@@ -43,7 +43,7 @@ class ChannelAPI {
     var msg = JSON.parse(message.data);
     if (msg.namespace) {
       var namespaceActions = this.registry.getActions(msg.namespace); 
-      featureActions.handleMessage(msg);
+      featureActions.receiveMessage(msg);
     }
   }
 

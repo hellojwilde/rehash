@@ -19,16 +19,19 @@ class WebRTCStore extends Store {
 
     var webRTCActionIds = registry.getActionIds('webRTC');
 
+    // Public facing actions.
     this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
     this.register(webRTCActionIds.prepareAsHost, this.handleWebRTCPrepareAsHost);
     this.register(webRTCActionIds.disconnect, this.handleWebRTCDisconnect);
 
+    // Internal actions regarding signaling and RTCPeerConnection.
     this.register(webRTCActionIds._createPeer, this.handleWebRTCCreatePeer);
+    this.register(webRTCActionIds._createPeerLocalStream, this.handleWebRTCCreatePeerLocalStream);
     this.register(webRTCActionIds._createPeerOffer, this.handleWebRTCCreateLocalDescription);
     this.register(webRTCActionIds._createPeerAnswer, this.handleWebRTCCreateLocalDescription);
-    this.register(webRTCActionIds._createPeerLocalStream, this.handleWebRTCCreatePeerLocalStream);
-    this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream)
+    this.register(webRTCActionIds._receivePeerIceCandidate, this.handleWebRTCReceivePeerIceCandidate);
     this.register(webRTCActionIds._receivePeerRemoteDescription, this.handleWebRTCReceivePeerRemoteDescription);
+    this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream);
 
     this.registry = registry;
     this.state = {
@@ -116,16 +119,16 @@ class WebRTCStore extends Store {
     this.state.pc.setLocalDescription(sessionDescription);
   }
 
-  handleWebRTCReceivePeerRemoteStream(stream) {
-    this.setState({remoteStream: stream});
+  handleWebRTCReceivePeerIceCandidate(candidate) {
+    this.state.pc.addIceCandidate(candidate);
   }
 
   handleWebRTCReceivePeerRemoteDescription(sessionDescription) {
     this.state.pc.setRemoteDescription(sessionDescription);
   }
 
-  handleWebRTCReceiveIceCandidate(candidate) {
-    this.state.pc.addIceCandidate(candidate);
+  handleWebRTCReceivePeerRemoteStream(stream) {
+    this.setState({remoteStream: stream});
   }
 }
 
