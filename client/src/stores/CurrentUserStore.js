@@ -12,6 +12,7 @@ class CurrentUserStore extends Store {
   constructor(registry) {
     super();
 
+    this.registry = registry;
     this.state = {
       channelToken: null,
       user: null

@@ -14,6 +14,7 @@ class MeetingStore extends Store {
     this.register(meetingActionIds.fetch, this.handleMeetingFetch);
     this.register(meetingActionIds.create, this.handleMeetingCreate);
 
+    this.registry = registry;
     this.state = {};
   }
 
