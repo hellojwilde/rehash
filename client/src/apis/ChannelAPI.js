@@ -1,10 +1,3 @@
-var {
-  Broadcast_onChannelOpened, 
-  Broadcast_onChannelMessage
-} = require('components/meeting/broadcast/Broadcast');
-
-var _ = require('lodash');
-
 class ChannelAPI {
   constructor(registry) {
     this.registry = registry;

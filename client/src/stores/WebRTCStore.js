@@ -3,7 +3,6 @@ var {Store} = require('flummox');
 var {createIceServers} = require('helpers/WebRTCAdapter');
 var {getPreferredAudioCodec} = require('helpers/WebRTCConstraints');
 var _ = require('lodash');
-var invariant = require('react/lib/invariant');
 
 class WebRTCStore extends Store {
   static deserialize(json) {
@@ -23,7 +22,7 @@ class WebRTCStore extends Store {
       ['fetchTurn', this.handleFetchTurn],
       ['prepareAsHost', this.handlePrepareAsHost],
       ['disconnect', this.handleDisconnect],
-
+      
       // Internal actions regarding signaling and RTCPeerConnection.
       ['_createPeer', this.handleCreatePeer],
       ['_createPeerLocalStream', this.handleCreatePeerLocalStream],
@@ -104,10 +103,14 @@ class WebRTCStore extends Store {
     var {uris, username, password} = turnServer;
     var iceServers = createIceServers(uris, username, password);
 
+
     if (iceServers !== null) {
+      var {pcConfig} = this.state;
+      pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
+
       this.setState({
         isTurnFetchingComplete: true,
-        pcConfig: _.clone(this.state.pcConfig).iceServers.concat(iceServers)
+        pcConfig: pcConfig
       });
     }
   }
