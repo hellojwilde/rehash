@@ -1,4 +1,4 @@
-var CreateModal = require('modals/CreateModal');
+var CreateMeetingModal = require('modals/CreateMeetingModal');
 var IconButton = require('components/common/IconButton');
 var React = require('react');
 
@@ -18,7 +18,7 @@ var CreateButton = React.createClass({
     var modalActions = this.context.flux.getActions('modal');
     
     ensureCurrentUser(this.context.flux, CREATE_LOGIN_MESSSAGE)
-      .then(() => modalActions.push(CreateModal, {}));
+      .then(() => modalActions.push(CreateMeetingModal, {}));
   },
 
   render: function() {

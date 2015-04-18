@@ -5,8 +5,8 @@ function ensureCurrentUser(flux, message) {
   var currentUserStore = flux.getStore('currentUser');
 
   return new Promise(function(resolve, reject) {
-    var currentUser = currentUserStore.getCurrentUser();
-
+    var currentUser = currentUserStore.state.user;
+    
     if (currentUser !== null) {
       resolve(currentUser);
       return;
@@ -16,7 +16,7 @@ function ensureCurrentUser(flux, message) {
       LoginModal,
       {
         message: message,
-        onComplete: () => resolve(currentUserStore.getCurrentUser()),
+        onComplete: () => resolve(currentUserStore.state.user),
         onCancel: () => reject(null)
       }
     );

@@ -42,7 +42,7 @@ var ExploreHandler = React.createClass({
                   {...state}
                   ref="grid"
                   detailMeetingKey={meetingKey}
-                  detail={<RouteHandler/>}
+                  detail={<RouteHandler meetingKey={meetingKey}/>}
                 />
               )}
             />

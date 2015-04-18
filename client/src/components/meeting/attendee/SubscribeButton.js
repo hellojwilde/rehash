@@ -2,6 +2,7 @@ var React = require('react');
 var IconButton = require('components/common/IconButton');
 
 var ensureCurrentUser = require('helpers/ensureCurrentUser');
+var meetingRelationPropType = require('types/meetingRelationPropType');
 
 var SubscribeButton = React.createClass({
 
@@ -11,8 +12,7 @@ var SubscribeButton = React.createClass({
 
   propTypes: {
     meetingKey: React.PropTypes.string.isRequired,
-    isHost: React.PropTypes.bool.isRequired,
-    isAttendee: React.PropTypes.bool.isRequired
+    meetingRelation: meetingRelationPropType.isRequired
   },
 
   handleClick: function() {
@@ -23,21 +23,30 @@ var SubscribeButton = React.createClass({
       this.context.flux.getActions('meeting')
         .join(this.props.meetingKey);
     });
+  },
 
+  getLabel: function() {
+    var {isHost, isAttendee} = this.props.meetingRelation;
 
+    if (isHost) {
+      return 'Hosting';
+    } else if (isAttendee) {
+      return 'Subscribed';
+    } else {
+      return 'Subscribe';
+    }
   },
 
   render: function() {
-    var {isHost, isAttendee, ...otherProps} = this.props;
-    var isSubscribed = isHost || isAttendee;
+    var {isHost, isAttendee} = this.props.meetingRelation;
 
     return (
       <IconButton
         className="btn-lg btn-default"
-        icon={isSubscribed ? 'ok' : 'plus'} 
+        icon={(isAttendee || isHost) ? 'ok' : 'plus'} 
         disabled={isHost}
         onClick={this.handleClick}>
-        {isSubscribed ? 'Subscribed' : 'Subscribe'}
+        {this.getLabel()}
       </IconButton>
     );
   }

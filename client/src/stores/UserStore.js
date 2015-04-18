@@ -8,13 +8,12 @@ class UserStore extends Store {
 
     this.register(userActionIds.fetch, this.handleUserFetch);
 
+    this.registry = registry;
     this.state = {};
   }
 
   handleUserFetch(user) {
-    this.setState({
-      [user.id]: user
-    });
+    this.setState({[user.id]: user});
   } 
 }
 

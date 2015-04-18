@@ -23,8 +23,10 @@
   border-left: 1px solid #444;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-.BeforeMeeting-description-core {
-  margin: 20px 0;
+.BeforeMeeting-description-header {
+  position: absolute;
+  z-index: 999;
 }

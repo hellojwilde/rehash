@@ -20,6 +20,7 @@ class WebRTCStore extends Store {
 
     this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
 
+    this.registry = registry;
     this.state = {
       pcConfig: null,
       pcConstraints: null,

@@ -29,6 +29,10 @@ class MeetingActions extends Actions {
 
     return this.api.meetingCreate(meeting);
   }
+
+  update(meetingKey, meeting) {
+    return this.api.meetingUpdate(meetingKey, meeting);
+  }
 }
 
 module.exports = MeetingActions;

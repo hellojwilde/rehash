@@ -3,19 +3,25 @@ var SubscribeButton = require('components/meeting/attendee/SubscribeButton');
 var React = require('react');
 
 var _ = require('lodash');
-var meetingPropType = require('types/meetingPropType');
+var meetingRelationPropType = require('types/meetingRelationPropType');
+var userPropType = require('types/userPropType');
 
 var AttendeeBlock = React.createClass({
 
   propTypes: {
-    meeting: meetingPropType.isRequired,
-    isHost: React.PropTypes.bool.isRequired,
-    isAttendee: React.PropTypes.bool.isRequired
+    meetingKey: React.PropTypes.string.isRequired,
+    meetingRelation: meetingRelationPropType.isRequired,
+    attendees: React.PropTypes.arrayOf(userPropType)
+  },
+
+  getDefaultProps: function() {
+    return {
+      attendees: []
+    };
   },
 
   render: function() {
-    var {meeting, isHost, isAttendee} = this.props;
-    var attendees = [meeting.host].concat(meeting.attendees);
+    var {meetingKey, attendees, meetingRelation} = this.props;
 
     return (
       <div className="AttendeeBlock">
@@ -24,9 +30,8 @@ var AttendeeBlock = React.createClass({
           totalNumber={attendees.length}
         />
         <SubscribeButton
-          meetingKey={meeting.key}
-          isHost={isHost}
-          isAttendee={isAttendee}
+          meetingKey={meetingKey}
+          meetingRelation={meetingRelation}
         />
       </div>
     );

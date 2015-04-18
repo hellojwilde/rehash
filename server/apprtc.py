@@ -485,6 +485,7 @@ class APIHandler(webapp2.RequestHandler):
       'userfetch': self.user_fetch,
       'meetingfetch': self.meeting_fetch,
       'meetingcreate': self.meeting_create,
+      'meetingupdate': self.meeting_update,
       'agendafetch': self.agenda_fetch,
       'explorefetch': self.explore_fetch,
       'meetingjoin': self.meeting_join
@@ -576,6 +577,16 @@ class APIHandler(webapp2.RequestHandler):
     meetingAgenda = AgendaModel(parent=key)
     meetingAgenda.topics = []
     meetingAgenda.put()
+
+    return meeting
+
+  @classmethod
+  def meeting_update(self, request, response):
+    meeting = ndb.Key(urlsafe=request.get('key')).get()
+    meeting.title = request.get('title')
+    meeting.description = request.get('description')
+    meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
+    meeting.put()
 
     return meeting
 

@@ -9,6 +9,7 @@ class ModalStore extends Store {
     this.register(modalActionIds.push, this.handleModalPush);
     this.register(modalActionIds.pop, this.handleModalPop);
 
+    this.registry = registry;
     this.state = {
       stack: []
     };
@@ -19,15 +20,11 @@ class ModalStore extends Store {
   }
 
   handleModalPush(modal) {
-    this.setState({
-      stack: this.state.stack.concat(modal)
-    });
+    this.setState({stack: this.state.stack.concat(modal)});
   }
 
   handleModalPop() {
-    this.setState({
-      stack: this.state.stack.slice(0, -1)
-    });
+    this.setState({stack: this.state.stack.slice(0, -1)});
   }
 }
 

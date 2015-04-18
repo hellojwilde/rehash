@@ -14,18 +14,16 @@ var LoginModal = React.createClass({
   },
 
   propTypes: {
+    onComplete: React.PropTypes.func.isRequired,
+    onCancel: React.PropTypes.func.isRequired,
     message: React.PropTypes.string,
-    redirect: React.PropTypes.string,
-    onComplete: React.PropTypes.func,
-    onCancel: React.PropTypes.func
+    redirect: React.PropTypes.string
   },
 
   getDefaultProps: function() {
     return {
       message: null,
       redirect: null,
-      onComplete: function() {},
-      onCancel: function() {}
     };
   },
 

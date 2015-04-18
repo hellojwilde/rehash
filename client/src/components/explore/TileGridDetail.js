@@ -10,6 +10,7 @@ const DEFAULT_HEIGHT = 500;
 var TileGridDetail = React.createClass({
 
   propTypes: {
+    columns: React.PropTypes.number.isRequired,
     column: React.PropTypes.number.isRequired
   },
 
@@ -24,7 +25,7 @@ var TileGridDetail = React.createClass({
         </div>
 
         <div className="TileGridDetail-header">
-          <ArrowMask column={this.props.column}/>
+          <ArrowMask columns={this.props.columns} column={this.props.column}/>
 
           <div className="container TileGridDetail-header-controls">
             <LinkNoClobber to="explore" className="pull-right btn btn-link">

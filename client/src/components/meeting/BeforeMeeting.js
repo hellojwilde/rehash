@@ -1,23 +1,37 @@
 var AgendaList = require('components/meeting/agenda/AgendaList');
 var AttendeeBlock = require('components/meeting/attendee/AttendeeBlock');
+var EditMeetingModal = require('modals/EditMeetingModal');
+var IconButton = require('components/common/IconButton');
 var React = require('react');
 var ScheduleLabel = require('components/common/ScheduleLabel');
 
 var meetingPropType = require('types/meetingPropType');
+var meetingRelationPropType = require('types/meetingRelationPropType');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./BeforeMeeting.css');
 
 var BeforeMeeting = React.createClass({
 
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
+  },
+
   propTypes: {
-    isHost: React.PropTypes.bool.isRequired,
-    isAttendee: React.PropTypes.bool.isRequired,
-    meeting: meetingPropType.isRequired
+    meeting: meetingPropType.isRequired,
+    meetingRelation: meetingRelationPropType.isRequired
+  },
+
+  handleEditClick: function() {
+    var modalActions = this.context.flux.getActions('modal');
+    
+    modalActions.push(EditMeetingModal, {
+      meetingKey: this.props.meeting.key
+    });
   },
 
   render: function() {
-    var {meeting, isHost} = this.props;
+    var {meeting, meetingRelation} = this.props;
 
     return (
       <div className="BeforeMeeting">
@@ -25,9 +39,16 @@ var BeforeMeeting = React.createClass({
           <div className="container">
             <div className="row">
               <div className="col-sm-6 col-md-8 BeforeMeeting-agenda">
-                <AgendaList isHost={isHost} />
+                <AgendaList isHost={meetingRelation.isHost} />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
+                <div className="BeforeMeeting-description-header">
+                  <button 
+                    onClick={this.handleEditClick} 
+                    className="btn btn-default btn-sm">
+                    Edit
+                  </button>
+                </div>
                 <div>
                   <ScheduleLabel 
                     start={meeting.start} 
@@ -39,7 +60,11 @@ var BeforeMeeting = React.createClass({
                     <p>{meeting.description}</p>
                   </div>
 
-                  <AttendeeBlock {...this.props}/>
+                  <AttendeeBlock 
+                    meetingKey={meeting.key}
+                    meetingRelation={meetingRelation}
+                    attendees={meeting.attendees}
+                  />
                 </div>
               </div>
             </div>

@@ -238,14 +238,26 @@ var ExampleAPI = {
       request: 'meetingCreate',
       title: meeting.title, 
       description: meeting.description,
-      start: moment.utc(meeting.start).toISOString(), 
-      // note here the attendees shall be a list of numerical user ids to maintain atomicity 
-      attendees: [],
-      topics: []
-    });
+      start: moment.utc(meeting.start).toISOString()
+    }).then((meeting) => {
+      meeting.start = moment.utc(meeting.start);
+      return meeting;
+    });;
   },
 
-
+  meetingUpdate: function(meetingKey, meeting) {
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'meetingUpdate',
+      key: meetingKey,
+      title: meeting.title,
+      description: meeting.description,
+      start: moment.utc(meeting.start).toISOString()
+    }).then((meeting) => {
+      meeting.start = moment.utc(meeting.start);
+      return meeting;
+    });;
+  },
 
   //
   //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
