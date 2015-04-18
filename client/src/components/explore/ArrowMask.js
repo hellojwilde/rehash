@@ -12,7 +12,7 @@ var ArrowMask = React.createClass({
   },
 
   render: function() {
-    var {column} = this.props;
+    var {column, columns} = this.props;
 
     return (
       <div className="ArrowMask">
@@ -21,7 +21,8 @@ var ArrowMask = React.createClass({
           <div className="row ArrowMask-row">
             <div className={joinClasses(
               'ArrowMask-row-left-margin',
-              `ArrowMask-row-left-margin-col-${column}`
+              `ArrowMask-row-left-margin-col-${column}`,
+              `ArrowMask-row-left-margin-cols-${columns}`
             )}/>
             <div className="col-md-4 col-sm-6 ArrowMask-cell">
               <div className="ArrowMask-cell-fill"/>
@@ -31,7 +32,8 @@ var ArrowMask = React.createClass({
             </div>
             <div className={joinClasses(
               'ArrowMask-row-right-margin',
-              `ArrowMask-row-right-margin-col-${column}`
+              `ArrowMask-row-right-margin-col-${column}`,
+              `ArrowMask-row-right-margin-cols-${columns}`
             )}/>
           </div>
         </div>

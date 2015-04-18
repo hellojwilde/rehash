@@ -27,7 +27,8 @@
 }
 
 .ArrowMask-row-left-margin-col-0,
-.ArrowMask-row-right-margin-col-2 {
+.ArrowMask-row-right-margin-col-2,
+.ArrowMask-row-right-margin-col-1.ArrowMask-row-right-margin-cols-2 {
   flex: 0;
 }
 
