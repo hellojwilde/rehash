@@ -22,7 +22,7 @@ class WebRTCStore extends Store {
       ['fetchTurn', this.handleFetchTurn],
       ['prepareAsHost', this.handlePrepareAsHost],
       ['disconnect', this.handleDisconnect],
-      
+
       // Internal actions regarding signaling and RTCPeerConnection.
       ['_createPeer', this.handleCreatePeer],
       ['_createPeerLocalStream', this.handleCreatePeerLocalStream],
@@ -102,7 +102,6 @@ class WebRTCStore extends Store {
 
     var {uris, username, password} = turnServer;
     var iceServers = createIceServers(uris, username, password);
-
 
     if (iceServers !== null) {
       var {pcConfig} = this.state;
