@@ -1,7 +1,6 @@
 var React = require('react');
 
 var _ = require('lodash');
-var joinClasses = require('react/lib/joinClasses');
 var userPropType = require('types/userPropType');
 
 require('./AttendeePreview.css');
@@ -13,8 +12,12 @@ var AttendeePreview = React.createClass({
     totalNumber: React.PropTypes.number.isRequired
   },
 
-  render: function() {
-    var {previewed, totalNumber, className, ...otherProps} = this.props;
+  renderThumbnailsEmpty: function() {
+    return <p>No attendees...yet!</p>
+  },
+
+  renderThumbnails: function() {
+    var {previewed, totalNumber} = this.props;
     var thumbnails = previewed.map((attendee, idx) => (
       <img 
         key={idx}
@@ -31,12 +34,14 @@ var AttendeePreview = React.createClass({
         </div>
       );
     }
+  },
 
+  render: function() {
     return (
-      <div 
-        {...otherProps}
-        className={joinClasses('AttendeePreview', className)}>
-        {thumbnails}
+      <div className="AttendeePreview">
+        {this.props.previewed.length > 0 
+          ? this.renderThumbnails() 
+          : this.renderThumbnailsEmpty()}
       </div>
     );
   }
