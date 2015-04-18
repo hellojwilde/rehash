@@ -51,10 +51,6 @@ def generate_random(length):
     word += random.choice('0123456789')
   return word
 
-### convert anything not alphanumberic to '-'
-def sanitize(key):
-  return re.sub('[^a-zA-Z0-9\-]', '-', key)
-
 ### client id based upon room_key to create GAE channels
 ### key().id_or_name() returns the string/number of name/id
 def make_client_id(room, user):
@@ -63,11 +59,6 @@ def make_client_id(room, user):
 def create_channel(user, duration_minutes):
   client_id = make_client_id(room, user)
   return channel.create_channel(client_id, duration_minutes)
-
-def make_loopback_answer(message):
-  message = message.replace("\"offer\"", "\"answer\"")
-  message = message.replace("a=ice- options:google-ice\\r\\n", "")
-  return message
 
 ### need to implement: if the host quit, we have to close the sesssion
 def handle_message(room, user, message):
@@ -176,11 +167,9 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
     user_id = session['anonymous_user_id'] = generate_random(8)
     
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self),
+    'webRTC': get_webrtc_config(self, user_id),
     'currentUser': {
       'user': user,
-      'attending': [],
-      'hosting': [],
       'channelToken': channel.create_channel(user_id, token_timeout)
     }
   })
@@ -388,12 +377,7 @@ class RequestBroadcastData(webapp2.RequestHandler):
         room.add_user(user)
         #initiator = 1
 
-    if turn_server == 'false':
-      turn_server = None
-      turn_url = ''
-    else:
-      turn_url = 'https://computeengineondemand.appspot.com/'
-      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
+
 
     token = create_channel(room, user, token_timeout)
 
@@ -449,16 +433,6 @@ class QuestionModel(ndb.Model):
   meetingId = ndb.StringProperty()
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
-
-# class AnswerModel(ndb.Model):
-#   content = ndb.StringProperty()
-
-class AdaptJsonEncoder(json.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, datetime.datetime):
-      return obj.strftime('%Y-%m-%d %H:%M:%S')
-    return json.JSONEncoder.default(self, obj)
-
 
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
