@@ -1,5 +1,7 @@
 var AgendaList = require('components/meeting/agenda/AgendaList');
 var AttendeeBlock = require('components/meeting/attendee/AttendeeBlock');
+var EditMeetingModal = require('modals/EditMeetingModal');
+var IconButton = require('components/common/IconButton');
 var React = require('react');
 var ScheduleLabel = require('components/common/ScheduleLabel');
 
@@ -11,9 +13,21 @@ require('./BeforeMeeting.css');
 
 var BeforeMeeting = React.createClass({
 
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired
+  },
+
   propTypes: {
     meeting: meetingPropType.isRequired,
     meetingRelation: meetingRelationPropType.isRequired
+  },
+
+  handleEditClick: function() {
+    var modalActions = this.context.flux.getActions('modal');
+    
+    modalActions.push(EditMeetingModal, {
+      meetingKey: this.props.meeting.key
+    });
   },
 
   render: function() {
@@ -28,6 +42,13 @@ var BeforeMeeting = React.createClass({
                 <AgendaList isHost={meetingRelation.isHost} />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
+                <div className="BeforeMeeting-description-header">
+                  <button 
+                    onClick={this.handleEditClick} 
+                    className="btn btn-default btn-sm">
+                    Edit
+                  </button>
+                </div>
                 <div>
                   <ScheduleLabel 
                     start={meeting.start} 

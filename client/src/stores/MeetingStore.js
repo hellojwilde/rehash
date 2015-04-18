@@ -12,7 +12,8 @@ class MeetingStore extends Store {
     
     this.register(exploreActionIds.fetch, this.handleExploreFetch);
     this.register(meetingActionIds.fetch, this.handleMeetingFetch);
-    this.register(meetingActionIds.create, this.handleMeetingCreate);
+    this.register(meetingActionIds.create, this.handleMeetingFetch);
+    this.register(meetingActionIds.update, this.handleMeetingFetch);
 
     this.registry = registry;
     this.state = {};
@@ -48,10 +49,6 @@ class MeetingStore extends Store {
 
   handleMeetingFetch(meeting) {
     this.setState({[meeting.key]: meeting});
-  }
-
-  handleMeetingCreate(meeting) {
-    this.setState({[meeting.key]: meeting})
   }
 }
 
