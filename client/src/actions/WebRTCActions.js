@@ -89,14 +89,14 @@ class WebRTCActions extends Actions {
 
     switch(message.type) {
       case 'offer':
-        webRTCActions._receivePeerDescription(message);
+        webRTCActions._receivePeerRemoteDescription(message);
         webRTCActions._createPeerAnswer();
         break;
       case 'answer':
         webRTCActions._receivePeerRemoteDescription(message);
         break;
       case 'candidate':
-        webRTCActions._receiveIceCandidate(message);
+        webRTCActions._receivePeerIceCandidate(message);
         break;
     }
   }

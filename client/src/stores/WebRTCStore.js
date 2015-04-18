@@ -18,20 +18,25 @@ class WebRTCStore extends Store {
     super();
 
     var webRTCActionIds = registry.getActionIds('webRTC');
+    var webRTCActionBindings = [
+      // Public facing actions.
+      ['fetchTurn', this.handleFetchTurn],
+      ['prepareAsHost', this.handlePrepareAsHost],
+      ['disconnect', this.handleDisconnect],
 
-    // Public facing actions.
-    this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
-    this.register(webRTCActionIds.prepareAsHost, this.handleWebRTCPrepareAsHost);
-    this.register(webRTCActionIds.disconnect, this.handleWebRTCDisconnect);
+      // Internal actions regarding signaling and RTCPeerConnection.
+      ['_createPeer', this.handleCreatePeer],
+      ['_createPeerLocalStream', this.handleCreatePeerLocalStream],
+      ['_createPeerOffer', this.handleCreatePeerLocalDescription],
+      ['_createPeerAnswer', this.handleCreatePeerLocalDescription],
+      ['_receivePeerIceCandidate', this.handleReceivePeerIceCandidate],
+      ['_receivePeerRemoteDescription', this.handleReceivePeerRemoteDescription],
+      ['_receivePeerRemoteStream', this.handleReceivePeerRemoteStream]
+    ];
 
-    // Internal actions regarding signaling and RTCPeerConnection.
-    this.register(webRTCActionIds._createPeer, this.handleWebRTCCreatePeer);
-    this.register(webRTCActionIds._createPeerLocalStream, this.handleWebRTCCreatePeerLocalStream);
-    this.register(webRTCActionIds._createPeerOffer, this.handleWebRTCCreateLocalDescription);
-    this.register(webRTCActionIds._createPeerAnswer, this.handleWebRTCCreateLocalDescription);
-    this.register(webRTCActionIds._receivePeerIceCandidate, this.handleWebRTCReceivePeerIceCandidate);
-    this.register(webRTCActionIds._receivePeerRemoteDescription, this.handleWebRTCReceivePeerRemoteDescription);
-    this.register(webRTCActionIds._receivePeerRemoteStream, this.handleWebRTCReceivePeerRemoteStream);
+    webRTCActionBindings.forEach(([action, handler]) => {
+      this.register(webRTCActionIds[action], handler);
+    });
 
     this.registry = registry;
     this.state = {
@@ -72,11 +77,11 @@ class WebRTCStore extends Store {
     return getPreferredAudioCodec(sdp, audioReceiveCodec);
   }
 
-  handleWebRTCPrepareAsHost(stream) {
+  handlePrepareAsHost(stream) {
     this.setState({localStream: stream});
   }
 
-  handleWebRTCDisconnect() {
+  handleDisconnect() {
     var {localStream, pc} = this.state;
 
     localStream.stop();
@@ -90,7 +95,7 @@ class WebRTCStore extends Store {
     });
   }
 
-  handleWebRTCFetchTurn(turnServer) {
+  handleFetchTurn(turnServer) {
     if (turnServer === null) {
       this.setState({isTurnFetchingComplete: true});
       return;
@@ -107,27 +112,27 @@ class WebRTCStore extends Store {
     }
   }
 
-  handleWebRTCCreatePeer(pc) {
+  handleCreatePeer(pc) {
     this.setState({pc: pc})
   }
 
-  handleWebRTCCreatePeerLocalStream(stream) {
+  handleCreatePeerLocalStream(stream) {
     this.state.pc.addStream(stream);
   }
 
-  handleWebRTCCreateLocalDescription(sessionDescription) {
+  handleCreatePeerLocalDescription(sessionDescription) {
     this.state.pc.setLocalDescription(sessionDescription);
   }
 
-  handleWebRTCReceivePeerIceCandidate(candidate) {
+  handleReceivePeerIceCandidate(candidate) {
     this.state.pc.addIceCandidate(candidate);
   }
 
-  handleWebRTCReceivePeerRemoteDescription(sessionDescription) {
+  handleReceivePeerRemoteDescription(sessionDescription) {
     this.state.pc.setRemoteDescription(sessionDescription);
   }
 
-  handleWebRTCReceivePeerRemoteStream(stream) {
+  handleReceivePeerRemoteStream(stream) {
     this.setState({remoteStream: stream});
   }
 }
