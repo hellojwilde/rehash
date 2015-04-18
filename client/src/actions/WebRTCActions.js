@@ -209,7 +209,6 @@ class WebRTCActions extends Actions {
   _receivePeerRemoteStream(event) {
     return event.stream;
   }
-
 }
 
 module.exports = WebRTCActions;
