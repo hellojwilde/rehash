@@ -168,7 +168,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   user_id = None
 
   if session.get('id'):
-    user = fetch_user_for_session(session).to_dict()
+    user = fetch_user_for_session(session)
     user_id = session['id']
   elif session.get('anonymous_user_id'):
     user_id = session['anonymous_user_id']
@@ -465,6 +465,13 @@ class APIJSONEncoder(json.JSONEncoder):
     if isinstance(obj, datetime.datetime):
       return obj.isoformat()
 
+    if isinstance(obj, MeetingModel):
+      model_dict = obj.to_dict()
+      model_dict['key'] = obj.key
+      model_dict['host'] = obj.host.get()
+      model_dict['attendees'] = [attendee.get() for attendee in obj.attendees]
+      return model_dict
+
     if isinstance(obj, ndb.Model):
       model_dict = obj.to_dict()
       model_dict['key'] = obj.key
@@ -511,39 +518,6 @@ class APIHandler(webapp2.RequestHandler):
     for each in LogModel.query():
       logging.info('LOGGED into ndb: ' + method)
 
-  @classmethod 
-  def build_meeting(self, meeting):
-    attendees = []
-    # construct attendees list to be sent back
-    for attendeeId in meeting.attendees:
-      logging.info(attendeeId)
-      instance = UserModel.get_by_id(attendeeId)
-      attendee = {'id': attendeeId, 
-              'photoUrl': instance.photoUrl,
-              'photoThumbnailUrl': instance.photoThumbnailUrl,
-              'name': instance.name, 
-              'bio': instance.bio
-      }
-      attendees.append(attendee)
-      
-    # construct host object to be sent back
-    instance = UserModel.get_by_id(meeting.host)
-    host = {'id': meeting.host, 
-            'photoUrl': instance.photoUrl,
-            'photoThumbnailUrl': instance.photoThumbnailUrl,
-            'name': instance.name, 
-            'bio': instance.bio
-    }
-
-    data = {'id': meeting.key.id(),
-            'title': meeting.title, 
-            'description': meeting.description,
-            'start': meeting.start,
-            'host': host,
-            'attendees': attendees
-    }
-    return data
-
   @classmethod
   def user_fetch(self, request, response):
     user = UserModel.get_by_id(request.get('userId'))
@@ -572,6 +546,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.topics = copy.deepcopy(request.get('topics'))
     meeting.host = fetch_user_for_session().key
+    meeting.attendees = []
     key = meeting.put()
 
     meetingAgenda = AgendaModel(parent=key)
