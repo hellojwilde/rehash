@@ -11,10 +11,9 @@ var Meeting = React.createClass({
   },
 
   getInitialState: function() {
-    // var {isBroadcasting} = this.props.meeting;
-    // temporary, need to convert back!
-    var isBroadcasting = false;
-    return {view: isBroadcasting ? DuringMeeting : BeforeMeeting};
+    return {
+      view: this.props.meeting.isBroadcasting ? DuringMeeting : BeforeMeeting
+    };
   },
 
   handleRequestViewChange: function(newView) {
@@ -23,7 +22,7 @@ var Meeting = React.createClass({
 
   render: function() {
     var View = this.state.view;
-    return <View {...this.props}/>;
+    return <View {...this.props} />;
   }
 
 });

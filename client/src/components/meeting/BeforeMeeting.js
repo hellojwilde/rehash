@@ -4,6 +4,7 @@ var React = require('react');
 var ScheduleLabel = require('components/common/ScheduleLabel');
 
 var meetingPropType = require('types/meetingPropType');
+var meetingRelationPropType = require('types/meetingRelationPropType');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./BeforeMeeting.css');
@@ -11,13 +12,12 @@ require('./BeforeMeeting.css');
 var BeforeMeeting = React.createClass({
 
   propTypes: {
-    isHost: React.PropTypes.bool.isRequired,
-    isAttendee: React.PropTypes.bool.isRequired,
-    meeting: meetingPropType.isRequired
+    meeting: meetingPropType.isRequired,
+    meetingRelation: meetingRelationPropType.isRequired
   },
 
   render: function() {
-    var {meeting, isHost} = this.props;
+    var {meeting, meetingRelation} = this.props;
 
     return (
       <div className="BeforeMeeting">
@@ -25,7 +25,7 @@ var BeforeMeeting = React.createClass({
           <div className="container">
             <div className="row">
               <div className="col-sm-6 col-md-8 BeforeMeeting-agenda">
-                <AgendaList isHost={isHost} />
+                <AgendaList isHost={meetingRelation.isHost} />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
                 <div>
@@ -39,7 +39,11 @@ var BeforeMeeting = React.createClass({
                     <p>{meeting.description}</p>
                   </div>
 
-                  <AttendeeBlock {...this.props}/>
+                  <AttendeeBlock 
+                    meetingKey={meeting.key}
+                    meetingRelation={meetingRelation}
+                    attendees={meeting.attendees}
+                  />
                 </div>
               </div>
             </div>

@@ -24,7 +24,8 @@ var MeetingHandler = React.createClass({
         key={meetingKey}
         connectToStores={['meeting']}
         stateGetter={([meetingStore]) => ({
-          meeting: meetingStore.getByKey(meetingKey)
+          meeting: meetingStore.getByKey(meetingKey),
+          meetingRelation: meetingStore.getCurrentUserRelationByKey(meetingKey)
         })}
         render={(state) => (
           <DocumentTitle title={`${state.meeting.title} - Rehash`}>
