@@ -104,12 +104,12 @@ def get_webrtc_config(self):
     # Set dtls to false as DTLS does not work for loopback.
     dtls = 'false'
 
-  # if turn_server == 'false':
-  turn_server = None
-  turn_url = ''
-  # else:
-  #   turn_url = 'https://computeengineondemand.appspot.com/'
-  #   turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
+  if turn_server == 'false':
+    turn_server = None
+    turn_url = ''
+  else:
+    turn_url = 'https://computeengineondemand.appspot.com/'
+    turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
 
   pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
