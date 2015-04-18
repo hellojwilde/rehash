@@ -7,6 +7,7 @@ require('./ArrowMask.css');
 var ArrowMask = React.createClass({
 
   propTypes: {
+    columns: React.PropTypes.number.isRequired,
     column: React.PropTypes.number.isRequired
   },
 

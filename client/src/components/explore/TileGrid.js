@@ -12,9 +12,9 @@ require('./TileGrid.css');
 
 function getColumnsForWindow() {
   var width = window.innerWidth;
-  if (width > 768) {
+  if (width > 992) {
     return 3;
-  } else if (width > 992){
+  } else if (width > 768){
     return 2;
   } else {
     return 1;
@@ -35,6 +35,24 @@ var TileGrid = React.createClass({
       detailMeetingKey: null,
       detail: null
     };
+  },
+
+  getInitialState: function() {
+    return {
+      columns: getColumnsForWindow() 
+    };
+  },
+
+  componentDidMount: function() {
+    window.addEventListener('resize', this.handleWindowResize, false);
+  },
+
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.handleWindowResize, false);
+  },
+
+  handleWindowResize: function() {
+    this.setState({columns: getColumnsForWindow()});
   },
 
   handleDetailRef: function(detail) {
@@ -58,7 +76,7 @@ var TileGrid = React.createClass({
 
   render: function() {
     var {meetings, detailMeetingKey, detail} = this.props;
-    var rows = _.chunk(meetings, getColumnsForWindow());
+    var rows = _.chunk(meetings, this.state.columns);
 
     return (
       <div className="TileGrid">
@@ -88,6 +106,7 @@ var TileGrid = React.createClass({
                   <TileGridDetail 
                     ref={this.handleDetailRef}
                     key="detail" 
+                    columns={this.state.columns}
                     column={rowDetailIndex}>
                     {detail}
                   </TileGridDetail>
