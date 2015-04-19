@@ -21,6 +21,8 @@ class WebRTCStore extends Store {
       // Public facing actions.
       ['fetchTurn', this.handleFetchTurn],
       ['prepareAsHost', this.handlePrepareAsHost],
+      ['connectAsHost', [this.handleConnectBegin]],
+      ['connectAsAudience', [this.handleConnectBegin]],
       ['disconnect', this.handleDisconnect],
 
       // Internal actions regarding signaling and RTCPeerConnection.
@@ -34,7 +36,11 @@ class WebRTCStore extends Store {
     ];
 
     webRTCActionBindings.forEach(([action, handler]) => {
-      this.register(webRTCActionIds[action], handler);
+      if (_.isArray(handler)) {
+        this.registerAsync(webRTCActionIds[action], ...handler);
+      } else {
+        this.register(webRTCActionIds[action], handler);
+      }
     });
 
     this.registry = registry;
@@ -78,6 +84,10 @@ class WebRTCStore extends Store {
 
   handlePrepareAsHost(stream) {
     this.setState({localStream: stream});
+  }
+
+  handleConnectBegin(meetingId) {
+    this.setState({meetingId: meetingId});
   }
 
   handleDisconnect() {
