@@ -185,9 +185,10 @@ def on_message(room, user_id, message):
 
 @db.transactional
 def connect_user(user_id):
-  ### add user to connectedUserModel:
-  connecteduser = connectedUserModel()
+  ### add user to ConnectedUserModel:
+  connecteduser = ConnectedUserModel()
   key = connecteduser.put()
+  session = get_current_session()
   session['connect_user_key'] = key
 
 def fetch_user_for_session(session=None):
@@ -445,7 +446,7 @@ def channel_messageConnected(message):
     channel.send_message(user.key.id(), message)
 
 def channel_messageByMeeting(message, meeting):
-  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting = meeting)
+  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting):
     if user.key != session['connect_user_key']:
       channel.send_message(user.key.id(), message)
 
@@ -455,9 +456,6 @@ def channel_messageByMeeting(message, meeting):
 # For methods that involves a write, written data is stored as data
 # FOr methods that involves a fetch, response data is stored as data 
 ### Maintain users currently connected for broadcasting 
-class ConnectedUserModel(ndb.Model):
-  activeMeeting = ndb.KeyProperty(kind = MeetingModel)
-  ishosting = 
 
 class LogModel(ndb.Model):
   datetime = ndb.DateTimeProperty(auto_now_add=True)
@@ -496,6 +494,10 @@ class QuestionModel(ndb.Model):
   meetingId = ndb.StringProperty()
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
+
+class ConnectedUserModel(ndb.Model):
+  activeMeeting = ndb.KeyProperty(kind = MeetingModel)
+
 
 # class AnswerModel(ndb.Model):
 #   content = ndb.StringProperty()
