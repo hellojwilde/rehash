@@ -87,7 +87,6 @@ def handle_message(user, message):
   else:
     channel_messageByMeeting(meeting)
 
-
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
 
@@ -116,14 +115,53 @@ def on_message(room, user_id, message):
     new_message.put()
     logging.info('Saved message for user ' + user_id)
 
+### transactional means atomic operation here
+@db.transactional
+def connect_user_to_room(room_key, user):
+  room = Room.get_by_key_name(room_key)
+  # Check if room has user in case that disconnect message comes before
+  # connect message with unknown reason, observed with local AppEngine SDK.
+  if room and room.has_user(user):
+    room.set_connected(user)
+    logging.info('User ' + user + ' connected to room ' + room_key)
+    logging.info('Room ' + room_key + ' has state ' + str(room))
+  else:
+    logging.warning('Unexpected Connect Message to room ' + room_key)
+  return room
 
 @db.transactional
-def connect_user(user_id):
+def connect_user(user=None):
   ### add user to ConnectedUserModel:
   connecteduser = ConnectedUserModel()
+  connecteduser.user = user.key
   key = connecteduser.put()
+
   session = get_current_session()
-  session['connect_user_key'] = key
+  session['connect_user_key'] = key.urlsafe()
+
+  return key.urlsafe()
+
+def disconnect_user():
+  ### remove user from ConnectedUserModel:
+  ndb.Key(urlsafe=session['connect_user_key']).delete()
+
+def channel_messageConnected(message):
+  ### message all connected users 
+  for connecteduser in ConnectedUserModel.query():
+    if connecteduser.key != session['connect_user_key']:
+      channel.send_message(
+        connecteduser.key.id(), 
+        json.dumps(message, cls=APIJSONEncoder)
+      )
+
+def channel_messageByMeeting(message, meetingKey):
+  ### message all connected users with a specified active meeting
+  for connecteduser in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting):
+    if connecteduser.key != session['connect_user_key']:
+      channel.send_message(
+        connecteduser.key.id(),
+        json.dumps(message, cls=APIJSONEncoder)
+      )
 
 def fetch_user_for_session(session=None):
   if session is None:
@@ -147,24 +185,14 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
     default = 30
   )
 
-  user = None
-  user_id = None
-
-  if session.get('id'):
-    user = fetch_user_for_session(session)
-    user_id = session['id']
-  elif session.get('anonymous_user_id'):
-    user_id = session['anonymous_user_id']
-  else:
-    user_id = session['anonymous_user_id'] = generate_random(8)
-  
-  connect_user(user_id)
+  user = fetch_user_for_session(session)
+  connecteduser_id = connect_user(user)
 
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self, user_id),
+    'webRTC': get_webrtc_config(self, connecteduser_id),
     'currentUser': {
       'user': user,
-      'channelToken': channel.create_channel(user_id, token_timeout)
+      'channelToken': channel.create_channel(connecteduser_id, token_timeout)
     }
   })
 
@@ -265,45 +293,10 @@ class Room(db.Model):
     else: 
       return False
 
-### transactional means atomic operation here
-@db.transactional
-def connect_user_to_room(room_key, user):
-  room = Room.get_by_key_name(room_key)
-  # Check if room has user in case that disconnect message comes before
-  # connect message with unknown reason, observed with local AppEngine SDK.
-  if room and room.has_user(user):
-    room.set_connected(user)
-    logging.info('User ' + user + ' connected to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-  else:
-    logging.warning('Unexpected Connect Message to room ' + room_key)
-  return room
-
-### figure out what the self.request.get('from') obtains
-class ConnectPage(webapp2.RequestHandler):
-  def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
-    with LOCK:
-      room = connect_user_to_room(room_key, user)
-      if room and room.has_user(user):
-        send_saved_messages(user)
-
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if room and room.has_user(user):
-        other_users = room.get_other_users(user)
-        for other_user in other_users:
-          ##### look into the add/removal scheme here! 
-          #room.remove_user(user) #, we also remove user on_message, if do it here, remove 2
-          logging.info('User ' + user + ' removed from room ' + room_key)
-          logging.info('Room ' + room_key + ' has state ' + str(room))
-    logging.warning('User ' + user + ' disconnected from room ' + room_key)
+    disconnect_user();
 
 ### Got message from clients here? 
 class MessagePage(webapp2.RequestHandler):
@@ -324,6 +317,7 @@ class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
     fetch_initial_store_data_and_render(self)
 
+<<<<<<< HEAD
 ### upon xmlhttprequest for webrtc, return initial data set for channel
 class RequestBroadcastData(webapp2.RequestHandler):
   def get(self, room_key):
@@ -377,6 +371,8 @@ def channel_messageByMeeting(message, meeting):
     if user.key != session['connect_user_key']:
       channel.send_message(user.key.id(), message)
 
+=======
+>>>>>>> 590fbdc961a0f486eb4c44d8e3bc88a49718da6e
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
 # Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
@@ -428,7 +424,8 @@ class QuestionModel(ndb.Model):
   answers = ndb.StringProperty(repeated=True)
 
 class ConnectedUserModel(ndb.Model):
-  activeMeeting = ndb.KeyProperty(kind = MeetingModel)
+  user = ndb.KeyProperty(kind=UserModel)
+  activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -684,7 +681,6 @@ app = webapp2.WSGIApplication([
     (r'/message/([^/]+)', MessagePage),
     (r'/meeting/([^/]+)', MeetingPage),
     (r'/explore/meeting/([^/]+)', MeetingPage),
-    (r'/meeting/([^/]+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
