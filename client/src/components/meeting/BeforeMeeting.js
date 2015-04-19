@@ -49,22 +49,32 @@ var BeforeMeeting = React.createClass({
                     Edit
                   </button>
                 </div>
-                <div>
-                  <ScheduleLabel 
-                    start={meeting.start} 
-                    isBroadcasting={meeting.isBroadcasting}
-                  />
+                <div className="BeforeMeeting-description-content">
+                  <div>
+                    <ScheduleLabel 
+                      start={meeting.start} 
+                      isBroadcasting={meeting.isBroadcasting}
+                    />
 
-                  <div className="BeforeMeeting-description-core">
                     <h2>{meeting.title}</h2>
                     <p>{meeting.description}</p>
-                  </div>
 
-                  <AttendeeBlock 
-                    meetingKey={meeting.key}
-                    meetingRelation={meetingRelation}
-                    attendees={meeting.attendees}
-                  />
+                    <AttendeeBlock 
+                      meetingKey={meeting.key}
+                      meetingRelation={meetingRelation}
+                      attendees={meeting.attendees}
+                    />
+                  </div>
+                </div>
+                <div className="BeforeMeeting-description-footer">
+                  <IconButton
+                    className="btn-lg btn-block btn-primary BeforeMeeting-broadcast-button"
+                    icon="facetime-video">
+                    Broadcast
+                  </IconButton>
+                  <small className="text-muted">
+                    We'll let you check your video before you go live. 
+                  </small>
                 </div>
               </div>
             </div>

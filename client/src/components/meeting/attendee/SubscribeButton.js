@@ -12,7 +12,7 @@ var SubscribeButton = React.createClass({
 
   propTypes: {
     meetingKey: React.PropTypes.string.isRequired,
-    meetingRelation: meetingRelationPropType.isRequired
+    isAttendee: React.PropTypes.bool.isRequired
   },
 
   handleClick: function() {
@@ -25,28 +25,16 @@ var SubscribeButton = React.createClass({
     });
   },
 
-  getLabel: function() {
-    var {isHost, isAttendee} = this.props.meetingRelation;
-
-    if (isHost) {
-      return 'Hosting';
-    } else if (isAttendee) {
-      return 'Subscribed';
-    } else {
-      return 'Subscribe';
-    }
-  },
-
   render: function() {
-    var {isHost, isAttendee} = this.props.meetingRelation;
+    var {isAttendee} = this.props;
 
     return (
       <IconButton
-        className="btn-lg btn-default"
-        icon={(isAttendee || isHost) ? 'ok' : 'plus'} 
-        disabled={isHost}
+        className="btn-default"
+        icon={(isAttendee) ? 'ok' : 'plus'} 
+        disabled={isAttendee}
         onClick={this.handleClick}>
-        {this.getLabel()}
+        {isAttendee ? 'Subscribed' : 'Subscribe'}
       </IconButton>
     );
   }

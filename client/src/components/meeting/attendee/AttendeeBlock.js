@@ -29,10 +29,12 @@ var AttendeeBlock = React.createClass({
           previewed={_.take(attendees, 5)}
           totalNumber={attendees.length}
         />
-        <SubscribeButton
-          meetingKey={meetingKey}
-          meetingRelation={meetingRelation}
-        />
+        {!meetingRelation.isHost && (
+          <SubscribeButton
+            meetingKey={meetingKey}
+            isAttendee={meetingRelation.isAttendee}
+          />
+        )}
       </div>
     );
   }
