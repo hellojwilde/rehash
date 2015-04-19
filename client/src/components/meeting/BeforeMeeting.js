@@ -29,7 +29,7 @@ var BeforeMeeting = React.createClass({
     var modalActions = this.context.flux.getActions('modal');
     
     modalActions.push(EditMeetingModal, {
-      meetingKey: this.props.meeting.key
+      meetingId: this.props.meeting.id
     });
   },
 

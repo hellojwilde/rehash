@@ -1,101 +1,6 @@
 var _ = require('lodash');
 var moment = require('moment');
 
-var USERS = {
-  0: {
-    id: 0,
-    photoUrl: 'http://placehold.it/400x300',
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Jonathan Wilde',
-    affiliation: 'Tufts University',
-    bio: ''
-  },
-  4: {
-    id: 4,
-    photoUrl: 'http://placehold.it/400x300',
-    name: 'Coleen Jose',
-    bio: 
-      'Coleen Jose is an American-Filipino multimedia journalist and \
-      documentary photographer. She writes and shoots for publications in the \
-      US and Philippines. She was a reporting fellow for E&E Publishing\'s \
-      ClimateWire in Washington, DC.'
-  },
-  5: {
-    id: 5,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Andreas Moser',
-    affiliation: 'MIT Media Lab'
-  },
-  6: {
-    id: 6,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Silya Mezyan',
-    affiliation: 'Al Akhawayn University'
-  },
-  7: {
-    id: 7,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Karina Wójcik',
-    affiliation: 'Harvard School of Public Health'
-  },
-  8: {
-    id: 8,
-    photoThumbnailUrl: 'http://placehold.it/50x50',
-    name: 'Biel Pérez',
-    affiliation: 'University of Barcelona'
-  }
-};
-
-var MEETING_ID = 0;
-
-var MEETINGS = {
-  0: {
-    id: 0,
-    title: 'The Philippines’s Outsourcing Wave',
-    description:
-      'Coleen Jose will discuss the process of reporting on the rapid \
-       increase in outsourcing operations in the Philippines and the impacts \
-       on Philippine youth.',
-    start: moment().subtract(10, 'm'),
-    host: USERS[4],
-    attendees: [
-      USERS[5], 
-      USERS[6],
-      USERS[7],
-      USERS[8]
-    ]
-  }
-};
-
-var AGENDAS = {
-  0: {
-    meetingKey: 0,
-    topics: [
-      {
-        id: 0,
-        content: 
-          'Challenges with competition for an outsourcing job and the role of \
-           brains and beauty in hiring decisions',
-        questions: []
-      },
-      {
-        id: 1,
-        content:
-          'Exploring the reporting process for the project and the challenges \
-           faced during production',
-        questions: []
-      },
-      {
-        id: 2,
-        content:
-          'Exploring the reporting process for the project and the challenges \
-           faced during production',
-        questions: []
-      }
-    ]
-  }
-}
-
 // Test implementation
 const BASE_URL = '/api';
 
@@ -112,10 +17,6 @@ function sendAjaxRequest(reqData) {
       data: reqData,
       dataType: 'json',
       success: function(data) {
-        if (data.error == 'not found') {
-          handleAjaxError(data.error, reject);
-          return;
-        }
         resolve(data);
       },
       error: handleAjaxError
@@ -165,13 +66,13 @@ var ExampleAPI = {
    * we won't have the meeting already cached from the explore page.
    * This fetches a single specific meeting to display in the app.
    * 
-   * @param  {number} meetingKey The id of the meeting to fetch.
+   * @param  {number} meetingId The id of the meeting to fetch.
    * @return {Promise}           Resolves to a meeting object.
    */
-  meetingFetch: function(meetingKey) {
+  meetingFetch: function(meetingId) {
     var reqData = {
       format: 'json',
-      key: meetingKey, 
+      id: meetingId, 
       request: 'meetingFetch'
     };
     
@@ -193,7 +94,7 @@ var ExampleAPI = {
    * the user that created the meeting.
    * 
    * @param  {object} meeting  A meeting object without an id.
-   * @return {Promise}         Resolves to an object of shape {key: KEY} 
+   * @return {Promise}         Resolves to an object of shape {id: KEY} 
    *                           that the meeting was saved as.
    */
   meetingCreate: function(meeting) {
@@ -211,11 +112,11 @@ var ExampleAPI = {
     });;
   },
 
-  meetingUpdate: function(meetingKey, meeting) {
+  meetingUpdate: function(meetingId, meeting) {
     return sendAjaxRequest({
       format: 'json',
       request: 'meetingUpdate',
-      key: meetingKey,
+      id: meetingId,
       title: meeting.title,
       description: meeting.description,
       start: moment.utc(meeting.start).toISOString()
@@ -226,10 +127,10 @@ var ExampleAPI = {
   },
 
   // Need to make sure the user has signed in before this is called
-  meetingSubscribe: function(meetingKey) {
+  meetingSubscribe: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
-      meetingKey: meetingKey, 
+      id: meetingId, 
       request: 'meetingsubscribe'
     });
   },
@@ -237,7 +138,7 @@ var ExampleAPI = {
   meetingOpen: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
-      meetingId: meetingId,
+      id: meetingId,
       request: 'meetingopen'
     });
   },
@@ -245,7 +146,7 @@ var ExampleAPI = {
   meetingClose: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
-      meetingId: meetingId,
+      id: meetingId,
       request: 'meetingclose'
     });
   },
@@ -255,47 +156,41 @@ var ExampleAPI = {
   //
 
   /**
-   * @param  {int} meetingKey   
+   * @param  {int} meetingId   
    *         {object} topics   Array of topics
    * @return {Promise}         Resolves to the id that the topics are added to
    */
-  agendaAdd: function(meetingKey, topics){
-    var reqData = {
+  agendaAdd: function(meetingId, topics){
+    return sendAjaxRequest({
       format: 'json',
       request: 'agendaAdd',
-      meetingKey: meetingKey, 
+      meetingId: meetingId, 
       topics: topics
-    };
-    return sendAjaxRequest(reqData);
+    });
   },
 
   /**
-   * @param  {int} meetingKey   
+   * @param  {int} meetingId   
    * @return {Promise}         Resolves to the array of topics 
    */
-  agendaFetch: function(meetingKey) {
-    var reqData = {
+  agendaFetch: function(meetingId) {
+    return sendAjaxRequest({
       format: 'json',
       request: 'agendafetch',
-      meetingKey: meetingKey
-    }
-    var result = sendAjaxRequest(reqData);
-    result.topics = AGENDAS[0].topics;
-    result['meetingKey'] = Number(result['meetingKey']);
-    console.log(result);
-    return Promise.resolve(AGENDAS[0]);
+      meetingId: meetingId
+    });
   },
 
   /**
-   * @param  {int} meetingKey   
+   * @param  {int} meetingId   
    *         {object} question Includes string of question and timestamp
    * @return {Promise}         Resolves to the dict containing question id (int or string?)
    */
-  questionAdd: function(meetingKey, question){
+  questionAdd: function(meetingId, question){
     var reqData = {
       format: 'json',
       request: 'questionAdd',
-      meetingKey: meetingKey, 
+      meetingId: meetingId, 
       question: question
     };
     return sendAjaxRequest(reqData)
@@ -306,54 +201,18 @@ var ExampleAPI = {
   },
 
   /**
-   * @param  {int} meetingKey   
+   * @param  {int} meetingId   
    * @return {Promise}         Resolves to the array of questions on a meeting
    */
-  questionFetch: function(meetingKey) {
+  questionFetch: function(meetingId) {
     var reqData = {
       format: 'json',
       request: 'questionfetch',
-      meetingKey: meetingKey
+      meetingId: meetingId
     }
     var result = sendAjaxRequest(reqData);
     result.topics = AGENDAS[0].topics;
-    result['meetingKey'] = Number(result['meetingKey']);
-    console.log(result);
-    return Promise.resolve(result);
-  },
-
-  /**
-   * @param  {int} questionId   
-   *         {object} question Includes string of answer and timestamp
-   * @return {Promise}         Resolves to the id that the questions are added to
-   */
-  answerAdd: function(questionId, answer){
-    var reqData = {
-      format: 'json',
-      request: 'questionAdd', 
-      questionId: questionId, 
-      answer: answer
-    };
-    return sendAjaxRequest(reqData)
-      .then((result) => {
-        result.id = Number(result.id);
-        return result;
-      });
-  },
-
-  /**
-   * @param  {int} meetingKey   
-   * @return {Promise}         Resolves to the array of questions on a meeting
-   */
-  answerFetch: function(questionId) {
-    var reqData = {
-      format: 'json',
-      request: 'questionfetch',
-      questionId: questionId
-    }
-    var result = sendAjaxRequest(reqData);
-    result.topics = AGENDAS[0].topics;
-    result['questionId'] = Number(result['questionId']);
+    result['meetingId'] = Number(result['meetingId']);
     console.log(result);
     return Promise.resolve(result);
   }

@@ -52,7 +52,7 @@ class WebRTCStore extends Store {
       // State variables representing client status.
       isTurnFetchingComplete: false,
       localStream: null,
-      meetingKey: null,
+      meetingId: null,
       pc: null,
       remoteStream: null
     };
@@ -88,7 +88,7 @@ class WebRTCStore extends Store {
 
     this.setState({
       localStream: null,
-      meetingKey: null,
+      meetingId: null,
       pc: null,
       remoteStream: null
     });

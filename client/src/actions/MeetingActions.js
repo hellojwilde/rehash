@@ -10,14 +10,14 @@ class MeetingActions extends Actions {
     this.api = api;
   }
 
-  fetch(meetingKey) {
+  fetch(meetingId) {
     var meetingStore = this.registry.getStore('meeting');
-    var meeting = meetingStore.getByKey(meetingKey);
+    var meeting = meetingStore.getById(meetingId);
     if (meeting) {
       return Promise.resolve(meeting);
     }
 
-    return this.api.meetingFetch(meetingKey);
+    return this.api.meetingFetch(meetingId);
   }
 
   create(meeting) {
@@ -26,12 +26,12 @@ class MeetingActions extends Actions {
     return this.api.meetingCreate(meeting);
   }
 
-  update(meetingKey, meeting) {
-    return this.api.meetingUpdate(meetingKey, meeting);
+  update(meetingId, meeting) {
+    return this.api.meetingUpdate(meetingId, meeting);
   }
 
-  subscribe(meetingKey) {
-    return this.api.meetingSubscribe(meetingKey);
+  subscribe(meetingId) {
+    return this.api.meetingSubscribe(meetingId);
   }
 
   open(meetingId) {

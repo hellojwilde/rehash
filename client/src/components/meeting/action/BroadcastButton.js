@@ -4,7 +4,7 @@ var IconButton = require('components/common/IconButton');
 var BroadcastButton = React.createClass({
 
   propTypes: {
-    meetingKey: React.PropTypes.string.isRequired,
+    meetingId: React.PropTypes.number.isRequired,
     onBroadcastStart: React.PropTypes.func.isRequired
   },
 
@@ -14,7 +14,7 @@ var BroadcastButton = React.createClass({
 
   handleClick: function() {
     this.context.flux.getActions('webRTC')
-      .connectAsHost(this.props.meetingKey);
+      .connectAsHost(this.props.meetingId);
     this.props.onBroadcastStart();
   },
 

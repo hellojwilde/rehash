@@ -8,12 +8,12 @@ var AgendaButton = React.createClass({
   },
 
   propTypes: {
-    meetingKey: React.PropTypes.string.isRequired
+    meetingId: React.PropTypes.string.isRequired
   },
 
   handleClick: function() {
     this.context.flux.getActions('modal')
-      .push(AgendaModal, {meetingKey: this.props.meetingKey});
+      .push(AgendaModal, {meetingId: this.props.meetingId});
   },
 
   render: function() {

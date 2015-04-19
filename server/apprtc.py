@@ -42,15 +42,6 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
-def generate_random(length):
-  word = ''
-  for _ in range(length):
-    word += random.choice('0123456789')
-  return word
-
-# def sanitize(key):
-#   return re.sub('[^a-zA-Z0-9\-]', '-', key)
-
 ### need to implement: if the host quit, we have to close the sesssion
 def handle_message(user, message):
   # implement broadcast to OTHERUSERS! 
@@ -133,7 +124,7 @@ def connect_user_to_room(room_key, user):
 def connect_user(user=None):
   ### add user to ConnectedUserModel:
   connecteduser = ConnectedUserModel()
-  connecteduser.user = user.key
+  connecteduser.user = user.key if user is not None else None
   key = connecteduser.put()
 
   session = get_current_session()
@@ -163,13 +154,22 @@ def channel_messageByMeeting(message, meetingKey):
         json.dumps(message, cls=APIJSONEncoder)
       )
 
+def fetch_connecteduser_for_session(session=None):
+  if session is None:
+    session = get_current_session()
+
+  if session.get('connect_user_key'):
+    connecteduser = ndb.Key(urlsafe=session['connect_user_key']).get()
+
+  return connecteduser
+
 def fetch_user_for_session(session=None):
   if session is None:
     session = get_current_session()
 
   user = None
   if session.get('id'):
-    user = ndb.Key(UserModel, session['id']).get()
+    user = UserModel.get_by_id(session['id'])
 
   return user
 
@@ -391,11 +391,9 @@ class UserModel(ndb.Model):
   photoUrl = ndb.StringProperty()
   photoThumbnailUrl = ndb.StringProperty()
   name = ndb.StringProperty()
-  screen_name = ndb.StringProperty()
+  screenName = ndb.StringProperty()
   location = ndb.StringProperty()
   bio = ndb.StringProperty()
-  attend = ndb.IntegerProperty(repeated=True)
-  host = ndb.IntegerProperty(repeated=True)
 
 class MeetingModel(ndb.Model):
   title = ndb.StringProperty()
@@ -434,6 +432,7 @@ class APIJSONEncoder(json.JSONEncoder):
 
     if isinstance(obj, MeetingModel):
       model_dict = obj.to_dict()
+      model_dict['id'] = obj.key.id()
       model_dict['key'] = obj.key
       model_dict['host'] = obj.host.get()
       model_dict['attendees'] = [attendee.get() for attendee in obj.attendees]
@@ -441,6 +440,7 @@ class APIJSONEncoder(json.JSONEncoder):
 
     if isinstance(obj, ndb.Model):
       model_dict = obj.to_dict()
+      model_dict['id'] = obj.key.id()
       model_dict['key'] = obj.key
       return model_dict
 
@@ -460,9 +460,13 @@ class APIHandler(webapp2.RequestHandler):
       'meetingfetch': self.meeting_fetch,
       'meetingcreate': self.meeting_create,
       'meetingupdate': self.meeting_update,
+      'meetingsubscribe': self.meeting_subscribe,
+      'meetingopen': self.meeting_open,
+      'meetingclose': self.meeting_close,
+      'broadcaststart': self.broadcast_start,
+      'broadcastend': self.broadcast_end,
       'agendafetch': self.agenda_fetch,
-      'explorefetch': self.explore_fetch,
-      'meetingjoin': self.meeting_join
+      'explorefetch': self.explore_fetch
     }
 
     handler = handlers[name.lower()]
@@ -505,7 +509,7 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def meeting_fetch(self, request, response):
-    return ndb.Key(urlsafe=request.get('key')).get()
+    return MeetingModel.get_by_id(int(request.get('id')))
 
   # Modifies data, LOG and BROADCAST
   @classmethod
@@ -529,7 +533,7 @@ class APIHandler(webapp2.RequestHandler):
   # Modifies data, LOG and BROADCAST
   @classmethod
   def meeting_update(self, request, response):
-    meeting = ndb.Key(urlsafe=request.get('key')).get()
+    meeting = MeetingModel.get_by_id(int(request.get('id')))
     meeting.title = request.get('title')
     meeting.description = request.get('description')
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
@@ -540,17 +544,37 @@ class APIHandler(webapp2.RequestHandler):
 
   # Modifies data, LOG and BROADCAST
   @classmethod
-  def meeting_join(self, request, response):
+  def meeting_subscribe(self, request, response):
     session = get_current_session()
     if not session['id']:
       #response.out.write('User not logged in yet')
       logging.info('User to join meeting not logged in')
     else: 
-      meeting = MeetingModel.get_by_id(request.get('meetingId'))
+      meeting = MeetingModel.get_by_id(int(request.get('id')))
       meeting.attendees.append(session['id'])
       meeting.put()
       response.out.write(request.get('meetingId'))
       self.add_log('meeting_join', meeting)
+
+  @classmethod
+  def meeting_open(self, request, response):
+    connecteduser = fetch_connecteduser_for_session()
+    connecteduser.activeMeeting = ndb.Key(MeetingModel, int(request.get('id')))
+    connecteduser.put();
+
+  @classmethod
+  def meeting_close(self, request, response):
+    connecteduser = fetch_connecteduser_for_session()
+    connecteduser.activeMeeting = None
+    connecteduser.put();
+
+  @classmethod
+  def broadcast_start(self, request, response):
+    pass
+
+  @classmethod
+  def broadcast_end(self, request, response):
+    pass
 
   @classmethod
   def agenda_fetch(self, request, response):
@@ -618,7 +642,7 @@ class TwitterAuthorized(webapp2.RequestHandler):
       user.photoUrl = me.profile_image_url.replace('_normal','_bigger')
       user.photoThumbnailUrl = me.profile_image_url
       user.name = me.name
-      user.screen_name = me.screen_name
+      user.screenName = me.screen_name
       user.location = me.location
       user.bio = me.description
       user.put()

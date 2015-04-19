@@ -39,11 +39,11 @@ class WebRTCActions extends Actions {
     // });
   }
 
-  prepareAsHost(meetingKey) {
+  prepareAsHost() {
     return requestUserMedia({audio: true, video: true});
   }
 
-  connectAsHost(meetingKey) {
+  connectAsHost(meetingId) {
     var webRTCActions = this.registry.getActions('webRTC');
     var webRTCStore = this.registry.getStore('webRTC');
     var {localStream} = webRTCStore.state;
@@ -62,7 +62,7 @@ class WebRTCActions extends Actions {
       });
   }
 
-  connectAsAttendee(meetingKey) {
+  connectAsAttendee(meetingId) {
     return webRTCActions.fetchTurn()
       .then(() => {
         webRTCActions._createPeer();
@@ -100,7 +100,7 @@ class WebRTCActions extends Actions {
   _createPeer() {
     var webRTCActions = this.registry.getActions('webRTC');
     var webRTCStore = this.registry.getStore('webRTC');
-    var {pcConfig, pcConstraints, meetingKey} = webRTCStore.state;
+    var {pcConfig, pcConstraints, meetingId} = webRTCStore.state;
 
     var pc = new RTCPeerConnection(pcConfig, pcConstraints);
     pc.onaddstream = webRTCActions._receivePeerRemoteStream;
@@ -114,7 +114,7 @@ class WebRTCActions extends Actions {
       }
 
       this.api.sendMessage(
-        meetingKey,
+        meetingId,
         {
           type: 'candidate',
           label: candidate.sdpMLineIndex,
@@ -154,7 +154,7 @@ class WebRTCActions extends Actions {
           sessionDescription.sdp = 
             webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
           
-          this.api.sendMessage(meetingKey, sessionDescription)
+          this.api.sendMessage(meetingId, sessionDescription)
             .then(() => resolve(sessionDescription));
         }, 
         (e) => reject(e), 
@@ -166,14 +166,14 @@ class WebRTCActions extends Actions {
   _createPeerAnswer() {
     return new Promise((resolve, reject) => {
       var webRTCStore = this.registry.getStore('webRTC');
-      var {pc, sdpConstraints, meetingKey} = webRTCStore.state;
+      var {pc, sdpConstraints, meetingId} = webRTCStore.state;
 
       pc.createAnswer(
         (sessionDescription) => {
           sessionDescription.sdp = 
             webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
           
-          this.api.sendMessage(meetingKey, sessionDescription)
+          this.api.sendMessage(meetingId, sessionDescription)
             .then(() => resolve(sessionDescription));
         },
         (e) => reject(e), 

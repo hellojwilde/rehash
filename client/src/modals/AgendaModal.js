@@ -9,7 +9,7 @@ var FluxComponent = require('flummox/component');
 var AgendaModal = React.createClass({
 
   propTypes: {
-    meetingKey: React.PropTypes.string.isRequired,
+    meetingId: React.PropTypes.number.isRequired,
     onComplete: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
   },
@@ -24,8 +24,8 @@ var AgendaModal = React.createClass({
               connectToStores={['meeting']}
               stateGetter={([meetingStore]) => ({
                 topics: [],
-                isHost: meetingStore.getCurrentUserRelationByKey(
-                  this.props.meetingKey
+                isHost: meetingStore.getCurrentUserRelationById(
+                  this.props.meetingId
                 ).isHost
               })}>
               <AgendaList/>

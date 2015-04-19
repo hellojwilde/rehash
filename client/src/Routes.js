@@ -11,14 +11,14 @@ var Routes = (
       <Route 
         name="explore_meeting" 
         handler={MeetingHandler} 
-        path="/explore/meeting/:meetingKey"
+        path="/explore/meeting/:meetingId"
       />
     </Route>
     <Route handler={StandaloneMeetingHandler}>
       <Route 
         name="meeting" 
         handler={MeetingHandler} 
-        path="/meeting/:meetingKey"
+        path="/meeting/:meetingId"
       />
     </Route>
   </Route>

@@ -23,11 +23,11 @@ class MeetingStore extends Store {
     return _.values(this.state);
   }
 
-  getByKey(meetingKey) {
-    return this.state[meetingKey];
+  getById(meetingId) {
+    return this.state[+meetingId];
   }
 
-  getCurrentUserRelationByKey(meetingKey) {
+  getCurrentUserRelationById(meetingId) {
     // XXX This will break when we start supporting logouts and logins of
     // users without page reloads! Over the long term, we should probably move
     // this functionality into a different store that will autoupdate whenever
@@ -35,23 +35,23 @@ class MeetingStore extends Store {
 
     var currentUserStore = this.registry.getStore('currentUser');
     var currentUser = currentUserStore.state.user;
-    var meeting = this.getByKey(meetingKey);
+    var meeting = this.getById(meetingId);
 
     return {
-      isHost: !!currentUser && meeting.host.key === currentUser.key,
+      isHost: !!currentUser && meeting.host.id === currentUser.id,
       isAttendee: !!currentUser && !!_.find(
         meeting.attendees, 
-        ({key}) => key === currentUser.key
+        ({key}) => id === currentUser.id
       )
     };
   }
 
   handleExploreFetch(meetings) {
-    this.setState(_.indexBy(meetings, 'key'));
+    this.setState(_.indexBy(meetings, 'id'));
   }
 
   handleMeetingFetch(meeting) {
-    this.setState({[meeting.key]: meeting});
+    this.setState({[meeting.id]: meeting});
   }
 }
 
