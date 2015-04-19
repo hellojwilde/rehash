@@ -52,7 +52,7 @@ def generate_random(length):
 #   return re.sub('[^a-zA-Z0-9\-]', '-', key)
 
 ### need to implement: if the host quit, we have to close the sesssion
-def handle_message(room, user, message):
+def handle_message(user, message):
   # implement broadcast to OTHERUSERS! 
   logging.info('handle_message' + str(user) + message)
   message_obj = json.loads(message)
@@ -673,6 +673,5 @@ app = webapp2.WSGIApplication([
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 
-    (r'.*', RouteErrorHandler)
+    (r'[^/]+', RouteErrorHandler)
   ], debug=True)
-

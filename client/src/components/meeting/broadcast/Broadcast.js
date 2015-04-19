@@ -10,23 +10,8 @@ var Broadcast = React.createClass({
     webRTC: React.PropTypes.object.isRequired,
   },
 
-  // temporarily added to test if this works
-  // change to ExampleAPI after rest of the code works
-  sendMessage: function(message) {
-    // temporarily hardcoded meetingId
-    meetingId = 0
-    var msgString = JSON.stringify(message);
-    console.log('C->S: ' + msgString);
-    path = '/message?r=' + meetingId;
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', path, true);
-    xhr.send(msgString);
-  }
-
   componentDidMount: function() {
-
     this.attachWebRTCStream();
-
   },
 
   componentDidUpdate: function(prevProps, prevState) {
