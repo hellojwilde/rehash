@@ -3,6 +3,18 @@ var {Store} = require('flummox');
 var _ = require('lodash');
 var moment = require('moment');
 
+function areUsersEqual(user, otherUser) {
+  if (!(user && user.id && otherUser && otherUser.id)) {
+    return false;
+  } else {
+    return user.id === otherUser.id;
+  }
+}
+
+function hasEqualUser(arr, user) {
+  return !!_.find(arr, areUsersEqual.bind(this, user));
+}
+
 class MeetingStore extends Store {
   constructor(registry) {
     super();
@@ -39,11 +51,9 @@ class MeetingStore extends Store {
     var meeting = this.getById(meetingId);
 
     return {
-      isHost: !!currentUser && meeting.host.id === currentUser.id,
-      isAttendee: !!currentUser && !!_.find(
-        meeting.attendees, 
-        ({key}) => id === currentUser.id
-      )
+      isHost: areUsersEqual(meeting.host, currentUser),
+      isSubscriber: hasEqualUser(meeting.subscribers, currentUser),
+      isAttendee: hasEqualUser(meeting.attendees, currentUser)
     };
   }
 

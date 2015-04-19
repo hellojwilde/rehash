@@ -97,10 +97,7 @@ var ExampleAPI = {
       title: meeting.title, 
       description: meeting.description,
       start: moment.utc(meeting.start).toISOString()
-    }).then((meeting) => {
-      meeting.start = moment.utc(meeting.start);
-      return meeting;
-    });;
+    });
   },
 
   meetingUpdate: function(meetingId, meeting) {
@@ -111,10 +108,7 @@ var ExampleAPI = {
       title: meeting.title,
       description: meeting.description,
       start: moment.utc(meeting.start).toISOString()
-    }).then((meeting) => {
-      meeting.start = moment.utc(meeting.start);
-      return meeting;
-    });;
+    });
   },
 
   // Need to make sure the user has signed in before this is called
