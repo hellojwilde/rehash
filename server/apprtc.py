@@ -134,6 +134,7 @@ def connect_user(user=None):
 
 def disconnect_user():
   ### remove user from ConnectedUserModel:
+  session = get_current_session()
   ndb.Key(urlsafe=session['connect_user_key']).delete()
 
 def channel_messageConnected(message):
