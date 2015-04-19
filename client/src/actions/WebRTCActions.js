@@ -13,35 +13,30 @@ class WebRTCActions extends Actions {
   }
 
   fetchTurn() {
-    return new Promise((resolve, reject) => {
-      var webRTCStore = this.registry.getStore('webRTC');
-      var {pcConfig, turnUrl, isTurnFetchingComplete} = webRTCStore.state;
+    return Promise.resolve(null);
 
-      // Ensure that we skip fetching turn if we already have it.
-      if (isTurnFetchingComplete) {
-        return resolve(null);
-      }
+    // return new Promise((resolve, reject) => {
+    //   var webRTCStore = this.registry.getStore('webRTC');
+    //   var {pcConfig, turnUrl, isTurnFetchingComplete} = webRTCStore.state;
 
-      // Allow to skip turn by passing ts=false to apprtc.
-      if (turnUrl == '') {
-        return resolve(null);
-      }
+    //   // Ensure that we skip fetching turn if we already have it.
+    //   if (isTurnFetchingComplete) {
+    //     return resolve(null);
+    //   }
 
-      for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
-        if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
-          return resolve(null);
-        }
-      }
+    //   // Allow to skip turn by passing ts=false to apprtc.
+    //   if (turnUrl == '') {
+    //     return resolve(null);
+    //   }
 
-      var currentDomain = document.domain;
-      if (currentDomain.search('localhost') === -1 &&
-          currentDomain.search('apprtc') === -1) {
-        // Not authorized domain. Try with default STUN instead.
-        return resolve(null);
-      }
+    //   for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
+    //     if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
+    //       return resolve(null);
+    //     }
+    //   }
 
-      resolve($.ajax({url: turnUrl, dataType: 'json'}));
-    });
+    //   resolve($.ajax({url: turnUrl, dataType: 'json'}));
+    // });
   }
 
   prepareAsHost(meetingKey) {

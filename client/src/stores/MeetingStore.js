@@ -38,8 +38,11 @@ class MeetingStore extends Store {
     var meeting = this.getByKey(meetingKey);
 
     return {
-      isHost: meeting.host.key === currentUser.key,
-      isAttendee: !!_.find(meeting.attendees, ({key}) => key === currentUser.key)
+      isHost: !!currentUser && meeting.host.key === currentUser.key,
+      isAttendee: !!currentUser && !!_.find(
+        meeting.attendees, 
+        ({key}) => key === currentUser.key
+      )
     };
   }
 

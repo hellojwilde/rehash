@@ -49,13 +49,15 @@ var BeforeMeeting = React.createClass({
                 <AgendaList isHost={meetingRelation.isHost} />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
-                <div className="BeforeMeeting-description-header">
-                  <button 
-                    onClick={this.handleEditClick} 
-                    className="btn btn-default btn-sm">
-                    Edit
-                  </button>
-                </div>
+                {meetingRelation.isHost && (
+                  <div className="BeforeMeeting-description-header">
+                    <button 
+                      onClick={this.handleEditClick} 
+                      className="btn btn-default btn-sm">
+                      Edit
+                    </button>
+                  </div>
+                )}
                 <div className="BeforeMeeting-description-content">
                   <div>
                     <ScheduleLabel 
