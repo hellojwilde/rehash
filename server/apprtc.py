@@ -388,7 +388,7 @@ class LogModel(ndb.Model):
   datetime = ndb.DateTimeProperty(auto_now_add=True)
   #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
   method = ndb.StringProperty()
-  data = ndb.JsonProperty()
+  data = ndb.StringProperty()
 
 class UserModel(ndb.Model):
   id = ndb.StringProperty()
@@ -421,7 +421,6 @@ class QuestionModel(ndb.Model):
   meetingId = ndb.StringProperty()
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
-
 
 class ConnectedUserModel(ndb.Model):
   activeMeeting = ndb.KeyProperty(kind = MeetingModel)
@@ -480,8 +479,9 @@ class APIHandler(webapp2.RequestHandler):
     log = LogModel(id = str(loggingId))
     # function name 
     log.method = method
-    log.data = data 
+    log.data = json.dumps(data, cls=APIJSONEncoder) 
     log.put()
+
     for each in LogModel.query():
       logging.info('LOGGED into ndb: ' + method)
 
@@ -521,7 +521,7 @@ class APIHandler(webapp2.RequestHandler):
     meetingAgenda.topics = []
     meetingAgenda.put()
 
-    self.add_log('meeting_create', meeting.to_dict())
+    self.add_log('meeting_create', meeting)
     return meeting
 
   # Modifies data, LOG and BROADCAST
@@ -532,7 +532,8 @@ class APIHandler(webapp2.RequestHandler):
     meeting.description = request.get('description')
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.put()
-    self.add_log('meeting_update', meeting.to_dict())
+
+    self.add_log('meeting_update', meeting)
     return meeting
 
   # Modifies data, LOG and BROADCAST
@@ -547,7 +548,7 @@ class APIHandler(webapp2.RequestHandler):
       meeting.attendees.append(session['id'])
       meeting.put()
       response.out.write(request.get('meetingId'))
-      self.add_log('meeting_join', meeting.to_dict())
+      self.add_log('meeting_join', meeting)
 
   @classmethod
   def agenda_fetch(self, request, response):
