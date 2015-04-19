@@ -658,7 +658,7 @@ class LogoutHandler(webapp2.RequestHandler):
 class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
-
+    self.response.set_status(404)
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
@@ -673,5 +673,5 @@ app = webapp2.WSGIApplication([
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 
-    (r'[^/]+', RouteErrorHandler)
+    (r'.+', RouteErrorHandler)
   ], debug=True)
