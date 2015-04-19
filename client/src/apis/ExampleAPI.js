@@ -184,40 +184,6 @@ var ExampleAPI = {
   },
 
   /**
-   * "Joining" is an action that indicates that the user somehow "attended"
-   * a given meeting, including by:
-   *
-   *  - By being marked as the host for an event.
-   *  - Clicking the "subscribe" button before the event starts.
-   *  - Viewing the meeting while logged in.
-   *
-   * This is kind of a funky API call, in that it's associated with a user id.
-   * If we call this over ajax, the server will have access to the cookies that
-   * we're using to maintain the user's session.
-   *
-   * If the server uses something like GAE sessions to maintain the current 
-   * sign-in status...
-   *
-   *    <https://github.com/dound/gae-sessions>
-   *
-   * ...we can have the server pull the user ID from that session information.
-   * There's no need to provide a user ID here.
-   * 
-   * @param  {number} meetingKey The id of the meeting to mark the current user 
-   *                            as joined to.
-   * @return {Promise}          Resolves to sort of message indicating that the
-   *                            join attempt didn't entirely fail.
-   */
-  // Need to make sure the user has signed in before this is called
-  meetingJoin: function(meetingKey) {
-    return sendAjaxRequest({
-      format: 'json',
-      meetingKey: meetingKey, 
-      request: 'meetingjoin'
-    });
-  },
-
-  /**
    * When we create the meeting initially, we want to force the user to set
    * a title and start time, and encourage them to set description and cover
    * photo so that we have a nice-looking, sortable tile to display in the feed
@@ -257,6 +223,31 @@ var ExampleAPI = {
       meeting.start = moment.utc(meeting.start);
       return meeting;
     });;
+  },
+
+  // Need to make sure the user has signed in before this is called
+  meetingSubscribe: function(meetingKey) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingKey: meetingKey, 
+      request: 'meetingsubscribe'
+    });
+  },
+
+  meetingOpen: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'meetingopen'
+    });
+  },
+
+  meetingClose: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'meetingclose'
+    });
   },
 
   //

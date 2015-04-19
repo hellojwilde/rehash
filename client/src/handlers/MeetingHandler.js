@@ -1,19 +1,35 @@
-var React = require('react');
 var DocumentTitle = require('react-document-title');
-var Meeting = require('components/meeting/Meeting')
 var FluxComponent = require('flummox/component');
+var Meeting = require('components/meeting/Meeting')
+var React = require('react');
 
 var MeetingHandler = React.createClass({
 
   statics: {
     ensureDataAvailable: function(state, registry) {
       var {meetingKey} = state.params;
-      return registry.getActions('meeting').fetch(meetingKey);
+      var meetingActions = registry.getActions('meeting');
+
+      return Promise.all(
+        meetingActions.fetch(meetingKey), 
+        meetingActions.open(meetingKey)
+      );
     },
 
     willTransitionFrom: function(transition, element) {
-      element && element.context && (element.context.flux.getActions('webRTC')
-        .disconnect());
+      if (
+        element && 
+        element.context && 
+        element.context.flux &&
+        element.context.router
+      ) {
+        var {meetingKey} = element.context.router.getCurrentParams();
+        var webRTCActions = element.context.flux.getActions('webRTC');
+        var meetingActions = element.context.flux.getActions('meeting');
+
+        meetingActions.close(meetingKey);
+        webRTCActions.disconnect();
+      }
     }
   },
 

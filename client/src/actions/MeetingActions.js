@@ -20,10 +20,6 @@ class MeetingActions extends Actions {
     return this.api.meetingFetch(meetingKey);
   }
 
-  join(meetingKey) {
-    return this.api.meetingJoin(meetingKey);
-  }
-
   create(meeting) {
     var currentUserStore = this.registry.getStore('currentUser');
 
@@ -32,6 +28,18 @@ class MeetingActions extends Actions {
 
   update(meetingKey, meeting) {
     return this.api.meetingUpdate(meetingKey, meeting);
+  }
+
+  subscribe(meetingKey) {
+    return this.api.meetingSubscribe(meetingKey);
+  }
+
+  open(meetingId) {
+    return this.api.meetingOpen(meetingId);
+  }
+
+  close(meetingId) {
+    return this.api.meetingClose(meetingId);
   }
 }
 
