@@ -137,7 +137,7 @@ def disconnect_user():
   session = get_current_session()
   ndb.Key(urlsafe=session['connected_user_key']).delete()
 
-def channel_messageConnected(message):
+def channel_messageAll(message):
   ### message all connected users 
   session = get_current_session()
 
@@ -149,9 +149,10 @@ def channel_messageConnected(message):
         json.dumps(message, cls=APIJSONEncoder)
       )
 
-def channel_messageByUser(user_key, message):
+def channel_messageByUserInMeeting(user_key, meeting_key, message):
   connected_user_query = ConnectedUserModel.query(
-    ConnectedUserModel.user == user_key
+    ConnectedUserModel.user == user_key and
+    ConnectedUserModel.activeMeeting == meeting_key
   )
 
   for connected_user in connected_user_query:
@@ -507,7 +508,7 @@ class APIHandler(webapp2.RequestHandler):
     meetingAgenda.put()
 
     self.add_log('meeting_create', meeting)
-    channel_messageConnected({
+    channel_messageAll({
       'type': 'meetingCreate',
       'meeting': meeting
     })
@@ -524,7 +525,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting.put()
 
     self.add_log('meeting_update', meeting)
-    channel_messageConnected({
+    channel_messageAll({
       'type': 'meetingUpdate',
       'meeting': meeting
     })
@@ -592,7 +593,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting.status = 'broadcasting'
     meeting.put()
 
-    channel_messageConnected({
+    channel_messageAll({
       'type': 'broadcastStart',
       'meetingId': meeting.key.id()
     })
@@ -611,7 +612,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting.status = 'ended'
     meeting.put()
 
-    channel_messageConnected({
+    channel_messageAll({
       'type': 'broadcastEnd',
       'meetingId': meeting.key.id()
     })
