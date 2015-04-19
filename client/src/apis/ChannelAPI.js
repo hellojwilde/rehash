@@ -3,6 +3,8 @@ var {
   Broadcast_onChannelMessage
 } = require('components/meeting/broadcast/Broadcast');
 
+
+
 var _ = require('lodash');
 
 class ChannelAPI {
@@ -38,15 +40,19 @@ class ChannelAPI {
     console.log('S->C: ' + message.data);
     var msg = JSON.parse(message.data);
 
-    // call actions to update resprective stores
-    if(msg.type === 'userUpdate') { 
+    if(msg.type === 'updatetoall') { 
+      switch(msg.method){
+        case 'meeting_create':
+          break;
+        case 'meeting_update':
+          break;
+        case 'meeting_join':
+          break;
+      }
     }
-    else if (msg.type === 'meetingUpdate') {
-    }
+    else if(msg.type === 'updatetothismeeting')
     // for broadcast 
     else{
-      // in this way, avoid setting global variables
-      // will this work? what if Broadcast object has not been established yet?
       _.isFunction(Broadcast_onChannelMessage) && Broadcast_onChannelMessage(msg); 
     }
   }

@@ -50,46 +50,55 @@ var Broadcast = React.createClass({
     meetingKey: React.PropTypes.number.isRequired
   },
 
+  sendMessage: function(message) {
+    // temporarily hardcoded meetingId
+    meetingId = 0
+    var msgString = JSON.stringify(message);
+    console.log('C->S: ' + msgString);
+    path = '/message?r=' + meetingId;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', path, true);
+    xhr.send(msgString);
+  }
+
   componentDidMount: function() {
     // if disconnect, request to delete on server
     window.addEventListener("beforeunload", function (e) {
-      //this.sendMessage({type: 'bye'});
-      console.log("quit")
-      var msgString = JSON.stringify({type: 'bye'});
-      var xhr_bye = new XMLHttpRequest();
-      url = '/message?r=' + roomKey + '&u=' + me;
-      xhr_bye.open('POST', url, true);
-      xhr_bye.send(msgString);
+      this.sendMessage({type: 'bye'});
     });
 
-    var xhr = new XMLHttpRequest();
-    url = `/meeting/${this.props.meetingKey}/requestBroadcastData`;
-    xhr.open('GET', url, true);
-    xhr.onload = () => {
-      var data = JSON.parse(xhr.responseText);
+    // request to start
+    this.sendMessage({type: 'ready'});
 
-      // convert to number
-      initiator=Number(data['initiator']);
-      channelToken=data['token'];
-      me=data['me'];
-      roomKey=data['room_key'];
-      pcConfig=data['pc_config'];
-      pcConstraints=data['pc_constraints'];
-      offerConstraints=data['offer_constraints'];
-      mediaConstraints=data['media_constraints'];
-      turnUrl=data['turn_url'];
-      stereo=data['stereo'];
-      audio_send_codec=data['audio_send_codec'];
-      audio_receive_codec=data['audio_receive_codec'];
 
-      // start the session to begin accepting server info
-      // this.openChannel();
-      // openChannel() earlier! 
-      this.maybeStart();
-      this.sendMessage({type: 'ready'});
+    // var xhr = new XMLHttpRequest();
+    // url = `/meeting/${this.props.meetingKey}/requestBroadcastData`;
+    // xhr.open('GET', url, true);
+    // xhr.onload = () => {
+    //   var data = JSON.parse(xhr.responseText);
 
-    }.bind(this);
-    xhr.send(); 
+    //   // convert to number
+    //   initiator=Number(data['initiator']);
+    //   channelToken=data['token'];
+    //   me=data['me'];
+    //   roomKey=data['room_key'];
+    //   pcConfig=data['pc_config'];
+    //   pcConstraints=data['pc_constraints'];
+    //   offerConstraints=data['offer_constraints'];
+    //   mediaConstraints=data['media_constraints'];
+    //   turnUrl=data['turn_url'];
+    //   stereo=data['stereo'];
+    //   audio_send_codec=data['audio_send_codec'];
+    //   audio_receive_codec=data['audio_receive_codec'];
+
+    //   // start the session to begin accepting server info
+    //   // this.openChannel();
+    //   // openChannel() earlier! 
+    //   this.maybeStart();
+    //   this.sendMessage({type: 'ready'});
+
+    // }.bind(this);
+    // xhr.send(); 
   },
 
   initialize: function() {
@@ -237,8 +246,7 @@ var Broadcast = React.createClass({
     // Message delivery due to possible datastore query at server side,
     // So callee needs to cache messages before peerConnection is created.
 
-    // && !started commented out to allow multiple p2p connections
-///////    
+    // && !started commented out to allow multiple p2p connections    
     if (!initiator) {
       if (msg.type === 'offer') {
         // Add offer to the beginning of msgQueue, since we can't handle
@@ -379,13 +387,18 @@ var Broadcast = React.createClass({
     video.style.opacity = 0;
   },
 
+  // start hosting
   handleStartClick: function() {
-    // here, need to make sure we request to be initiator
-    // only one initiator at a time 
     initiator = 0;
     this.initialize();
     console.log("Start the broadcast and notify audiences!");
     this.sendMessage({type: 'broadcast'});
+  },
+
+  handleJoinClick: function() {
+    initiator = 1;
+    this.sendMessage({type: 'join'});
+    this.initialize();
   },
 
   handleStopClick: function() {
@@ -405,6 +418,11 @@ var Broadcast = React.createClass({
             className="btn btn-success btnstart" 
             onClick={this.handleStartClick}>
             START
+          </button>
+          <button 
+            className="btn btn-success btnstart" 
+            onClick={this.handleJoinClick}>
+            JOIN
           </button>
           <button 
             className="btn btn-success btnstop"

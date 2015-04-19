@@ -34,8 +34,6 @@ from google.appengine.ext import ndb
 from gaesessions import get_current_session
 from webrtc_config import get_webrtc_config
 
-### Environment stores configuration and global objects, 
-### used to load templates from the filesystem
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -44,74 +42,117 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
-
 def generate_random(length):
   word = ''
   for _ in range(length):
     word += random.choice('0123456789')
   return word
 
-### convert anything not alphanumberic to '-'
 def sanitize(key):
   return re.sub('[^a-zA-Z0-9\-]', '-', key)
 
 ### client id based upon room_key to create GAE channels
 ### key().id_or_name() returns the string/number of name/id
-def make_client_id(room, user):
-  return room.key().id_or_name() + '/' + user
+# def make_client_id(room, user):
+#   # return room.key().id_or_name() + '/' + user
 
-def create_channel(user, duration_minutes):
-  client_id = make_client_id(room, user)
-  return channel.create_channel(client_id, duration_minutes)
+# def create_channel(user, duration_minutes):
+#   client_id = user
+#   return channel.create_channel(client_id, duration_minutes)
 
-def make_loopback_answer(message):
-  message = message.replace("\"offer\"", "\"answer\"")
-  message = message.replace("a=ice- options:google-ice\\r\\n", "")
-  return message
+# def make_loopback_answer(message):
+#   message = message.replace("\"offer\"", "\"answer\"")
+#   message = message.replace("a=ice- options:google-ice\\r\\n", "")
+#   return message
 
-### need to implement: if the host quit, we have to close the sesssion
-def handle_message(room, user, message):
-  # implement broadcast to OTHERUSERS! 
-  logging.info('handle_message' + str(user) + message)
+# def handle_message(message):
+#   # implement broadcast to OTHERUSERS! 
+#   logging.info('handle_message' + str(user) + message)
+#   message_obj = json.loads(message)
+#   room_key = room.key().id_or_name()
+
+#   ### IF SESSION ALREADY STARTED, send to host the user info 
+#   if message_obj['type'] == 'bye':
+#     room.remove_user(user)
+#     logging.info('User ' + user + ' quit from room ' + room_key)
+#     logging.info('Room ' + room_key + ' has state ' + str(room))
+#     return
+#   # to start a broadcast session by asking others to initialize  
+#   elif message_obj['type'] == 'broadcast':
+#     logging.info('User ' + user + ' started broadcasting')
+#     room.select_host(user)
+#     on_message(room, room.get_next_user(), message)
+#   # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
+#   elif message_obj['type'] == 'ready':
+#     if room.host_started:
+#       room.connect_queue.append(user)
+#       room.put()
+#       if len(room.connect_queue) > 0:
+#         on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+#     return
+#   # to trigger next connection (remove top from the queue and proceed)
+#   elif message_obj['type'] == 'connected':
+#     room.connect_queue.pop(0)
+#     room.put()
+#     if len(room.connect_queue) > 0:
+#       on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+#   # handle all other types of cross messages, like Candidate, Offer and Answer
+#   else:
+#     # also, queue, add alock later on
+#     if room.host == None:
+#       return
+#       # on_message(room, room.host, message)
+#     elif user == room.host: 
+#       on_message(room, room.get_next_user(), message)
+#     else:
+#       on_message(room, room.host, message)
+
+# revised version using 
+def handle_message(message, meeting):
   message_obj = json.loads(message)
-  #other_users = room.get_other_users()
-  room_key = room.key().id_or_name()
-
-  ### IF SESSION ALREADY STARTED, send to host the user info 
+  connect_user_key = session.get('connect_user_key')
+  
+  # beforeunload
   if message_obj['type'] == 'bye':
-    room.remove_user(user)
-    logging.info('User ' + user + ' quit from room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
+    connect_user_key.delete()
     return
-  # to start a broadcast session by asking others to initialize  
-  elif message_obj['type'] == 'broadcast':
-    logging.info('User ' + user + ' started broadcasting')
-    room.select_host(user)
-    on_message(room, room.get_next_user(), message)
+  
+  # starthosting
+  elif message_obj['type'] == 'broadcast' or message_obj['type'] == 'join':
+    connect_user_key.get().activeMeeting = meeting.key()
+    connect_user_key.get().put()
+    logging.info('User ' + connect_user_key.id() + ' started broadcasting')
+    # room.select_host(user)
+    # on_message(room, room.get_next_user(), message)
+
   # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
   elif message_obj['type'] == 'ready':
-    if room.host_started:
-      room.connect_queue.append(user)
-      room.put()
-      if len(room.connect_queue) > 0:
-        on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
     return
+    # if room.host_started:
+    #   room.connect_queue.append(user)
+    #   room.put()
+    #   if len(room.connect_queue) > 0:
+    #     on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+
   # to trigger next connection (remove top from the queue and proceed)
   elif message_obj['type'] == 'connected':
-    room.connect_queue.pop(0)
-    room.put()
-    if len(room.connect_queue) > 0:
-      on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+    return
+    # room.connect_queue.pop(0)
+    # room.put()
+    # if len(room.connect_queue) > 0:
+    #   on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
+
   # handle all other types of cross messages, like Candidate, Offer and Answer
   else:
+    channel_messageByMeeting(meeting)
     # also, queue, add alock later on
-    if room.host == None:
-      return
-      # on_message(room, room.host, message)
-    elif user == room.host: 
-      on_message(room, room.get_next_user(), message)
-    else:
-      on_message(room, room.host, message)
+    # if room.host == None:
+    #   return
+    # on_message(room, room.host, message)
+    # elif user == room.host: 
+    #   on_message(room, room.get_next_user(), message)
+    # else:
+    #   on_message(room, room.host, message)
 
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
@@ -130,16 +171,24 @@ def send_saved_messages(client_id):
     message.delete()
 
 ### if the receiver is online, send message; else, cache it 
-def on_message(room, user, message):
-  client_id = make_client_id(room, user)
+def on_message(room, user_id, message):
+  #client_id = make_client_id(room, user)
+  client_id = user_id
   if room.is_connected(user):
     channel.send_message(client_id, message)
-    logging.info('Delivered message to user ' + user)
+    logging.info('Delivered message to user ' + user_id)
   else:
     new_message = Message(client_id = client_id, msg = message)
     new_message.put()
-    logging.info('Saved message for user ' + user)
+    logging.info('Saved message for user ' + user_id)
 
+
+@db.transactional
+def connect_user(user_id):
+  ### add user to connectedUserModel:
+  connecteduser = connectedUserModel()
+  key = connecteduser.put()
+  session['connect_user_key'] = key
 
 def fetch_user_for_session(session=None):
   if session is None:
@@ -150,7 +199,6 @@ def fetch_user_for_session(session=None):
     user = ndb.Key(UserModel, session['id']).get()
 
   return user
-
 
 def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
@@ -174,7 +222,9 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
     user_id = session['anonymous_user_id']
   else:
     user_id = session['anonymous_user_id'] = generate_random(8)
-    
+  
+  connect_user(user_id)
+
   initial_store_data.update({
     'webRTC': get_webrtc_config(self),
     'currentUser': {
@@ -256,29 +306,18 @@ class Room(db.Model):
   def select_host(self, user):
     self.host = user
     self.host_started = True
-    # avoid connecting to itself
     self.connect_queue.remove(user)
     self.put()
     logging.info('SELECTED host ' + str(self.host_started) + user)
     logging.info("Host chosen and start broadcasting")
 
   def remove_user(self, user):
-    # if self.users.index(user) == 0:
-    #   self.delete()
     logging.info('delete user called' + str(self.get_occupancy()))
     if user in self.users:
-      delete_saved_messages(make_client_id(self, user))
+      delete_saved_messages(user)
       self.users_connected.pop(self.users.index(user))
       self.users.remove(user)
       self.put()
-    # cur_num_users = len(self.users)
-    # for j in range(cur_num_users ):
-    #   i = cur_num_users - j - 1
-    #   if self.users_connected[i] == False:
-    #     delete_saved_messages(make_client_id(self, self.users[i]))
-    #     self.users_connected.pop(i)
-    #     self.users.remove(self.users[i])
-    #     self.put()
     if self.get_occupancy() == 0 or self.host == user:
       logging.info('ROOM DELETED' + str(self.get_occupancy()))
       self.delete()
@@ -315,7 +354,7 @@ class ConnectPage(webapp2.RequestHandler):
     with LOCK:
       room = connect_user_to_room(room_key, user)
       if room and room.has_user(user):
-        send_saved_messages(make_client_id(room, user))
+        send_saved_messages(user)
 
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
@@ -335,16 +374,13 @@ class DisconnectPage(webapp2.RequestHandler):
 
 ### Got message from clients here? 
 class MessagePage(webapp2.RequestHandler):
-  def post(self):
+  def post(self, meetingId):
     message = self.request.body
-    room_key = self.request.get('r')
-    user = self.request.get('u')
+    meetingId = self.request.get('r')
+    # need to revise if other method is used to retrieve meeting
+    meeting = MeetingModel.get_by_id(meetingId)
     with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if room:
-        handle_message(room, user, message)
-      else:
-        logging.warning('Unknown room ' + room_key)
+      handle_message(message, meeting)
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
@@ -353,10 +389,6 @@ class MainPage(webapp2.RequestHandler):
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
-#     page = 'index.html'
-#     template_values = {}
-#     template = jinja_environment.get_template(page)
-#     self.response.out.write(template.render(template_values))
     fetch_initial_store_data_and_render(self)
 
 ### upon xmlhttprequest for webrtc, return initial data set for channel
@@ -407,11 +439,26 @@ class RequestBroadcastData(webapp2.RequestHandler):
     self.response.out.write(json.dumps(data))
 
 
+### message all connected users 
+def channel_messageConnected(message):
+  for user in ConnectedUserModel.query():
+    channel.send_message(user.key.id(), message)
+
+def channel_messageByMeeting(message, meeting):
+  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting = meeting)
+    if user.key != session['connect_user_key']:
+      channel.send_message(user.key.id(), message)
+
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
 # Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
 # For methods that involves a write, written data is stored as data
 # FOr methods that involves a fetch, response data is stored as data 
+### Maintain users currently connected for broadcasting 
+class ConnectedUserModel(ndb.Model):
+  activeMeeting = ndb.KeyProperty(kind = MeetingModel)
+  ishosting = 
+
 class LogModel(ndb.Model):
   datetime = ndb.DateTimeProperty(auto_now_add=True)
   #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
@@ -498,18 +545,27 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def add_log(self, method, data):
+    # create new log entry 
     loggingId = LogModel.query().count()
-    logging.info(loggingId)
     log = LogModel.get_by_id(str(loggingId))
     while log:
       loggingId += 1
       log = LogModel.get_by_id(loggingId)
     log = LogModel(id = str(loggingId))
+    # function name 
     log.method = method
     log.data = data 
     log.put()
     for each in LogModel.query():
       logging.info('LOGGED into ndb: ' + method)
+
+    # Broadcast actions to clients 
+    message = JSON.dumps({'type': 'updatetoall',
+                          'seqnum': loggingId,
+                          'method': method, 
+                          'data': data})
+    channel_messageConnected(message)
+
 
   @classmethod 
   def build_meeting(self, meeting):
@@ -564,12 +620,13 @@ class APIHandler(webapp2.RequestHandler):
   def meeting_fetch(self, request, response):
     return ndb.Key(urlsafe=request.get('key')).get()
 
+  # Modifies data, LOG and BROADCAST
   @classmethod
   def meeting_create(self, request, response):
     meeting = MeetingModel()
     meeting.title = request.get('title')
     meeting.description = request.get('description')
-    meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
+    meeting.start = dateutil.parser.parse(request.get('start'))
     meeting.topics = copy.deepcopy(request.get('topics'))
     meeting.host = fetch_user_for_session().key
     key = meeting.put()
@@ -578,8 +635,10 @@ class APIHandler(webapp2.RequestHandler):
     meetingAgenda.topics = []
     meetingAgenda.put()
 
+    self.add_log('meeting_create', meeting.to_dict())
     return meeting
 
+  # Modifies data, LOG and BROADCAST
   @classmethod
   def meeting_update(self, request, response):
     meeting = ndb.Key(urlsafe=request.get('key')).get()
@@ -587,9 +646,10 @@ class APIHandler(webapp2.RequestHandler):
     meeting.description = request.get('description')
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.put()
-
+    self.add_log('meeting_update', meeting.to_dict())
     return meeting
 
+  # Modifies data, LOG and BROADCAST
   @classmethod
   def meeting_join(self, request, response):
     session = get_current_session()
@@ -601,10 +661,7 @@ class APIHandler(webapp2.RequestHandler):
       meeting.attendees.append(session['id'])
       meeting.put()
       response.out.write(request.get('meetingId'))
-      data = {'meetingId': request.get('meetingId'),
-              'userId': request.get(session['id'])
-      }
-      self.add_log('meetingjoin', data)
+      self.add_log('meeting_join', meeting.to_dict())
 
   @classmethod
   def agenda_fetch(self, request, response):
@@ -627,7 +684,7 @@ class APIHandler(webapp2.RequestHandler):
       agenda = []
     logging.info(topics)
     response.out.write(json.dumps(topics))
-    self.add_log('agendafetch', topics)
+    # self.add_log('agendafetch', topics)
 
 ### after login case
 class TwitterAuthorized(webapp2.RequestHandler):
@@ -726,7 +783,7 @@ app = webapp2.WSGIApplication([
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
     (r'/twitterauthorized', TwitterAuthorized),
-    ('/message', MessagePage),
+    (r'/message/([^/]+)', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 
