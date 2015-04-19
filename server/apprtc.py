@@ -87,7 +87,6 @@ def handle_message(user, message):
   else:
     channel_messageByMeeting(meeting)
 
-
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
 
@@ -116,14 +115,53 @@ def on_message(room, user_id, message):
     new_message.put()
     logging.info('Saved message for user ' + user_id)
 
+### transactional means atomic operation here
+@db.transactional
+def connect_user_to_room(room_key, user):
+  room = Room.get_by_key_name(room_key)
+  # Check if room has user in case that disconnect message comes before
+  # connect message with unknown reason, observed with local AppEngine SDK.
+  if room and room.has_user(user):
+    room.set_connected(user)
+    logging.info('User ' + user + ' connected to room ' + room_key)
+    logging.info('Room ' + room_key + ' has state ' + str(room))
+  else:
+    logging.warning('Unexpected Connect Message to room ' + room_key)
+  return room
 
 @db.transactional
-def connect_user(user_id):
+def connect_user(user=None):
   ### add user to ConnectedUserModel:
   connecteduser = ConnectedUserModel()
+  connecteduser.user = user.key
   key = connecteduser.put()
+
   session = get_current_session()
-  session['connect_user_key'] = key
+  session['connect_user_key'] = key.urlsafe()
+
+  return key.id()
+
+def disconnect_user():
+  ### remove user from ConnectedUserModel:
+  ndb.Key(urlsafe=session['connect_user_key']).delete()
+
+def channel_messageConnected(message):
+  ### message all connected users 
+  for connecteduser in ConnectedUserModel.query():
+    if connecteduser.key != session['connect_user_key']:
+      channel.send_message(
+        connecteduser.key.id(), 
+        json.dumps(message, cls=APIJSONEncoder)
+      )
+
+def channel_messageByMeeting(message, meetingKey):
+  ### message all connected users with a specified active meeting
+  for connecteduser in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting):
+    if connecteduser.key != session['connect_user_key']:
+      channel.send_message(
+        connecteduser.key.id(),
+        json.dumps(message, cls=APIJSONEncoder)
+      )
 
 def fetch_user_for_session(session=None):
   if session is None:
@@ -147,24 +185,14 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
     default = 30
   )
 
-  user = None
-  user_id = None
-
-  if session.get('id'):
-    user = fetch_user_for_session(session)
-    user_id = session['id']
-  elif session.get('anonymous_user_id'):
-    user_id = session['anonymous_user_id']
-  else:
-    user_id = session['anonymous_user_id'] = generate_random(8)
-  
-  connect_user(user_id)
+  user = fetch_user_for_session(session)
+  connecteduser_id = connect_user(user)
 
   initial_store_data.update({
     'webRTC': get_webrtc_config(self, user_id),
     'currentUser': {
       'user': user,
-      'channelToken': channel.create_channel(user_id, token_timeout)
+      'channelToken': channel.create_channel(connecteduser_id, token_timeout)
     }
   })
 
@@ -265,45 +293,10 @@ class Room(db.Model):
     else: 
       return False
 
-### transactional means atomic operation here
-@db.transactional
-def connect_user_to_room(room_key, user):
-  room = Room.get_by_key_name(room_key)
-  # Check if room has user in case that disconnect message comes before
-  # connect message with unknown reason, observed with local AppEngine SDK.
-  if room and room.has_user(user):
-    room.set_connected(user)
-    logging.info('User ' + user + ' connected to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-  else:
-    logging.warning('Unexpected Connect Message to room ' + room_key)
-  return room
-
-### figure out what the self.request.get('from') obtains
-class ConnectPage(webapp2.RequestHandler):
-  def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
-    with LOCK:
-      room = connect_user_to_room(room_key, user)
-      if room and room.has_user(user):
-        send_saved_messages(user)
-
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if room and room.has_user(user):
-        other_users = room.get_other_users(user)
-        for other_user in other_users:
-          ##### look into the add/removal scheme here! 
-          #room.remove_user(user) #, we also remove user on_message, if do it here, remove 2
-          logging.info('User ' + user + ' removed from room ' + room_key)
-          logging.info('Room ' + room_key + ' has state ' + str(room))
-    logging.warning('User ' + user + ' disconnected from room ' + room_key)
+    disconnect_user();
 
 ### Got message from clients here? 
 class MessagePage(webapp2.RequestHandler):
@@ -323,59 +316,6 @@ class MainPage(webapp2.RequestHandler):
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
     fetch_initial_store_data_and_render(self)
-
-### upon xmlhttprequest for webrtc, return initial data set for channel
-class RequestBroadcastData(webapp2.RequestHandler):
-  def get(self, room_key):
-    # token_timeout for channel creation, default 30min, max 1 days, min 3min.
-    token_timeout = self.request.get_range('tt',
-                                           min_value = 3,
-                                           max_value = 1440,
-                                           default = 30)
-    user = None
-    ### everyone will be assigned a user number
-    ### for future, can connect with user account
-    ### everyone's initiator value set to 1, NEGATIVE, who initiates will get 0
-    initiator = 1
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      ### create new room
-      if not room:
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        ###########
-        #room.select_host(user)
-      ### add to existing room, 
-      elif room:
-        logging.info("Current Occupancy: " + str(room.get_occupancy()))
-        user = generate_random(8)
-        room.add_user(user)
-        #initiator = 1
-
-
-
-    token = create_channel(room, user, token_timeout)
-
-    data = {
-      'token': token,
-      'me': user,
-      'room_key': room_key,
-      'initiator': initiator
-    }
-    logging.info('correctly established!')
-    self.response.out.write(json.dumps(data))
-
-
-### message all connected users 
-def channel_messageConnected(message):
-  for user in ConnectedUserModel.query():
-    channel.send_message(user.key.id(), message)
-
-def channel_messageByMeeting(message, meeting):
-  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting):
-    if user.key != session['connect_user_key']:
-      channel.send_message(user.key.id(), message)
 
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
@@ -423,7 +363,8 @@ class QuestionModel(ndb.Model):
   answers = ndb.StringProperty(repeated=True)
 
 class ConnectedUserModel(ndb.Model):
-  activeMeeting = ndb.KeyProperty(kind = MeetingModel)
+  user = ndb.KeyProperty(kind=UserModel)
+  activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -665,13 +606,11 @@ app = webapp2.WSGIApplication([
     (r'/', MainPage),
     (r'/meeting/([^/]+)', MeetingPage),
     (r'/explore/meeting/([^/]+)', MeetingPage),
-    (r'/meeting/([^/]+)/requestBroadcastData', RequestBroadcastData),
     (r'/api', APIHandler),
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
     (r'/twitterauthorized', TwitterAuthorized),
     (r'/message/([^/]+)', MessagePage),
-    ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 
     (r'.+', RouteErrorHandler)
