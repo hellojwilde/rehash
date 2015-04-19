@@ -27,10 +27,12 @@ var TileGridDetail = React.createClass({
         <div className="TileGridDetail-header">
           <ArrowMask columns={this.props.columns} column={this.props.column}/>
 
-          <div className="container TileGridDetail-header-controls">
-            <LinkNoClobber to="explore" className="pull-right btn btn-link">
-              <span className="glyphicon glyphicon-remove"></span>
-            </LinkNoClobber>
+          <div className="container">
+            <div className="TileGridDetail-header-controls">
+              <LinkNoClobber to="explore" className="pull-right btn btn-link">
+                <span className="glyphicon glyphicon-remove"></span>
+              </LinkNoClobber>
+            </div>
           </div>
         </div>
       </div>

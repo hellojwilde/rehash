@@ -9,17 +9,17 @@ var MeetingHandler = React.createClass({
     ensureDataAvailable: function(state, registry) {
       var {meetingKey} = state.params;
       return registry.getActions('meeting').fetch(meetingKey);
+    },
+
+    willTransitionFrom: function(transition, element) {
+      element.context.flux.getActions('webRTC')
+        .disconnect();
     }
   },
 
   contextTypes: {
     router: React.PropTypes.func.isRequired,
     flux: React.PropTypes.object.isRequired
-  },
-
-  componentWillUnmount: function() {
-    this.context.flux.getActions('webRTC')
-      .disconnect();
   },
 
   render: function() {
