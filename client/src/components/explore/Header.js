@@ -60,9 +60,8 @@ var Header = React.createClass({
     if (this.props.currentUser) {
       return [
         <li key="name">
-          <p className="navbar-text">
-            {this.props.currentUser.name}
-          </p>
+          <img src={this.props.currentUser.photoThumbnailUrl || 
+                    this.props.currentUser.photo_thumbnail_url}/>
         </li>,
         <li key="logout"><a href="/user/logout">Log out</a></li>
       ];

@@ -46,7 +46,7 @@ var Tile = React.createClass({
           />
 
           <div className="Tile-main">
-            <h3 className="Tile-main-tile">{title}</h3>
+            <h3 className="Tile-main-title">{title}</h3>
             <p className="Tile-main-description">{description}</p>
           </div>
         </div>

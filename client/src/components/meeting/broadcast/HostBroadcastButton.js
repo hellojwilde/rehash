@@ -1,6 +1,8 @@
 var React = require('react');
 var IconButton = require('components/common/IconButton');
 
+require('./HostBroadcastButton.css')
+
 var HostBroadcastButton = React.createClass({
 
   contextTypes: {
@@ -25,7 +27,7 @@ var HostBroadcastButton = React.createClass({
           onClick={this.handleClick}>
           Broadcast
         </IconButton>
-        <small className="text-muted">
+        <small className="HostBroadcastButton-note text-muted">
           {'We\'ll let you check your video before you go live.'}
         </small>
       </div>

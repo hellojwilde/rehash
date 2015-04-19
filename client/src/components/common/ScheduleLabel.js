@@ -4,6 +4,8 @@ var cx = require('classnames');
 var joinClasses = require('react/lib/joinClasses');
 var moment = require('moment');
 
+require('./ScheduleLabel.css');
+
 var ScheduleLabel = React.createClass({
 
   propTypes: {
