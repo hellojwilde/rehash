@@ -1,5 +1,6 @@
 var {Actions} = require('flummox');
 
+var invariant = require('react/lib/invariant');
 var {requestUserMedia} = require('helpers/WebRTCAdapter');
 var {SDP_CONSTRAINTS, mergeConstraints} = require('helpers/WebRTCConstraints');
 

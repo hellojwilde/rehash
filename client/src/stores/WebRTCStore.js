@@ -83,8 +83,8 @@ class WebRTCStore extends Store {
   handleDisconnect() {
     var {localStream, pc} = this.state;
 
-    localStream.stop();
-    pc.close();
+    localStream && localStream.stop();
+    pc && pc.close();
 
     this.setState({
       localStream: null,
