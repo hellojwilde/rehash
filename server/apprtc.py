@@ -139,7 +139,7 @@ def connect_user(user=None):
   session = get_current_session()
   session['connect_user_key'] = key.urlsafe()
 
-  return key.id()
+  return key.urlsafe()
 
 def disconnect_user():
   ### remove user from ConnectedUserModel:
@@ -189,7 +189,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   connecteduser_id = connect_user(user)
 
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self, user_id),
+    'webRTC': get_webrtc_config(self, connecteduser_id),
     'currentUser': {
       'user': user,
       'channelToken': channel.create_channel(connecteduser_id, token_timeout)
