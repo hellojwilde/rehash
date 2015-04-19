@@ -317,62 +317,6 @@ class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
     fetch_initial_store_data_and_render(self)
 
-<<<<<<< HEAD
-### upon xmlhttprequest for webrtc, return initial data set for channel
-class RequestBroadcastData(webapp2.RequestHandler):
-  def get(self, room_key):
-    # token_timeout for channel creation, default 30min, max 1 days, min 3min.
-    token_timeout = self.request.get_range('tt',
-                                           min_value = 3,
-                                           max_value = 1440,
-                                           default = 30)
-    user = None
-    ### everyone will be assigned a user number
-    ### for future, can connect with user account
-    ### everyone's initiator value set to 1, NEGATIVE, who initiates will get 0
-    initiator = 1
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      ### create new room
-      if not room:
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        ###########
-        #room.select_host(user)
-      ### add to existing room, 
-      elif room:
-        logging.info("Current Occupancy: " + str(room.get_occupancy()))
-        user = generate_random(8)
-        room.add_user(user)
-        #initiator = 1
-
-
-
-    token = create_channel(room, user, token_timeout)
-
-    data = {
-      'token': token,
-      'me': user,
-      'room_key': room_key,
-      'initiator': initiator
-    }
-    logging.info('correctly established!')
-    self.response.out.write(json.dumps(data))
-
-
-### message all connected users 
-def channel_messageConnected(message):
-  for user in ConnectedUserModel.query():
-    channel.send_message(user.key.id(), message)
-
-def channel_messageByMeeting(message, meeting):
-  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting.key()):
-    if user.key != session['connect_user_key']:
-      channel.send_message(user.key.id(), message)
-
-=======
->>>>>>> 590fbdc961a0f486eb4c44d8e3bc88a49718da6e
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
 # Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
@@ -402,7 +346,7 @@ class MeetingModel(ndb.Model):
   host = ndb.KeyProperty(kind=UserModel)
   attendees = ndb.KeyProperty(kind=UserModel, repeated=True)
   isBroadcasting = ndb.BooleanProperty()
-  recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
+  # recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
 
 class RecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
@@ -690,8 +634,8 @@ class UploadRecording(webapp2.RequestHandler):
     meeting_key = connect_user_key.get().activeMeeting
     recording = RecordingModel(parent = meeting_key)
     recording.put()
-    meeting.recording.append(recording)
-    meeting.put()
+    # meeting.recording.append(recording)
+    # meeting.put()
     # parent, Model
 
 
