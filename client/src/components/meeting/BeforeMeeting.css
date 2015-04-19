@@ -26,7 +26,15 @@
 }
 
 .BeforeMeeting-description-header {
+  /**
+   * XXX The z-index ensures that the TileGrid header doesn't clobber this,
+   * but since the z-index causes us to clobber the close button in the TileGrid
+   * header, we need to add a margin so that the close button is clickable.
+   *
+   * Yeah, this kind of sucks.
+   */
   z-index: 999;
+  margin-right: 40px;
 }
 
 .BeforeMeeting-description-content {
@@ -39,4 +47,8 @@
   font-family: Oswald;
   margin-top: 30px;
   margin-bottom: 5px;
+}
+
+.BeforeMeeting-description-footer {
+  border-top: 1px solid #333;
 }

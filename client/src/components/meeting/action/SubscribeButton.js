@@ -30,7 +30,7 @@ var SubscribeButton = React.createClass({
 
     return (
       <IconButton
-        className="btn-default"
+        className="btn-default btn-lg btn-block"
         icon={(isAttendee) ? 'ok' : 'plus'} 
         disabled={isAttendee}
         onClick={this.handleClick}>

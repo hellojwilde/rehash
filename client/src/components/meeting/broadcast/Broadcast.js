@@ -31,8 +31,15 @@ var Broadcast = React.createClass({
   },
 
   render: function() {
+    var {meetingRelation} = this.props;
+
     return (
-      <video ref="broadcast" autoPlay={true} {...this.props} />
+      <video 
+        ref="broadcast" 
+        muted={meetingRelation.isHost} 
+        autoPlay={true}
+        {...this.props}
+      />
     );
   }
 

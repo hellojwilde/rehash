@@ -1,10 +1,10 @@
 var AgendaList = require('components/meeting/agenda/AgendaList');
-var AttendeeBlock = require('components/meeting/attendee/AttendeeBlock');
 var DuringMeeting = require('components/meeting/DuringMeeting');
 var EditMeetingModal = require('modals/EditMeetingModal');
-var HostBroadcastBlock = require('components/meeting/broadcast/HostBroadcastBlock');
 var React = require('react');
 var ScheduleLabel = require('components/common/ScheduleLabel');
+var HostActionBlock = require('components/meeting/action/HostActionBlock');
+var NonHostActionBlock = require('components/meeting/action/NonHostActionBlock');
 
 var meetingPropType = require('types/meetingPropType');
 var meetingRelationPropType = require('types/meetingRelationPropType');
@@ -33,7 +33,7 @@ var BeforeMeeting = React.createClass({
     });
   },
 
-  handleBroadcastStart: function() {
+  handleBroadcastStartOrJoin: function() {
     this.props.onRequestViewChange(DuringMeeting);
   },
 
@@ -67,22 +67,18 @@ var BeforeMeeting = React.createClass({
 
                     <h2 className="BeforeMeeting-description-title">{meeting.title}</h2>
                     <p>{meeting.description}</p>
-
-                    <AttendeeBlock 
-                      meetingKey={meeting.key}
-                      meetingRelation={meetingRelation}
-                      attendees={meeting.attendees}
-                    />
                   </div>
                 </div>
                 <div className="BeforeMeeting-description-footer">
-                  {meetingRelation.isHost && (
-                    <HostBroadcastBlock 
-                      {...this.props}
-                      meetingKey={meeting.key}
-                      onBroadcastStart={this.handleBroadcastStart}
-                    />
-                  )}
+                  {meetingRelation.isHost 
+                    ? <HostActionBlock 
+                        {...this.props} 
+                        onBroadcastStart={this.handleBroadcastStartOrJoin}
+                      />
+                    : <NonHostActionBlock
+                        {...this.props}
+                        onBroadcastJoin={this.handleBroadcastStartOrJoin}
+                      />}
                 </div>
               </div>
             </div>

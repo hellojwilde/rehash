@@ -12,8 +12,8 @@ var MeetingHandler = React.createClass({
     },
 
     willTransitionFrom: function(transition, element) {
-      element.context.flux.getActions('webRTC')
-        .disconnect();
+      element && element.context && (element.context.flux.getActions('webRTC')
+        .disconnect());
     }
   },
 

@@ -1,0 +1,9 @@
+.UserListPreview {
+  display: flex;
+  margin: 10px 0;
+}
+
+.UserListPreview-thumbnail,
+.UserListPreview-placeholder {
+  border-radius: 4px;
+}
