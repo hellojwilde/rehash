@@ -45,6 +45,14 @@ class MeetingActions extends Actions {
   receive(meeting) {
     return meeting;
   }
+
+  receiveBroadcastStart(meetingId) {
+    return meetingId;
+  }
+
+  receiveBroadcastEnd(meetingId) {
+    return meetingId;
+  }
 }
 
 module.exports = MeetingActions;

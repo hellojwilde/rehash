@@ -1,5 +1,6 @@
 var BeforeMeeting = require('components/meeting/BeforeMeeting');
 var DuringMeeting = require('components/meeting/DuringMeeting');
+var AfterMeeting = require('components/meeting/AfterMeeting');
 var React = require('react');
 
 var meetingPropType = require('types/meetingPropType');
@@ -12,9 +13,20 @@ var Meeting = React.createClass({
 
   getInitialState: function() {
     return {
-      view: this.props.meeting.isBroadcasting ? DuringMeeting : BeforeMeeting
+      view: this.getInitialMeetingView()
     };
   },
+
+  getInitialMeetingView: function() {
+    switch (this.props.meeting.status) {
+      case 'scheduled':
+        return BeforeMeeting;
+      case 'broadcasting':
+        return DuringMeeting;
+      case 'ended':
+        return AfterMeeting;
+    }
+  }
 
   handleRequestViewChange: function(newView) {
     this.setState({view: newView});

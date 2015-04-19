@@ -32,19 +32,29 @@ class ChannelAPI {
   }
 
   handleMessage(message) {
-    console.log('ChannelAPI: message: ' + message.data);
-
+    var msg = JSON.parse(message.data);
     var webRTCActions = this.registry.getActions('webRTC');
     var meetingActions = this.registry.getActions('meeting');
 
-    var msg = JSON.parse(message.data);
+    console.log('ChannelAPI: message: ',  msg);
+    
     switch (msg.type) {
       case 'meetingCreate':
       case 'meetingUpdate':
         meetingActions.receive(msg.meeting);
         break;
+      case 'broadcastStart':
+        meetingActions.receiveBroadcastStart(msg.meetingId);
+        webRTCActions.connectAsAttendee(msg.meetingId);
+        break;
+      case 'broadcastWebRTCMessage':
+        webRTCActions.receiveMessage(msg.meetingId, msg.message);
+        break;
+      case 'broadcastEnd': 
+        meetingActions.receiveBroadcastEnd(msg.meetingId);
+        webRTCActions.disconnect();
+        break;
     }
-
   }
 
   handleError() {

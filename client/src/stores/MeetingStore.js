@@ -26,7 +26,10 @@ class MeetingStore extends Store {
     this.register(meetingActionIds.fetch, this.handleReceiveMeeting);
     this.register(meetingActionIds.create, this.handleReceiveMeeting);
     this.register(meetingActionIds.update, this.handleReceiveMeeting);
+
     this.register(meetingActionIds.receive, this.handleReceiveMeeting);
+    this.register(meetingActionIds.receiveBroadcastStart, this.handleReceiveMeetingBroadcastStart);
+    this.register(meetingActionIds.receiveBroadcastEnd, this.handleReceiveMeetingBroadcastEnd);
 
     this.registry = registry;
     this.state = {};
@@ -67,6 +70,18 @@ class MeetingStore extends Store {
   handleReceiveMeeting(meeting) {
     meeting.start = moment.utc(meeting.start);
     this.setState({[meeting.id]: meeting});
+  }
+
+  handleReceiveMeetingBroadcastStart(meetingId) {
+    thie.setState({
+      [meetingId]: _.assign(this.state[meetingId], {status: 'broadcasting'})
+    });
+  }
+
+  handleReceiveMeetingBroadcastEnd(meetingId) {
+    thie.setState({
+      [meetingId]: _.assign(this.state[meetingId], {status: 'ended'})
+    });
   }
 }
 
