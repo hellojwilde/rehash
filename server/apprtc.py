@@ -373,7 +373,7 @@ def channel_messageConnected(message):
     channel.send_message(user.key.id(), message)
 
 def channel_messageByMeeting(message, meeting):
-  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting):
+  for user in ConnectedUserModel.query(ConnectedUserModel.activeMeeting == meeting.key()):
     if user.key != session['connect_user_key']:
       channel.send_message(user.key.id(), message)
 
@@ -408,6 +408,11 @@ class MeetingModel(ndb.Model):
   host = ndb.KeyProperty(kind=UserModel)
   attendees = ndb.KeyProperty(kind=UserModel, repeated=True)
   isBroadcasting = ndb.BooleanProperty()
+  recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
+
+class RecordingModel(ndb.Model):
+  recording = ndb.BlobProperty(indexed=False)
+  # add additional information as needed here 
 
 class AgendaModel(ndb.Model):
   # topics contains a list of {id: tId, content: '', questions: [qId, ]}
@@ -656,6 +661,19 @@ class LogoutHandler(webapp2.RequestHandler):
     ### will redefine the redirect route, 
     self.redirect(OAUTH_CONFIG['internal']['logout_redirect_url'])
 
+class UploadRecording(webapp2.RequestHandler):
+  def post(self):
+    ### shall save to meeting blob
+    session = get_current_session()
+    connect_user_key = session.get('connect_user_key')
+    meeting_key = connect_user_key.get().activeMeeting
+    recording = RecordingModel(parent = meeting_key)
+    recording.put()
+    meeting.recording.append(recording)
+    meeting.put()
+    # parent, Model
+
+
 class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
@@ -663,6 +681,7 @@ class RouteErrorHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
+    (r'/message/([^/]+)', MessagePage),
     (r'/meeting/([^/]+)', MeetingPage),
     (r'/explore/meeting/([^/]+)', MeetingPage),
     (r'/meeting/([^/]+)/requestBroadcastData', RequestBroadcastData),
@@ -670,7 +689,7 @@ app = webapp2.WSGIApplication([
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
     (r'/twitterauthorized', TwitterAuthorized),
-    (r'/message/([^/]+)', MessagePage),
+    (r'/uploadrecording', UploadRecording),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 

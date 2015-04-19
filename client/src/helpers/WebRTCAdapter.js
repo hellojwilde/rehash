@@ -236,7 +236,8 @@ function startRecording(element, stream) {
     mediaRecorder.ondataavailable = function (blob) {
         // POST/PUT "Blob" using FormData/XHR2
         var blobURL = URL.createObjectURL(blob);
-        document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+        alert('<a href="' + blobURL + '">' + blobURL + '</a>');
+        uploadRecording(blob);
     };
     mediaRecorder.start(3000);
     return mediaRecorder;
@@ -247,10 +248,12 @@ function startRecording(element, stream) {
     multiStreamRecorder.video = element;
     // multiStreamRecorder.audioChannels = 1;
     multiStreamRecorder.ondataavailable = function (blobs) {
-        // blobs.audio
-        // blobs.video
-        var videoblobURL = URL.createObjectURL(blobs.video);
-        var audioblobURL = URL.createObjectURL(blobs.audio);  
+      // blobs.audio
+      // blobs.video
+      var videoblobURL = URL.createObjectURL(blobs.video);
+      var audioblobURL = URL.createObjectURL(blobs.audio);  
+      // currently only upload audio
+      uploadRecording(blobs.audio);
     };
     multiStreamRecorder.start(3 * 1000);
     return multiStreamRecorder;
@@ -263,6 +266,25 @@ function startRecording(element, stream) {
 function stopRecording(mediaRecorder){
   mediaRecorder.stop()
 }
+
+function uploadRecording(blob) {
+  var formData = new FormData();
+  formData.append('fname', 'test.webm');
+  formData.append('data', blob);
+  $.ajax({
+      type: 'POST',
+      url: '/uploadrecording',
+      data: formData,
+      processData: false,
+      contentType: false
+  }).done(function(data) {
+    console.log('Recording files successfully uploaded');
+    // may want ot suspend user action during video upload
+  }).fail(function(e){
+    console.log('Recording files fail to upload');
+  });
+}
+
 
 module.exports = {
   getUserMedia,
