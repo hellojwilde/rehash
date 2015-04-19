@@ -227,6 +227,43 @@ function requestUserMedia(constraints) {
   });
 }
 
+// Takes in a steam for which video/audio is recorded
+function startRecording(element, stream) {
+  if (navigator.mozGetUserMedia) {
+    console.log('This appears to be Firefox');
+    var mediaRecorder = new MediaStreamRecorder(stream);
+    mediaRecorder.mimeType = 'video/webm';
+    mediaRecorder.ondataavailable = function (blob) {
+        // POST/PUT "Blob" using FormData/XHR2
+        var blobURL = URL.createObjectURL(blob);
+        document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+    };
+    mediaRecorder.start(3000);
+    return mediaRecorder;
+  }
+  else if (navigator.webkitGetUserMedia) {
+    console.log('This appears to be Chrome');
+    var multiStreamRecorder = new MultiStreamRecorder(stream);
+    multiStreamRecorder.video = element;
+    // multiStreamRecorder.audioChannels = 1;
+    multiStreamRecorder.ondataavailable = function (blobs) {
+        // blobs.audio
+        // blobs.video
+        var videoblobURL = URL.createObjectURL(blobs.video);
+        var audioblobURL = URL.createObjectURL(blobs.audio);  
+    };
+    multiStreamRecorder.start(3 * 1000);
+    return multiStreamRecorder;
+  }
+  else {
+    console.log('Browser not supported. Please use Chrome/Firefox'); 
+  }
+}
+
+function stopRecording(mediaRecorder){
+  mediaRecorder.stop()
+}
+
 module.exports = {
   getUserMedia,
   requestUserMedia,

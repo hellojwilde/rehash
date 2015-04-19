@@ -18,10 +18,15 @@
   <script type="text/javascript">
     window.initialStoreData = '{{ initial_store_data }}';
   </script>
+
+  <script src="https://cdn.webrtc-experiment.com/MediaStreamRecorder.js">
+  </script>
+
   {% if is_usingwebpack %}
   <script src="http://localhost:3001/dist/bundle.js"></script>
   {% else %}
   <script src="/dist/bundle.js"></script>
   {% endif %}
+  
 </body>
 </html>

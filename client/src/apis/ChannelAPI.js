@@ -38,7 +38,9 @@ class ChannelAPI {
     if (msg.namespace) {
       var namespaceActions = this.registry.getActions(msg.namespace); 
       featureActions.receiveMessage(msg);
-
+    }
+    else {
+      // need to take care of messages that dont have namespace at all
     }
   }
 
