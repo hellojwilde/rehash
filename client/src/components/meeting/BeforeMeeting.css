@@ -25,12 +25,12 @@
   flex-direction: column;
 }
 
+.BeforeMeeting-description-header {
+  z-index: 999;
+}
+
 .BeforeMeeting-description-content {
   flex: 1;
   display: flex;
   align-items: center;
-}
-
-.BeforeMeeting-broadcast-button {
-  margin: 5px 0;
 }

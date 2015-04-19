@@ -1,0 +1,19 @@
+.DuringMeeting {
+  display: flex;
+  height: 100%;
+  flex-diration: row;
+  align-items: center;
+  background: #222;
+}
+
+.DuringMeeting-video {
+  width: 100%;
+  flex: 1;
+}
+
+.DuringMeeting-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

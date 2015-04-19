@@ -13,7 +13,13 @@ var MeetingHandler = React.createClass({
   },
 
   contextTypes: {
-    router: React.PropTypes.func.isRequired
+    router: React.PropTypes.func.isRequired,
+    flux: React.PropTypes.object.isRequired
+  },
+
+  componentWillUnmount: function() {
+    this.context.flux.getActions('webRTC')
+      .disconnect();
   },
 
   render: function() {
@@ -22,10 +28,11 @@ var MeetingHandler = React.createClass({
     return (
       <FluxComponent
         key={meetingKey}
-        connectToStores={['meeting']}
-        stateGetter={([meetingStore]) => ({
+        connectToStores={['meeting', 'webRTC']}
+        stateGetter={([meetingStore, webRTCStore]) => ({
           meeting: meetingStore.getByKey(meetingKey),
-          meetingRelation: meetingStore.getCurrentUserRelationByKey(meetingKey)
+          meetingRelation: meetingStore.getCurrentUserRelationByKey(meetingKey),
+          webRTC: webRTCStore.state
         })}
         render={(state) => (
           <DocumentTitle title={`${state.meeting.title} - Rehash`}>

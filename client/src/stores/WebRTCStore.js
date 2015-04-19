@@ -17,20 +17,44 @@ class WebRTCStore extends Store {
     super();
 
     var webRTCActionIds = registry.getActionIds('webRTC');
+    var webRTCActionBindings = [
+      // Public facing actions.
+      ['fetchTurn', this.handleFetchTurn],
+      ['prepareAsHost', this.handlePrepareAsHost],
+      ['disconnect', this.handleDisconnect],
 
-    this.register(webRTCActionIds.fetchTurn, this.handleWebRTCFetchTurn);
+      // Internal actions regarding signaling and RTCPeerConnection.
+      ['_createPeer', this.handleCreatePeer],
+      ['_createPeerLocalStream', this.handleCreatePeerLocalStream],
+      ['_createPeerOffer', this.handleCreatePeerLocalDescription],
+      ['_createPeerAnswer', this.handleCreatePeerLocalDescription],
+      ['_receivePeerIceCandidate', this.handleReceivePeerIceCandidate],
+      ['_receivePeerRemoteDescription', this.handleReceivePeerRemoteDescription],
+      ['_receivePeerRemoteStream', this.handleReceivePeerRemoteStream]
+    ];
+
+    webRTCActionBindings.forEach(([action, handler]) => {
+      this.register(webRTCActionIds[action], handler);
+    });
 
     this.registry = registry;
     this.state = {
+      // State variables representing mostly immutable server configuration.
+      audioReceiveCodec: null,
+      audioSendCodec: null,
+      mediaConstraints: null,
+      offerConstraints: null,
       pcConfig: null,
       pcConstraints: null,
-      offerConstraints: null,
-      mediaConstraints: null,
-      turnUrl: null,
       stereo: null,
-      audioSendCodec: null,
-      audioReceiveCodec: null,
-      isTurnFetchingComplete: false
+      turnUrl: null,
+
+      // State variables representing client status.
+      isTurnFetchingComplete: false,
+      localStream: null,
+      meetingKey: null,
+      pc: null,
+      remoteStream: null
     };
   }
 
@@ -52,7 +76,25 @@ class WebRTCStore extends Store {
     return getPreferredAudioCodec(sdp, audioReceiveCodec);
   }
 
-  handleWebRTCFetchTurn(turnServer) {
+  handlePrepareAsHost(stream) {
+    this.setState({localStream: stream});
+  }
+
+  handleDisconnect() {
+    var {localStream, pc} = this.state;
+
+    localStream && localStream.stop();
+    pc && pc.close();
+
+    this.setState({
+      localStream: null,
+      meetingKey: null,
+      pc: null,
+      remoteStream: null
+    });
+  }
+
+  handleFetchTurn(turnServer) {
     if (turnServer === null) {
       this.setState({isTurnFetchingComplete: true});
       return;
@@ -62,15 +104,38 @@ class WebRTCStore extends Store {
     var iceServers = createIceServers(uris, username, password);
 
     if (iceServers !== null) {
+      var {pcConfig} = this.state;
+      pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
+
       this.setState({
         isTurnFetchingComplete: true,
-        pcConfig: _.clone(this.state.pcConfig).iceServers.concat(iceServers)
+        pcConfig: pcConfig
       });
     }
   }
 
-  handleWebRTCReceiveMessage(message) {
-    
+  handleCreatePeer(pc) {
+    this.setState({pc: pc})
+  }
+
+  handleCreatePeerLocalStream(stream) {
+    this.state.pc.addStream(stream);
+  }
+
+  handleCreatePeerLocalDescription(sessionDescription) {
+    this.state.pc.setLocalDescription(sessionDescription);
+  }
+
+  handleReceivePeerIceCandidate(candidate) {
+    this.state.pc.addIceCandidate(candidate);
+  }
+
+  handleReceivePeerRemoteDescription(sessionDescription) {
+    this.state.pc.setRemoteDescription(sessionDescription);
+  }
+
+  handleReceivePeerRemoteStream(stream) {
+    this.setState({remoteStream: stream});
   }
 }
 

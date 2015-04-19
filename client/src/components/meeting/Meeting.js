@@ -7,7 +7,7 @@ var meetingPropType = require('types/meetingPropType');
 var Meeting = React.createClass({
 
   propTypes: {
-    meeting: meetingPropType.isRequired
+    meeting: meetingPropType.isRequired,
   },
 
   getInitialState: function() {
@@ -22,7 +22,13 @@ var Meeting = React.createClass({
 
   render: function() {
     var View = this.state.view;
-    return <View {...this.props} />;
+    
+    return (
+      <View 
+        {...this.props} 
+        onRequestViewChange={this.handleRequestViewChange}
+      />
+    );
   }
 
 });

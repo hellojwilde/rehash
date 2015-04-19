@@ -1,7 +1,8 @@
 var AgendaList = require('components/meeting/agenda/AgendaList');
 var AttendeeBlock = require('components/meeting/attendee/AttendeeBlock');
+var DuringMeeting = require('components/meeting/DuringMeeting');
 var EditMeetingModal = require('modals/EditMeetingModal');
-var IconButton = require('components/common/IconButton');
+var HostBroadcastBlock = require('components/meeting/broadcast/HostBroadcastBlock');
 var React = require('react');
 var ScheduleLabel = require('components/common/ScheduleLabel');
 
@@ -19,7 +20,9 @@ var BeforeMeeting = React.createClass({
 
   propTypes: {
     meeting: meetingPropType.isRequired,
-    meetingRelation: meetingRelationPropType.isRequired
+    meetingRelation: meetingRelationPropType.isRequired,
+    webRTC: React.PropTypes.object.isRequired,
+    onRequestViewChange: React.PropTypes.func.isRequired
   },
 
   handleEditClick: function() {
@@ -28,6 +31,10 @@ var BeforeMeeting = React.createClass({
     modalActions.push(EditMeetingModal, {
       meetingKey: this.props.meeting.key
     });
+  },
+
+  handleBroadcastStart: function() {
+    this.props.onRequestViewChange(DuringMeeting);
   },
 
   render: function() {
@@ -42,13 +49,15 @@ var BeforeMeeting = React.createClass({
                 <AgendaList isHost={meetingRelation.isHost} />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
-                <div className="BeforeMeeting-description-header">
-                  <button 
-                    onClick={this.handleEditClick} 
-                    className="btn btn-default btn-sm">
-                    Edit
-                  </button>
-                </div>
+                {meetingRelation.isHost && (
+                  <div className="BeforeMeeting-description-header">
+                    <button 
+                      onClick={this.handleEditClick} 
+                      className="btn btn-default btn-sm">
+                      Edit
+                    </button>
+                  </div>
+                )}
                 <div className="BeforeMeeting-description-content">
                   <div>
                     <ScheduleLabel 
@@ -67,14 +76,13 @@ var BeforeMeeting = React.createClass({
                   </div>
                 </div>
                 <div className="BeforeMeeting-description-footer">
-                  <IconButton
-                    className="btn-lg btn-block btn-primary BeforeMeeting-broadcast-button"
-                    icon="facetime-video">
-                    Broadcast
-                  </IconButton>
-                  <small className="text-muted">
-                    We'll let you check your video before you go live. 
-                  </small>
+                  {meetingRelation.isHost && (
+                    <HostBroadcastBlock 
+                      {...this.props}
+                      meetingKey={meeting.key}
+                      onBroadcastStart={this.handleBroadcastStart}
+                    />
+                  )}
                 </div>
               </div>
             </div>

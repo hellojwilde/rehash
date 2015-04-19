@@ -48,75 +48,19 @@ def generate_random(length):
     word += random.choice('0123456789')
   return word
 
-def sanitize(key):
-  return re.sub('[^a-zA-Z0-9\-]', '-', key)
+# def sanitize(key):
+#   return re.sub('[^a-zA-Z0-9\-]', '-', key)
 
-### client id based upon room_key to create GAE channels
-### key().id_or_name() returns the string/number of name/id
-# def make_client_id(room, user):
-#   # return room.key().id_or_name() + '/' + user
-
-# def create_channel(user, duration_minutes):
-#   client_id = user
-#   return channel.create_channel(client_id, duration_minutes)
-
-# def make_loopback_answer(message):
-#   message = message.replace("\"offer\"", "\"answer\"")
-#   message = message.replace("a=ice- options:google-ice\\r\\n", "")
-#   return message
-
-# def handle_message(message):
-#   # implement broadcast to OTHERUSERS! 
-#   logging.info('handle_message' + str(user) + message)
-#   message_obj = json.loads(message)
-#   room_key = room.key().id_or_name()
-
-#   ### IF SESSION ALREADY STARTED, send to host the user info 
-#   if message_obj['type'] == 'bye':
-#     room.remove_user(user)
-#     logging.info('User ' + user + ' quit from room ' + room_key)
-#     logging.info('Room ' + room_key + ' has state ' + str(room))
-#     return
-#   # to start a broadcast session by asking others to initialize  
-#   elif message_obj['type'] == 'broadcast':
-#     logging.info('User ' + user + ' started broadcasting')
-#     room.select_host(user)
-#     on_message(room, room.get_next_user(), message)
-#   # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
-#   elif message_obj['type'] == 'ready':
-#     if room.host_started:
-#       room.connect_queue.append(user)
-#       room.put()
-#       if len(room.connect_queue) > 0:
-#         on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-#     return
-#   # to trigger next connection (remove top from the queue and proceed)
-#   elif message_obj['type'] == 'connected':
-#     room.connect_queue.pop(0)
-#     room.put()
-#     if len(room.connect_queue) > 0:
-#       on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-#   # handle all other types of cross messages, like Candidate, Offer and Answer
-#   else:
-#     # also, queue, add alock later on
-#     if room.host == None:
-#       return
-#       # on_message(room, room.host, message)
-#     elif user == room.host: 
-#       on_message(room, room.get_next_user(), message)
-#     else:
-#       on_message(room, room.host, message)
-
-# revised version using 
-def handle_message(message, meeting):
+### need to implement: if the host quit, we have to close the sesssion
+def handle_message(room, user, message):
+  # implement broadcast to OTHERUSERS! 
+  logging.info('handle_message' + str(user) + message)
   message_obj = json.loads(message)
   connect_user_key = session.get('connect_user_key')
-  
   # beforeunload
   if message_obj['type'] == 'bye':
     connect_user_key.delete()
     return
-  
   # starthosting
   elif message_obj['type'] == 'broadcast' or message_obj['type'] == 'join':
     connect_user_key.get().activeMeeting = meeting.key()
@@ -124,7 +68,6 @@ def handle_message(message, meeting):
     logging.info('User ' + connect_user_key.id() + ' started broadcasting')
     # room.select_host(user)
     # on_message(room, room.get_next_user(), message)
-
   # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
   elif message_obj['type'] == 'ready':
     return
@@ -133,7 +76,6 @@ def handle_message(message, meeting):
     #   room.put()
     #   if len(room.connect_queue) > 0:
     #     on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-
   # to trigger next connection (remove top from the queue and proceed)
   elif message_obj['type'] == 'connected':
     return
@@ -141,18 +83,10 @@ def handle_message(message, meeting):
     # room.put()
     # if len(room.connect_queue) > 0:
     #   on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-
   # handle all other types of cross messages, like Candidate, Offer and Answer
   else:
     channel_messageByMeeting(meeting)
-    # also, queue, add alock later on
-    # if room.host == None:
-    #   return
-    # on_message(room, room.host, message)
-    # elif user == room.host: 
-    #   on_message(room, room.get_next_user(), message)
-    # else:
-    #   on_message(room, room.host, message)
+
 
 def get_saved_messages(client_id):
   return Message.gql("WHERE client_id = :id", id=client_id)
@@ -227,11 +161,9 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   connect_user(user_id)
 
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self),
+    'webRTC': get_webrtc_config(self, user_id),
     'currentUser': {
       'user': user,
-      'attending': [],
-      'hosting': [],
       'channelToken': channel.create_channel(user_id, token_timeout)
     }
   })
@@ -421,12 +353,7 @@ class RequestBroadcastData(webapp2.RequestHandler):
         room.add_user(user)
         #initiator = 1
 
-    if turn_server == 'false':
-      turn_server = None
-      turn_url = ''
-    else:
-      turn_url = 'https://computeengineondemand.appspot.com/'
-      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
+
 
     token = create_channel(room, user, token_timeout)
 
@@ -495,19 +422,9 @@ class QuestionModel(ndb.Model):
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
 
+
 class ConnectedUserModel(ndb.Model):
   activeMeeting = ndb.KeyProperty(kind = MeetingModel)
-
-
-# class AnswerModel(ndb.Model):
-#   content = ndb.StringProperty()
-
-class AdaptJsonEncoder(json.JSONEncoder):
-  def default(self, obj):
-    if isinstance(obj, datetime.datetime):
-      return obj.strftime('%Y-%m-%d %H:%M:%S')
-    return json.JSONEncoder.default(self, obj)
-
 
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -758,3 +675,4 @@ app = webapp2.WSGIApplication([
     ### all other unmapped url shall be directed to error page 
     (r'.*', RouteErrorHandler)
   ], debug=True)
+

@@ -1,0 +1,25 @@
+.BroadcastPreview {
+  position: relative;
+  background: #151515;
+  border-radius: 4px;
+}
+
+.BroadcastPreview-video {
+  width: 100%;
+  height: auto;
+  vertical-align: bottom;
+  border-radius: 4px;
+}
+
+.BroadcastPreview-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+}
+
+.BroadcastPreview-button {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+}
