@@ -440,7 +440,22 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def broadcast_send_webrtc_message(self, request, response):
+    user_key = get_user_key_for_session()
     meeting = MeetingModel.get_by_id(int(request.get('meetingId')))
+
+    if meeting.status != 'broadcasting':
+      return
+
+    message = {
+      'type': 'broadcastWebRTCMessage',
+      'meetingId': request.get('meetingId'),
+      'message': request.get('message')
+    }
+
+    if user_key == meeting.host:
+      channel_messageByUserInMeeting(user_key, meeting.key, message)
+    else:
+      channel_messageByMeeting(meeting.key, message)
 
   @classmethod
   def broadcast_end(self, request, response):
