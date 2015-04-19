@@ -270,5 +270,7 @@ module.exports = {
   attachMediaStream,
   reattachMediaStream,
   webrtcDetectedBrowser,
-  webrtcDetectedVersion
+  webrtcDetectedVersion,
+  startRecording,
+  stopRecording
 };
