@@ -149,11 +149,22 @@ def channel_messageConnected(message):
         json.dumps(message, cls=APIJSONEncoder)
       )
 
-def channel_messageByMeeting(meetingKey, message):
+def channel_messageByUser(user_key, message):
+  connected_user_query = ConnectedUserModel.query(
+    ConnectedUserModel.user == user_key
+  )
+
+  for connected_user in connected_user_query:
+    channel.send_message(
+      connected_user.key.urlsafe(), 
+      json.dumps(message, cls=APIJSONEncoder)
+    )
+
+def channel_messageByMeeting(meeting_key, message):
   ### message all connected users with a specified active meeting
   session = get_current_session()
   connected_user_query = ConnectedUserModel.query(
-    ConnectedUserModel.activeMeeting == meetingKey
+    ConnectedUserModel.activeMeeting == meeting_key
   )
 
   for connected_user in connected_user_query:
