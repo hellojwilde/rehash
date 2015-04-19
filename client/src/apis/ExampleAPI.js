@@ -55,10 +55,6 @@ var ExampleAPI = {
     };
 
     return sendAjaxRequest(reqData)
-      .then((result) => result.map((meeting) => {
-        meeting.start = moment.utc(meeting.start);
-        return meeting;
-      }));
   },
 
   /**
@@ -76,12 +72,7 @@ var ExampleAPI = {
       request: 'meetingFetch'
     };
     
-    return sendAjaxRequest(reqData)
-      .then((meeting) => {
-        meeting.start = moment.utc(meeting.start);
-        return meeting;
-      });
-
+    return sendAjaxRequest(reqData);
   },
 
   /**

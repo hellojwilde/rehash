@@ -10,10 +10,11 @@ class MeetingStore extends Store {
     var exploreActionIds = registry.getActionIds('explore');
     var meetingActionIds = registry.getActionIds('meeting');
     
-    this.register(exploreActionIds.fetch, this.handleExploreFetch);
-    this.register(meetingActionIds.fetch, this.handleMeetingFetch);
-    this.register(meetingActionIds.create, this.handleMeetingFetch);
-    this.register(meetingActionIds.update, this.handleMeetingFetch);
+    this.register(exploreActionIds.fetch, this.handleReceiveMeetings);
+    this.register(meetingActionIds.fetch, this.handleReceiveMeeting);
+    this.register(meetingActionIds.create, this.handleReceiveMeeting);
+    this.register(meetingActionIds.update, this.handleReceiveMeeting);
+    this.register(meetingActionIds.receive, this.handleReceiveMeeting);
 
     this.registry = registry;
     this.state = {};
@@ -46,11 +47,15 @@ class MeetingStore extends Store {
     };
   }
 
-  handleExploreFetch(meetings) {
-    this.setState(_.indexBy(meetings, 'id'));
+  handleReceiveMeetings(meetings) {
+    this.setState(_.indexBy(meetings.map((meeting) => {
+      meeting.start = moment.utc(meeting.start);
+      return meeting;
+    }), 'id'));
   }
 
-  handleMeetingFetch(meeting) {
+  handleReceiveMeeting(meeting) {
+    meeting.start = moment.utc(meeting.start);
     this.setState({[meeting.id]: meeting});
   }
 }

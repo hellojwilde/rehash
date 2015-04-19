@@ -20,7 +20,7 @@ class ChannelAPI {
 
       channel.open({
         onopen: this.handleOpened,
-        onmessage: this.handleMessage,
+        onmessage: this.handleMessage.bind(this),
         onerror: this.handleError,
         onclose: this.handleClosed
       });
@@ -34,14 +34,17 @@ class ChannelAPI {
   handleMessage(message) {
     console.log('ChannelAPI: message: ' + message.data);
 
+    var webRTCActions = this.registry.getActions('webRTC');
+    var meetingActions = this.registry.getActions('meeting');
+
     var msg = JSON.parse(message.data);
-    if (msg.namespace) {
-      var namespaceActions = this.registry.getActions(msg.namespace); 
-      featureActions.receiveMessage(msg);
+    switch (msg.type) {
+      case 'meetingCreate':
+      case 'meetingUpdate':
+        meetingActions.receive(msg.meeting);
+        break;
     }
-    else {
-      // need to take care of messages that dont have namespace at all
-    }
+
   }
 
   handleError() {

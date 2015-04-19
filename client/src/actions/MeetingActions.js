@@ -41,6 +41,10 @@ class MeetingActions extends Actions {
   close(meetingId) {
     return this.api.meetingClose(meetingId);
   }
+
+  receive(meeting) {
+    return meeting;
+  }
 }
 
 module.exports = MeetingActions;
