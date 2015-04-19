@@ -6,14 +6,10 @@ var PrepareBroadcastButton = React.createClass({
   contextTypes: {
     flux: React.PropTypes.object.isRequired
   },
-
-  propTypes: {
-    meetingId: React.PropTypes.string.isRequired
-  },
-
+  
   handleClick: function() {
     this.context.flux.getActions('webRTC')
-      .prepareAsHost(this.props.meetingId);
+      .prepareAsHost();
   },
 
   render: function() {

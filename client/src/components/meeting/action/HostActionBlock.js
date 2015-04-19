@@ -38,7 +38,7 @@ var HostActionBlock = React.createClass({
         onPreviewClose={this.handlePreviewClose}>
         {isShowingPreview 
           ? <BroadcastButton {...{meetingId, onBroadcastStart}}/>
-          : <PrepareBroadcastButton meetingId={meetingId}/>}
+          : <PrepareBroadcastButton/>}
       </ActionBlock>
     );
   }

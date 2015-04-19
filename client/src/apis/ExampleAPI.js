@@ -151,6 +151,31 @@ var ExampleAPI = {
     });
   },
 
+  broadcastStart: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'broadcastStart'
+    });
+  },
+
+  broadcastSendWebRTCMessage: function(meetingId, message) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'broadcastSendWebRTCMessage',
+      message: message
+    });
+  },
+
+  broadcastEnd: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'broadcastEnd'
+    });
+  },
+
   //
   //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
   //

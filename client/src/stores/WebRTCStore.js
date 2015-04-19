@@ -59,6 +59,7 @@ class WebRTCStore extends Store {
       isTurnFetchingComplete: false,
       localStream: null,
       meetingId: null,
+      isMeetingHost: false,
       pc: null,
       remoteStream: null
     };

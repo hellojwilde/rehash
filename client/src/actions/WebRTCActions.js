@@ -57,8 +57,7 @@ class WebRTCActions extends Actions {
       .then(() => {
         webRTCActions._createPeer();
         webRTCActions._createPeerLocalStream(localStream);
-
-        // TODO: send broadcast message saying to fetch all of the messages for the client.
+        return this.api.broadcastStart(meetingId);
       });
   }
 
@@ -71,7 +70,18 @@ class WebRTCActions extends Actions {
   }
 
   disconnect() {
-    return null;
+    var webRTCStore = this.registry.getStore('webRTC');
+    var meetingStore = this.registry.getStore('meeting');
+    var {meetingId} = webRTCStore.state;
+
+    if (meetingId) {
+      var meetingRelation = meetingStore.getCurrentUserRelationById(meetingId);
+      if (meetingRelation.isHost) {
+        return this.api.broadcastEnd(meetingId);
+      }
+    }
+    
+    return Promise.resolve(null);
   }
 
   receiveMessage(message) {
@@ -113,7 +123,7 @@ class WebRTCActions extends Actions {
         return;
       }
 
-      this.api.sendMessage(
+      this.api.broadcastSendWebRTCMessage(
         meetingId,
         {
           type: 'candidate',
@@ -154,7 +164,7 @@ class WebRTCActions extends Actions {
           sessionDescription.sdp = 
             webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
           
-          this.api.sendMessage(meetingId, sessionDescription)
+          this.api.broadcastSendWebRTCMessage(meetingId, sessionDescription)
             .then(() => resolve(sessionDescription));
         }, 
         (e) => reject(e), 
@@ -173,7 +183,7 @@ class WebRTCActions extends Actions {
           sessionDescription.sdp = 
             webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
           
-          this.api.sendMessage(meetingId, sessionDescription)
+          this.api.broadcastSendWebRTCMessage(meetingId, sessionDescription)
             .then(() => resolve(sessionDescription));
         },
         (e) => reject(e), 

@@ -41,7 +41,7 @@ var ExploreHandler = React.createClass({
                 <TileGrid 
                   {...state}
                   ref="grid"
-                  detailMeetingId={meetingId}
+                  detailMeetingId={+meetingId}
                   detail={<RouteHandler/>}
                 />
               )}

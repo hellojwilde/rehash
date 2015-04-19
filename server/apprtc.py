@@ -413,6 +413,7 @@ class APIHandler(webapp2.RequestHandler):
       'meetingopen': self.meeting_open,
       'meetingclose': self.meeting_close,
       'broadcaststart': self.broadcast_start,
+      'broadcastsendwebrtcmessage': self.broadcast_send_webrtc_message,
       'broadcastend': self.broadcast_end,
       'agendafetch': self.agenda_fetch,
       'explorefetch': self.explore_fetch
@@ -519,6 +520,10 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def broadcast_start(self, request, response):
+    pass
+
+  @classmethod
+  def broadcast_send_webrtc_message(self, request, response):
     pass
 
   @classmethod
@@ -651,7 +656,6 @@ class RouteErrorHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
-    (r'/message/([^/]+)', MessagePage),
     (r'/meeting/([^/]+)', MeetingPage),
     (r'/explore/meeting/([^/]+)', MeetingPage),
     (r'/api', APIHandler),
