@@ -34,7 +34,7 @@
    * Yeah, this kind of sucks.
    */
   z-index: 999;
-  margin-right: 40px;
+  position: absolute;
 }
 
 .BeforeMeeting-description-content {

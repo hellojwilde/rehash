@@ -11,7 +11,26 @@
   flex: 1;
 }
 
-.DuringMeeting-overlay {
+.DuringMeeting-header {
+  position: absolute;
+  left: 0;
+  top: 35px;
+  right: 0;
+}
+
+.DuringMeeting-header-buttons {
+  /**
+   * XXX The z-index ensures that the TileGrid header doesn't clobber this,
+   * but since the z-index causes us to clobber the close button in the TileGrid
+   * header, we need to position absolute so the close button is clickable.
+   *
+   * Yeah, this kind of sucks.
+   */
+  z-index: 999;
+  position: absolute;
+}
+
+.DuringMeeting-footer {
   position: absolute;
   left: 0;
   right: 0;
@@ -19,14 +38,14 @@
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
 }
 
-.DuringMeeting-overlay-host {
+.DuringMeeting-footer-host {
   padding: 20px 0;
   font-family: Oswald;
   color: white;
   text-shadow: 0 1px 1px black;
 }
 
-.DuringMeeting-overlay-host .label {
+.DuringMeeting-footer-host .label {
   text-transform: uppercase;
   background: #262626;
   font-size: 10px;

@@ -1,5 +1,6 @@
-var React = require('react');
+var AgendaButton = require('components/meeting/agenda/AgendaButton');
 var Broadcast = require('components/meeting/broadcast/Broadcast');
+var React = require('react');
 
 var meetingPropType = require('types/meetingPropType');
 var meetingRelationPropType = require('types/meetingRelationPropType');
@@ -26,9 +27,17 @@ var DuringMeeting = React.createClass({
       <div className="DuringMeeting">
         <Broadcast {...otherProps} className="DuringMeeting-video" />
 
-        <div className="DuringMeeting-overlay">
+        <div className="DuringMeeting-header">
           <div className="container">
-            <h2 className="DuringMeeting-overlay-host">
+            <div className="DuringMeeting-header-buttons">
+              <AgendaButton meetingKey={meeting.key}/>
+            </div>
+          </div>
+        </div>
+
+        <div className="DuringMeeting-footer">
+          <div className="container">
+            <h2 className="DuringMeeting-footer-host">
               {meeting.host.name}
               <span className="label label-default">Host</span>
             </h2>
