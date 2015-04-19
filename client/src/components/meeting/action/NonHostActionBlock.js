@@ -15,8 +15,20 @@ var NonHostActionBlock = React.createClass({
     onBroadcastJoin: React.PropTypes.func.isRequired
   },
 
+  getInitialState: function() {
+    return {
+      isPreviewClosed: false 
+    };
+  },
+
+  handlePreviewClose: function() {
+    this.setState({isPreviewClosed: true});
+  },
+
   render: function() {
-    var isShowingPreview = !!this.props.webRTC.remoteStream;
+    var isShowingPreview = (
+      !!this.props.webRTC.remoteStream && !this.state.isPreviewClosed
+    );
     var meetingKey = this.props.meeting.key;
     var {isAttendee} = this.props.meetingRelation;
 
@@ -25,7 +37,8 @@ var NonHostActionBlock = React.createClass({
         {...this.props}
         previewLabel="Live"
         subscribersEmptyLabel="Be the first to be notified about this event."
-        isShowingPreview={isShowingPreview}>
+        isShowingPreview={isShowingPreview}
+        onPreviewClose={this.handlePreviewClose}>
         {isShowingPreview 
           ? <JoinButton onClick={this.props.onBroadcastJoin}/>
           : <SubscribeButton {...{meetingKey, isAttendee}}/>}

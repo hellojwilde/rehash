@@ -6,7 +6,7 @@ require('./BroadcastPreview.css');
 var BroadcastPreview = React.createClass({
 
   propTypes: {
-    label: React.PropTypes.string.isRequired
+    label: React.PropTypes.string.isRequired,
   },
 
   render: function() {

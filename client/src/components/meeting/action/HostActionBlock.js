@@ -8,11 +8,20 @@ var meetingRelationPropType = require('types/meetingRelationPropType')
 
 var HostActionBlock = React.createClass({
 
+  contextTypes: {
+    flux: React.PropTypes.object.isRequired,
+  },
+
   propTypes: {
     meeting: meetingPropType.isRequired,
     meetingRelation: meetingRelationPropType.isRequired,
     webRTC: React.PropTypes.object.isRequired,
     onBroadcastStart: React.PropTypes.func.isRequired
+  },
+
+  handlePreviewClose: function() {
+    this.context.flux.getActions('webRTC')
+      .disconnect();
   },
 
   render: function() {
@@ -25,14 +34,11 @@ var HostActionBlock = React.createClass({
         {...this.props}
         previewLabel="Preview"
         subscribersEmptyLabel="No subscribers yet. This'll be spontaneous."
-        isShowingPreview={isShowingPreview}>
+        isShowingPreview={isShowingPreview}
+        onPreviewClose={this.handlePreviewClose}>
         {isShowingPreview 
           ? <BroadcastButton {...{meetingKey, onBroadcastStart}}/>
           : <PrepareBroadcastButton meetingKey={meetingKey}/>}
-
-        <small className="text-muted">
-          {'We\'ll show you a preview of your camera first.'}
-        </small>
       </ActionBlock>
     );
   }
