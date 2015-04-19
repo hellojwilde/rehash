@@ -293,6 +293,10 @@ class Room(db.Model):
     else: 
       return False
 
+class ConnectPage(webapp2.RequestHandler):
+  def post(self):
+    pass
+
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
