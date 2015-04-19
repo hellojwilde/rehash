@@ -28,7 +28,7 @@ var DuringMeeting = React.createClass({
 
         <div className="DuringMeeting-overlay">
           <div className="container">
-            <h2>
+            <h2 className="DuringMeeting-overlay-host">
               {meeting.host.name}
               <span className="label label-default">Host</span>
             </h2>

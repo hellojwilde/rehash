@@ -1,10 +1,11 @@
+var Avatar = require('components/common/Avatar');
+var CreateButton = require('components/common/CreateButton');
 var HeaderExplain = require('components/explore/HeaderExplain');
 var LinkNoClobber = require('components/common/LinkNoClobber');
 var LoginButton = require('components/common/LoginButton');
-var CreateButton = require('components/common/CreateButton');
+var Logo = require('components/common/Logo');
 var React = require('react');
 var ScrollListenerMixin = require('react-scroll-components/ScrollListenerMixin');
-var Logo = require('components/common/Logo');
 
 var getLinearInterpolation = require('helpers/getLinearInterpolation');
 var getUniqueId = require('react-pick/lib/helpers/getUniqueId');
@@ -60,8 +61,7 @@ var Header = React.createClass({
     if (this.props.currentUser) {
       return [
         <li key="name">
-          <img src={this.props.currentUser.photoThumbnailUrl || 
-                    this.props.currentUser.photo_thumbnail_url}/>
+          <Avatar user={this.props.currentUser} className="navbar-avatar" />
         </li>,
         <li key="logout"><a href="/user/logout">Log out</a></li>
       ];

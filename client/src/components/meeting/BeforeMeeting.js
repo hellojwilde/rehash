@@ -65,7 +65,7 @@ var BeforeMeeting = React.createClass({
                       isBroadcasting={meeting.isBroadcasting}
                     />
 
-                    <h2>{meeting.title}</h2>
+                    <h2 className="BeforeMeeting-description-title">{meeting.title}</h2>
                     <p>{meeting.description}</p>
 
                     <AttendeeBlock 

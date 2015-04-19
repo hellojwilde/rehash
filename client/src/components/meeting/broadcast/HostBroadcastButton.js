@@ -28,7 +28,7 @@ var HostBroadcastButton = React.createClass({
           Broadcast
         </IconButton>
         <small className="HostBroadcastButton-note text-muted">
-          {'We\'ll let you check your video before you go live.'}
+          {'We\'ll show you a preview of your camera first.'}
         </small>
       </div>
     );
