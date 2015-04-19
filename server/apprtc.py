@@ -35,90 +35,8 @@ from gaesessions import get_current_session
 from webrtc_config import get_webrtc_config
 
 jinja_environment = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-
-# Lock for syncing DB operation in concurrent requests handling.
-# TODO(brave): keeping working on improving performance with thread syncing.
-# One possible method for near future is to reduce the message caching.
-LOCK = threading.RLock()
-
-### need to implement: if the host quit, we have to close the sesssion
-def handle_message(user, message):
-  # implement broadcast to OTHERUSERS! 
-  logging.info('handle_message' + str(user) + message)
-  message_obj = json.loads(message)
-  connected_user_key = session.get('connected_user_key')
-  # beforeunload
-  if message_obj['type'] == 'bye':
-    connected_user_key.delete()
-    return
-  # starthosting
-  elif message_obj['type'] == 'broadcast' or message_obj['type'] == 'join':
-    connected_user_key.get().activeMeeting = meeting.key()
-    connected_user_key.get().put()
-    logging.info('User ' + connected_user_key.id() + ' started broadcasting')
-    # room.select_host(user)
-    # on_message(room, room.get_next_user(), message)
-  # to potentially start next connection only if broadcast started; else, handled by add_user adding to queue
-  elif message_obj['type'] == 'ready':
-    return
-    # if room.host_started:
-    #   room.connect_queue.append(user)
-    #   room.put()
-    #   if len(room.connect_queue) > 0:
-    #     on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-  # to trigger next connection (remove top from the queue and proceed)
-  elif message_obj['type'] == 'connected':
-    return
-    # room.connect_queue.pop(0)
-    # room.put()
-    # if len(room.connect_queue) > 0:
-    #   on_message(room, room.get_next_user(), json.dumps({'type': 'broadcast'}))
-  # handle all other types of cross messages, like Candidate, Offer and Answer
-  else:
-    channel_messageByMeeting(meeting)
-
-def get_saved_messages(client_id):
-  return Message.gql("WHERE client_id = :id", id=client_id)
-
-def delete_saved_messages(client_id):
-  messages = get_saved_messages(client_id)
-  for message in messages:
-    message.delete()
-    logging.info('Deleted the saved message for ' + client_id)
-
-def send_saved_messages(client_id):
-  messages = get_saved_messages(client_id)
-  for message in messages:
-    channel.send_message(client_id, message.msg)
-    logging.info('Delivered saved message to ' + client_id)
-    message.delete()
-
-### if the receiver is online, send message; else, cache it 
-def on_message(room, user_id, message):
-  #client_id = make_client_id(room, user)
-  client_id = user_id
-  if room.is_connected(user):
-    channel.send_message(client_id, message)
-    logging.info('Delivered message to user ' + user_id)
-  else:
-    new_message = Message(client_id = client_id, msg = message)
-    new_message.put()
-    logging.info('Saved message for user ' + user_id)
-
-### transactional means atomic operation here
-@db.transactional
-def connect_user_to_room(room_key, user):
-  room = Room.get_by_key_name(room_key)
-  # Check if room has user in case that disconnect message comes before
-  # connect message with unknown reason, observed with local AppEngine SDK.
-  if room and room.has_user(user):
-    room.set_connected(user)
-    logging.info('User ' + user + ' connected to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-  else:
-    logging.warning('Unexpected Connect Message to room ' + room_key)
-  return room
+  loader=jinja2.FileSystemLoader(os.path.dirname(__file__))
+)
 
 @db.transactional
 def connect_user(user=None):
@@ -132,10 +50,12 @@ def connect_user(user=None):
 
   return key.urlsafe()
 
+
 def disconnect_user():
   ### remove user from ConnectedUserModel:
   session = get_current_session()
   ndb.Key(urlsafe=session['connected_user_key']).delete()
+
 
 def channel_messageAll(message):
   ### message all connected users 
@@ -149,6 +69,7 @@ def channel_messageAll(message):
         json.dumps(message, cls=APIJSONEncoder)
       )
 
+
 def channel_messageByUserInMeeting(user_key, meeting_key, message):
   connected_user_query = ConnectedUserModel.query(
     ConnectedUserModel.user == user_key and
@@ -160,6 +81,7 @@ def channel_messageByUserInMeeting(user_key, meeting_key, message):
       connected_user.key.urlsafe(), 
       json.dumps(message, cls=APIJSONEncoder)
     )
+
 
 def channel_messageByMeeting(meeting_key, message):
   ### message all connected users with a specified active meeting
@@ -236,119 +158,28 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   self.response.out.write(template.render(template_values))
 
 
-# This database is to store the messages from the sender client when the
-# receiver client is not ready to receive the messages.
-# Use TextProperty instead of StringProperty for msg because
-# the session description can be more than 500 characters.
-class Message(db.Model):
-  client_id = db.StringProperty()
-  msg = db.TextProperty()
-
-### Room stores personal connection detail and user properties 
-class Room(db.Model):
-  """All the data we store for a room"""
-  users = db.ListProperty(str)
-  users_connected = db.ListProperty(bool)
-  host = db.StringProperty() ### host/broadcaster index
-  host_started = db.BooleanProperty(False)
-  connect_queue = db.ListProperty(str)
-
-  def __str__(self):
-    result = '['
-    for i in range(len(self.users)):
-      result += "%s-%r," % (self.users[i], self.users_connected[i])
-    if len(result) > 1:
-      result = result[:-1] 
-    result += ']'
-    return result
-
-  def get_occupancy(self):
-    return len(self.users)
-
-  def get_other_users(self, user):
-    users = [];
-    for other_user in self.users:
-      if other_user != user: 
-        users.append(other_user)
-    logging.info("other users: " + ''.join(users))
-    return users
-
-  def get_next_user(self):
-    if len(self.connect_queue) > 0:
-     return self.connect_queue[0]
-
-  def has_user(self, user):
-    if user in self.users:
-      return True
-    else:
-      return False
-
-  def add_user(self, user):
-    ### consider limiting the number of audiences here! 
-    self.users.append(user)
-    self.users_connected.append(True)
-    ### if not started, add to the queue; else, add through ready
-    if not self.host_started:
-      self.connect_queue.append(user)
-    self.put()
-
-  ### chose the given host and start broadcasting
-  def select_host(self, user):
-    self.host = user
-    self.host_started = True
-    self.connect_queue.remove(user)
-    self.put()
-    logging.info('SELECTED host ' + str(self.host_started) + user)
-    logging.info("Host chosen and start broadcasting")
-
-  def remove_user(self, user):
-    logging.info('delete user called' + str(self.get_occupancy()))
-    if user in self.users:
-      delete_saved_messages(user)
-      self.users_connected.pop(self.users.index(user))
-      self.users.remove(user)
-      self.put()
-    if self.get_occupancy() == 0 or self.host == user:
-      logging.info('ROOM DELETED' + str(self.get_occupancy()))
-      self.delete()
-
-  def set_connected(self, user):
-    self.users_connected[self.users.index(user)] = True
-    self.put()
-
-  def is_connected(self, user):
-    if user in self.users:
-      return self.users_connected[self.users.index(user)]
-    else: 
-      return False
-
 class ConnectPage(webapp2.RequestHandler):
   def post(self):
+    # TODO: check whether or not we need to cache messages for a given user.
     pass
+
 
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
     disconnect_user();
 
-### Got message from clients here? 
-class MessagePage(webapp2.RequestHandler):
-  def post(self, meetingId):
-    message = self.request.body
-    meetingId = self.request.get('r')
-    # need to revise if other method is used to retrieve meeting
-    meeting = MeetingModel.get_by_id(meetingId)
-    with LOCK:
-      handle_message(message, meeting)
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
     fetch_initial_store_data_and_render(self)
 
+
 ### Handle the case where clients request to join existing room
 class MeetingPage(webapp2.RequestHandler):
   def get(self, room_key):
     fetch_initial_store_data_and_render(self)
+
 
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
@@ -363,6 +194,7 @@ class LogModel(ndb.Model):
   method = ndb.StringProperty()
   data = ndb.StringProperty()
 
+
 class UserModel(ndb.Model):
   id = ndb.StringProperty()
   photoUrl = ndb.StringProperty()
@@ -371,6 +203,7 @@ class UserModel(ndb.Model):
   screenName = ndb.StringProperty()
   location = ndb.StringProperty()
   bio = ndb.StringProperty()
+
 
 class MeetingModel(ndb.Model):
   title = ndb.StringProperty()
@@ -385,26 +218,32 @@ class MeetingModel(ndb.Model):
   )
   # recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
 
+
 class RecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
   # add additional information as needed here 
+
 
 class AgendaModel(ndb.Model):
   # topics contains a list of {id: tId, content: '', questions: [qId, ]}
   topics = ndb.JsonProperty()
 
+
 class TopicsModel(ndb.Model):
   content = ndb.StringProperty()
   questions = ndb.StringProperty(repeated=True)
+
 
 class QuestionModel(ndb.Model):
   meetingId = ndb.StringProperty()
   content = ndb.StringProperty()
   answers = ndb.StringProperty(repeated=True)
 
+
 class ConnectedUserModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   activeMeeting = ndb.KeyProperty(kind=MeetingModel)
+
 
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -430,6 +269,7 @@ class APIJSONEncoder(json.JSONEncoder):
       return obj.urlsafe()
 
     return json.JSONEncoder.default(self, obj)
+
 
 class APIHandler(webapp2.RequestHandler):
   def post(self):
@@ -688,6 +528,7 @@ class TwitterAuthorized(webapp2.RequestHandler):
       user.bio = me.description
       user.put()
 
+
 class LoginHandler(webapp2.RequestHandler):
   def get(self):
     ### check if already have session 
@@ -716,12 +557,14 @@ class LoginHandler(webapp2.RequestHandler):
     else:
       self.redirect(session['redirect'])
 
+
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
     session = get_current_session()
     session.clear()
     ### will redefine the redirect route, 
     self.redirect(OAUTH_CONFIG['internal']['logout_redirect_url'])
+
 
 class UploadRecording(webapp2.RequestHandler):
   def post(self):
@@ -740,6 +583,7 @@ class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
     self.response.set_status(404)
+
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
