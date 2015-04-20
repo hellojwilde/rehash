@@ -16,6 +16,7 @@ skip_files:
 - ^client
 - ^.git
 - .DS_Store
+- ^google_appengine
 
 inbound_services:
 - channel_presence
