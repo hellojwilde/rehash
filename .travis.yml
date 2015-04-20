@@ -11,7 +11,7 @@ script: cd client/ && npm run-script build && cd ..
 # Based on https://github.com/travis-ci/dpl/issues/94
 before_deploy:
   - git clone https://github.com/hellojwilde/dpl.git
-  - pushd dpl && gem build dpl.gemspec
+  - pushd dpl && git checkout patch-1 && gem build dpl.gemspec
   - rvm 1.9.3 do ruby -S gem install dpl-*.gem
   - popd
 
