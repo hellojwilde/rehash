@@ -271,9 +271,10 @@ function uploadRecording(blob) {
   var formData = new FormData();
   formData.append('fname', 'test.webm');
   formData.append('data', blob);
+  formData.append('type', 'recording');
   $.ajax({
       type: 'POST',
-      url: '/uploadrecording',
+      url: '/upload',
       data: formData,
       processData: false,
       contentType: false

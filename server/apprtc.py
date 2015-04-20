@@ -404,7 +404,7 @@ class MeetingModel(ndb.Model):
   host = ndb.KeyProperty(kind=UserModel)
   attendees = ndb.KeyProperty(kind=UserModel, repeated=True)
   isBroadcasting = ndb.BooleanProperty()
-  recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
+  cardPicture = ndb.BlobProperty()
 
 class RecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
@@ -658,16 +658,19 @@ class LogoutHandler(webapp2.RequestHandler):
     ### will redefine the redirect route, 
     self.redirect(OAUTH_CONFIG['internal']['logout_redirect_url'])
 
-class UploadRecording(webapp2.RequestHandler):
+class Upload(webapp2.RequestHandler):
   def post(self):
     ### shall save to meeting blob
     session = get_current_session()
     connect_user_key = session.get('connect_user_key')
     meeting_key = connect_user_key.get().activeMeeting
-    recording = RecordingModel(parent = meeting_key)
-    recording.put()
-    meeting.recording.append(recording)
-    meeting.put()
+    if self.request.get('type') == 'upload':
+      recording_key = RecordingModel(parent = meeting_key)
+      recording_key.get().recording = self.request.get('data')
+      recording_key.get().put()
+    elif self.request.get('type') == 'firstframe':
+      meeting_key.get().firstframe = self.request.get('data')  
+      meeting_key.get().put()
     # parent, Model
 
 
@@ -685,7 +688,7 @@ app = webapp2.WSGIApplication([
     (r'/user/login', LoginHandler),
     (r'/user/logout', LogoutHandler),
     (r'/twitterauthorized', TwitterAuthorized),
-    (r'/uploadrecording', UploadRecording),
+    (r'/upload', Upload),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage),
     ### all other unmapped url shall be directed to error page 
