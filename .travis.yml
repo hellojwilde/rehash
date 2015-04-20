@@ -8,10 +8,10 @@ install:
 
 script: cd client/ && npm run-script build && cd ..
 
-deploy:
-  provider: gae
-  edge: true
-  on:
-    branch: master
-  oauth_refresh_token:
-    secure: cRRrmLGVsajcv0MrDtKHMNsr6vJM4eOE6OwVjpefoBaHQUBBBC0VraC97BgTOtgdDQUHNdv1Lu4JJVYs2oV38dB9crfOh48PbBeSZIDlOtReoBRNmUwtupYrtzuPCeRxxlLrApftwHa+8vQI7fDCAC78W0oaAPMQPUocO715yoQ=
+after_success:
+- if [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
+  - unzip google_appengine_1.9.17.zip
+  - python google_appengine/appcfg.py --oauth2_refresh_token=$DEPLOY_REFRESH_TOKEN update .
+- else 
+  - echo "Build is pull request $TRAVIS_PULL_REQUEST: skipping deploy"
+- fi
