@@ -14,16 +14,30 @@ class BroadcastActions extends Actions {
 
   start(meetingId) {
     var webRTCActions = this.registry.getActions('webRTC');
+    var currentUserStore = this.registry.getStore('currentUser');
+
     return webRTCActions.connectAsHost()
-      .then(() => this.api.broadcastStart(meetingId));
+      .then(() => this.api.broadcastStart(
+        currentUserStore.state.connectedUserId, 
+        meetingId
+      ));
   }
 
   end(meetingId) {
-    return this.api.broadcastEnd(meetingId);
+    return this.api.broadcastEnd(meetingId)
+      .then(() => meetingId);
   }
 
   receiveStart(broadcast) {
-    return broadcast;
+    var webRTCActions = this.registry.getActions('webRTC');
+    return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
+      .then(() => broadcast);
+  }
+
+  receiveEnd(meetingId) {
+    var webRTCActions = this.registry.getActions('webRTC');
+    webRTCActions.disconnect();
+    return meetingId;
   }
 }
 

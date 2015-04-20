@@ -120,18 +120,20 @@ var ExampleAPI = {
     });
   },
 
-  meetingOpen: function(meetingId) {
+  meetingOpen: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       format: 'json',
       id: meetingId,
+      connectedUserId: connectedUserId,
       request: 'meetingopen'
     });
   },
 
-  meetingClose: function(meetingId) {
+  meetingClose: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       format: 'json',
       id: meetingId,
+      connectedUserId: connectedUserId,
       request: 'meetingclose'
     });
   },
@@ -144,10 +146,11 @@ var ExampleAPI = {
     });
   },
 
-  broadcastStart: function(meetingId) {
+  broadcastStart: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       format: 'json',
       meetingId: meetingId,
+      connectedUserId: connectedUserId,
       request: 'broadcastStart'
     });
   },
@@ -160,11 +163,12 @@ var ExampleAPI = {
     });
   },
 
-  webRTCSendMessage: function(to, message) {
+  webRTCSendMessage: function(connectedUserId, to, message) {
     return sendAjaxRequest({
       format: 'json',
       to: to,
       request: 'webRTCSendMessage',
+      connectedUserId: connectedUserId,
       message: JSON.stringify(message)
     });
   },

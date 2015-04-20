@@ -36,13 +36,15 @@ class MeetingActions extends Actions {
     var broadcastActions = this.registry.getActions('broadcast');
     var meetingActions = this.registry.getActions('meeting');
     var webRTCActions = this.registry.getActions('webRTC');
+
+    var currentUserStore = this.registry.getStore('currentUser');
     var broadcastStore = this.registry.getStore('broadcast');
     var meetingStore = this.registry.getStore('meeting');
     
     return Promise.all([
       meetingActions.fetch(id),
       broadcastActions.fetch(id),
-      this.api.meetingOpen(id)
+      this.api.meetingOpen(currentUserStore.state.connectedUserId, id)
     ]).then(() => {
       var meeting = meetingStore.getById(id);
       var meetingRelation = meetingStore.getCurrentUserRelationById(id);
@@ -61,13 +63,14 @@ class MeetingActions extends Actions {
   }
 
   close(id) {
+    var currentUserStore = this.registry.getStore('currentUser');
     var broadcastActions = this.registry.getActions('broadcast');
     var webRTCActions = this.registry.getActions('webRTC');
     var meetingStore = this.registry.getStore('meeting');
 
     webRTCActions.disconnect();
 
-    return this.api.meetingClose(id)
+    return this.api.meetingClose(currentUserStore.state.connectedUserId, id)
       .then(() => {
         var meeting = meetingStore.getById(id);
         var meetingRelation = meetingStore.getCurrentUserRelationById(id);
