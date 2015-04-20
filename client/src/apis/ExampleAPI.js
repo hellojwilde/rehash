@@ -136,6 +136,14 @@ var ExampleAPI = {
     });
   },
 
+  broadcastFetch: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      meetingId: meetingId,
+      request: 'broadcastFetch'
+    });
+  },
+
   broadcastStart: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
@@ -144,20 +152,20 @@ var ExampleAPI = {
     });
   },
 
-  broadcastSendWebRTCMessage: function(meetingId, message) {
-    return sendAjaxRequest({
-      format: 'json',
-      meetingId: meetingId,
-      request: 'broadcastSendWebRTCMessage',
-      message: JSON.stringify(message)
-    });
-  },
-
   broadcastEnd: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
       meetingId: meetingId,
       request: 'broadcastEnd'
+    });
+  },
+
+  webRTCSendMessage: function(to, message) {
+    return sendAjaxRequest({
+      format: 'json',
+      to: to,
+      request: 'webRTCSendMessage',
+      message: JSON.stringify(message)
     });
   },
 

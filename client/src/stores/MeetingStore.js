@@ -21,18 +21,18 @@ class MeetingStore extends Store {
 
     var exploreActionIds = registry.getActionIds('explore');
     var meetingActionIds = registry.getActionIds('meeting');
+    var broadcastActionIds = registry.getActionIds('broadcast');
     
     this.register(exploreActionIds.fetch, this.handleReceiveMeetings);
+
     this.register(meetingActionIds.fetch, this.handleReceiveMeeting);
     this.register(meetingActionIds.create, this.handleReceiveMeeting);
     this.register(meetingActionIds.update, this.handleReceiveMeeting);
-
-    this.register(meetingActionIds.broadcastStart, this.handleReceiveMeetingBroadcastStart);
-    this.register(meetingActionIds.broadcastEnd, this.handleReceiveMeetingBroadcastEnd);
-
     this.register(meetingActionIds.receive, this.handleReceiveMeeting);
-    this.register(meetingActionIds.receiveBroadcastStart, this.handleReceiveMeetingBroadcastStart);
-    this.register(meetingActionIds.receiveBroadcastEnd, this.handleReceiveMeetingBroadcastEnd);
+
+    this.register(broadcastActionIds.start, this.handleReceiveBroadcastStart);
+    this.register(broadcastActionIds.receiveStart, this.handleReceiveBroadcastStart);
+    this.register(broadcastActionIds.end, this.handleReceiveBroadcastEnd);
 
     this.registry = registry;
     this.state = {};
@@ -75,13 +75,15 @@ class MeetingStore extends Store {
     this.setState({[meeting.id]: meeting});
   }
 
-  handleReceiveMeetingBroadcastStart(meetingId) {
+  handleReceiveBroadcastStart(broadcast) {
+    var id = broadcast.id || broadcast;
+
     this.setState({
-      [meetingId]: _.assign(this.state[meetingId], {status: 'broadcasting'})
+      [id]: _.assign(this.state[id], {status: 'broadcasting'})
     });
   }
 
-  handleReceiveMeetingBroadcastEnd(meetingId) {
+  handleReceiveBroadcastEnd(meetingId) {
     this.setState({
       [meetingId]: _.assign(this.state[meetingId], {status: 'ended'})
     });

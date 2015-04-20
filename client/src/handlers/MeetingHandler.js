@@ -9,25 +9,7 @@ var MeetingHandler = React.createClass({
     ensureDataAvailable: function(state, registry) {
       var {meetingId} = state.params;
       var meetingActions = registry.getActions('meeting');
-      var meetingStore = registry.getStore('meeting');
-      var webRTCActions = registry.getActions('webRTC');
-
-      return Promise.all([
-        meetingActions.fetch(meetingId), 
-        meetingActions.open(meetingId)
-      ]).then(() => {
-        var meeting = meetingStore.getById(meetingId);
-        var relation = meetingStore.getCurrentUserRelationById(meetingId);
-
-        if (meeting.status === 'broadcasting') {
-          if (relation.isHost) {
-            webRTCActions.prepareAsHost(meetingId)
-              .then(() => webRTCActions.connectAsHost(meetingId))
-          } else {
-            webRTCActions.connectAsAttendee(meetingId);
-          }
-        }
-      });
+      return meetingActions.open(meetingId);
     },
 
     willTransitionFrom: function(transition, element) {
@@ -38,12 +20,8 @@ var MeetingHandler = React.createClass({
         element.context.router
       ) {
         var {meetingId} = element.context.router.getCurrentParams();
-        var webRTCActions = element.context.flux.getActions('webRTC');
         var meetingActions = element.context.flux.getActions('meeting');
-
         meetingActions.close(meetingId);
-        meetingActions.broadcastEnd(meetingId);
-        webRTCActions.disconnect();
       }
     }
   },

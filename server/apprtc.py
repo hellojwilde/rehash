@@ -41,15 +41,16 @@ jinja_environment = jinja2.Environment(
 
 @db.transactional
 def channel_connect_user(user=None):
-  ### add user to ConnectedUserModel:
-  connected_user = ConnectedUserModel()
-  connected_user.user = user.key if user is not None else None
-  key = connected_user.put()
-
   session = get_current_session()
-  session['connected_user_key'] = key.urlsafe()
 
-  return key.urlsafe()
+  if session.get('connected_user_key') is None:
+    connected_user = ConnectedUserModel()
+    connected_user.user = user.key if user is not None else None
+    key = connected_user.put()
+
+    session['connected_user_key'] = key.urlsafe()
+  
+  return session['connected_user_key']
 
 
 def channel_disconnect_user():
@@ -66,7 +67,9 @@ def channel_message(connected_user_key, message):
       connected_user_key, 
       json.dumps(message, cls=APIJSONEncoder)
     )
-
+    print 'sent to user'
+    print connected_user_key
+    print session['connected_user_key']
 
 def channel_messageAll(message):
   for connected_user in ConnectedUserModel.query():
@@ -75,7 +78,7 @@ def channel_messageAll(message):
 
 def channel_messageByUserInMeeting(user_key, meeting_key, message):
   connected_user_query = ConnectedUserModel.query(
-    ConnectedUserModel.user == user_key and
+    ConnectedUserModel.user == user_key,
     ConnectedUserModel.activeMeeting == meeting_key
   )
 
@@ -139,6 +142,8 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   user = fetch_user_for_session(session)
   connected_user_id = channel_connect_user(user)
 
+  print connected_user_id
+
   initial_store_data.update({
     'webRTC': get_webrtc_config(self, connected_user_id),
     'currentUser': {
@@ -188,13 +193,6 @@ class MeetingPage(webapp2.RequestHandler):
 # FOr methods that involves a fetch, response data is stored as data 
 ### Maintain users currently connected for broadcasting 
 
-class LogModel(ndb.Model):
-  datetime = ndb.DateTimeProperty(auto_now_add=True)
-  #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
-  method = ndb.StringProperty()
-  data = ndb.StringProperty()
-
-
 class UserModel(ndb.Model):
   id = ndb.StringProperty()
   photoUrl = ndb.StringProperty()
@@ -216,10 +214,21 @@ class MeetingModel(ndb.Model):
     choices=['scheduled', 'broadcasting', 'ended'], 
     default='scheduled'
   )
-  # recording = ndb.KeyProperty(kind=RecordingModel, repeated=True)
+  # recording = ndb.KeyProperty(kind=BroadcastRecordingModel, repeated=True)
 
 
-class RecordingModel(ndb.Model):
+class BroadcastModel(ndb.Model):
+  hostConnectedUser = ndb.KeyProperty()
+
+
+class BroadcastLogModel(ndb.Model):
+  datetime = ndb.DateTimeProperty(auto_now_add=True)
+  #model = ndb.StringProperty(choices=['meeting','question','answer', 'topics', 'user', 'agenda'])
+  method = ndb.StringProperty()
+  data = ndb.StringProperty()
+
+
+class BroadcastRecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
   # add additional information as needed here 
 
@@ -284,9 +293,10 @@ class APIHandler(webapp2.RequestHandler):
       'meetingsubscribe': self.meeting_subscribe,
       'meetingopen': self.meeting_open,
       'meetingclose': self.meeting_close,
+      'broadcastfetch': self.broadcast_fetch,
       'broadcaststart': self.broadcast_start,
-      'broadcastsendwebrtcmessage': self.broadcast_send_webrtc_message,
       'broadcastend': self.broadcast_end,
+      'webrtcsendmessage': self.webrtc_send_message,
       'agendafetch': self.agenda_fetch,
       'explorefetch': self.explore_fetch
     }
@@ -296,22 +306,22 @@ class APIHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps(response, cls=APIJSONEncoder))
 
-  @classmethod
-  def add_log(self, method, data):
-    # create new log entry 
-    loggingId = LogModel.query().count()
-    log = LogModel.get_by_id(str(loggingId))
-    while log:
-      loggingId += 1
-      log = LogModel.get_by_id(loggingId)
-    log = LogModel(id = str(loggingId))
-    # function name 
-    log.method = method
-    log.data = json.dumps(data, cls=APIJSONEncoder) 
-    log.put()
+  # @classmethod
+  # def add_log(self, method, data):
+  #   # create new log entry 
+  #   loggingId = LogModel.query().count()
+  #   log = LogModel.get_by_id(str(loggingId))
+  #   while log:
+  #     loggingId += 1
+  #     log = LogModel.get_by_id(loggingId)
+  #   log = LogModel(id = str(loggingId))
+  #   # function name 
+  #   log.method = method
+  #   log.data = json.dumps(data, cls=APIJSONEncoder) 
+  #   log.put()
 
-    for each in LogModel.query():
-      logging.info('LOGGED into ndb: ' + method)
+  #   for each in LogModel.query():
+  #     logging.info('LOGGED into ndb: ' + method)
 
   @classmethod
   def user_fetch(self, request, response):
@@ -343,11 +353,10 @@ class APIHandler(webapp2.RequestHandler):
     meeting.host = fetch_user_for_session().key
     key = meeting.put()
 
-    meetingAgenda = AgendaModel(parent=key)
-    meetingAgenda.topics = []
-    meetingAgenda.put()
+    agenda = AgendaModel(id=key.id(), parent=key)
+    agenda.topics = []
+    agenda.put()
 
-    self.add_log('meeting_create', meeting)
     channel_messageAll({
       'type': 'meetingCreate',
       'meeting': meeting
@@ -364,7 +373,6 @@ class APIHandler(webapp2.RequestHandler):
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.put()
 
-    self.add_log('meeting_update', meeting)
     channel_messageAll({
       'type': 'meetingUpdate',
       'meeting': meeting
@@ -424,45 +432,48 @@ class APIHandler(webapp2.RequestHandler):
       })
 
   @classmethod
-  def broadcast_start(self, request, response):
-    meeting = MeetingModel.get_by_id(int(request.get('meetingId')))
+  def broadcast_fetch(self, request, response):
+    meeting_id = int(request.get('meetingId'))
+    meeting_key = ndb.Key(MeetingModel, meeting_id)
 
-    if meeting.status != 'scheduled':
+    broadcast = BroadcastModel.get_by_id(meeting_id, parent=meeting_key)
+
+    if broadcast is None:
+      broadcast = BroadcastModel(id=meeting_id, parent=meeting_key)
+      broadcast.put()
+
+    return broadcast
+
+  @classmethod
+  def broadcast_start(self, request, response):
+    meeting_id = int(request.get('meetingId'))
+    meeting = MeetingModel.get_by_id(meeting_id)
+    broadcast = BroadcastModel.get_by_id(meeting_id, parent=meeting.key)
+
+    if meeting.status == 'ended':
       return
 
-    meeting.status = 'broadcasting'
-    meeting.put()
+    if meeting.status != 'broadcasting':
+      meeting.status = 'broadcasting'
+      meeting.put()
+
+    broadcast.hostConnectedUser = get_connected_user_key_for_session()
+    broadcast.put()
 
     channel_messageAll({
       'type': 'broadcastStart',
-      'meetingId': meeting.key.id()
+      'meetingId': meeting_id,
+      'broadcast': broadcast
     })
 
-  @classmethod
-  def broadcast_send_webrtc_message(self, request, response):
-    user_key = get_user_key_for_session()
-    meeting = MeetingModel.get_by_id(int(request.get('meetingId')))
-
-    if meeting.status != 'broadcasting':
-      return
-
-    message = {
-      'type': 'broadcastWebRTCMessage',
-      'from': get_connected_user_key_for_session(),
-      'meetingId': request.get('meetingId'),
-      'message': request.get('message')
-    }
-
-    if user_key == meeting.host:
-      channel_messageByMeeting(meeting.key, message)
-    else:
-      channel_messageByUserInMeeting(meeting.host, meeting.key, message)
+    return broadcast
 
   @classmethod
   def broadcast_end(self, request, response):
-    meeting = MeetingModel.get_by_id(int(request.get('meetingId')))
+    meeting_id = int(request.get('meetingId'))
+    meeting = MeetingModel.get_by_id(meeting_id)
 
-    if meeting.status != 'broadcasting':
+    if meeting.status == 'ended':
       return
 
     meeting.status = 'ended'
@@ -470,8 +481,21 @@ class APIHandler(webapp2.RequestHandler):
 
     channel_messageAll({
       'type': 'broadcastEnd',
-      'meetingId': meeting.key.id()
+      'meetingId': meeting_id
     })
+
+  @classmethod
+  def webrtc_send_message(self, request, response):
+    to_key = request.get('to')
+
+    message = {
+      'type': 'webRTCMessage',
+      'sender': get_connected_user_key_for_session(),
+      'message': request.get('message')
+    }
+
+    if to_key != '':
+      channel_message(to_key, message)
 
   @classmethod
   def agenda_fetch(self, request, response):
@@ -588,7 +612,7 @@ class UploadRecording(webapp2.RequestHandler):
     session = get_current_session()
     connected_user_key = session.get('connected_user_key')
     meeting_key = connected_user_key.get().activeMeeting
-    recording = RecordingModel(parent = meeting_key)
+    recording = BroadcastRecordingModel(parent = meeting_key)
     recording.put()
     # meeting.recording.append(recording)
     # meeting.put()

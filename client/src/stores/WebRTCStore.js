@@ -4,9 +4,24 @@ var {createIceServers} = require('helpers/WebRTCAdapter');
 var {getPreferredAudioCodec} = require('helpers/WebRTCConstraints');
 var _ = require('lodash');
 
+const DEFAULT_FETCH_STATE = {
+  isTurnFetchingComplete: false
+};
+
+const DEFAULT_MEETING_STATE = {
+  localStream: null,
+  remoteStream: null,
+  broadcaster: null,
+  receiver: null
+};
+
 class WebRTCStore extends Store {
-  static deserialize(json) {
-    return json;
+  static deserialize(state) {
+    return _.assign(
+      state, 
+      DEFAULT_FETCH_STATE,
+      DEFAULT_MEETING_STATE
+    );
   }
 
   static serialize(state) {
@@ -17,31 +32,16 @@ class WebRTCStore extends Store {
     super();
 
     var webRTCActionIds = registry.getActionIds('webRTC');
-    var webRTCActionBindings = [
-      // Public facing actions.
-      ['fetchTurn', this.handleFetchTurn],
-      ['prepareAsHost', this.handlePrepareAsHost],
-      ['connectAsHost', [this.handleConnectBegin]],
-      ['connectAsAttendee', [this.handleConnectBegin]],
-      ['disconnect', this.handleDisconnect],
 
-      // Internal actions regarding signaling and RTCPeerConnection.
-      ['_createPeer', this.handleCreatePeer],
-      ['_receivePeerIceCandidate', this.handleReceivePeerIceCandidate],
-      ['_receivePeerRemoteDescription', this.handleReceivePeerRemoteDescription],
-      ['_receivePeerRemoteStream', this.handleReceivePeerRemoteStream]
-    ];
-
-    webRTCActionBindings.forEach(([action, handler]) => {
-      if (_.isArray(handler)) {
-        this.registerAsync(webRTCActionIds[action], handler[0]);
-      } else {
-        this.register(webRTCActionIds[action], handler);
-      }
-    });
+    this.register(webRTCActionIds.fetchTurn, this.handleFetchTurn);
+    this.register(webRTCActionIds.prepareAsHost, this.handlePrepareAsHost);
+    this.register(webRTCActionIds.connectAsHost, this.handleConnectAsHost);
+    this.register(webRTCActionIds.connectAsAttendee, this.handleConnectAsAttendee);
+    this.register(webRTCActionIds.receiveRemoteStream, this.handleReceiveRemoteStream);
+    this.register(webRTCActionIds.disconnect, this.handleDisconnect);
 
     this.registry = registry;
-    this.state = {
+    this.state = _.assign({
       // State variables representing mostly immutable server configuration.
       audioReceiveCodec: null,
       audioSendCodec: null,
@@ -50,58 +50,26 @@ class WebRTCStore extends Store {
       pcConfig: null,
       pcConstraints: null,
       stereo: null,
-      turnUrl: null,
-
-      // State variables representing client status.
-      isTurnFetchingComplete: false,
-      localStream: null,
-      meetingId: null,
-      isMeetingHost: false,
-      pc: null,
-      remoteStream: null
-    };
+      turnUrl: null
+    }, DEFAULT_FETCH_STATE, DEFAULT_MEETING_STATE);
   }
 
   getPreferredAudioSendCodec(sdp) {
     var {audioSendCodec} = this.state;
     if (audioSendCodec == '') {
-      console.log('No preference on audio send codec.');
       return sdp;
+    } else {
+      return getPreferredAudioCodec(sdp, audioSendCodec);
     }
-    console.log('Prefer audio send codec: ' + audioSendCodec);
-    return getPreferredAudioCodec(sdp, audioSendCodec);
   }
 
   getPreferredAudioReceiveCodec(sdp) {
     var {audioReceiveCodec} = this.state;
     if (audioReceiveCodec == '') {
-      console.log('No preference on audio receive codec.');
       return sdp;
+    } else {
+      return getPreferredAudioCodec(sdp, audioReceiveCodec);
     }
-    console.log('Prefer audio receive codec: ' + audioReceiveCodec);
-    return getPreferredAudioCodec(sdp, audioReceiveCodec);
-  }
-
-  handlePrepareAsHost(stream) {
-    this.setState({localStream: stream});
-  }
-
-  handleConnectBegin(meetingId) {
-    this.setState({meetingId: meetingId});
-  }
-
-  handleDisconnect() {
-    var {localStream, pc} = this.state;
-
-    localStream && localStream.stop();
-    pc && pc.close();
-
-    this.setState({
-      localStream: null,
-      meetingId: null,
-      pc: null,
-      remoteStream: null
-    });
   }
 
   handleFetchTurn(turnServer) {
@@ -124,20 +92,30 @@ class WebRTCStore extends Store {
     }
   }
 
-  handleCreatePeer(pc) {
-    this.setState({pc: pc})
+  handlePrepareAsHost(localStream) {
+    this.setState({localStream});
   }
 
-  handleReceivePeerIceCandidate(candidate) {
-    this.state.pc.addIceCandidate(candidate);
+  handleConnectAsHost(broadcaster) {
+    this.setState({broadcaster});
   }
 
-  handleReceivePeerRemoteDescription(sessionDescription) {
-    this.state.pc.setRemoteDescription(sessionDescription);
+  handleConnectAsAttendee(receiver) {
+    this.setState({receiver});
   }
 
-  handleReceivePeerRemoteStream(stream) {
-    this.setState({remoteStream: stream});
+  handleReceiveRemoteStream(remoteStream) {
+    this.setState({remoteStream});
+  }
+
+  handleDisconnect() {
+    var {localStream, broadcaster, receiver} = this.state;
+
+    localStream && localStream.stop();
+    broadcaster && broadcaster.disconnect();
+    receiver && receiver.disconnect();
+
+    this.setState(DEFAULT_MEETING_STATE);
   }
 }
 

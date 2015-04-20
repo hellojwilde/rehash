@@ -77,7 +77,7 @@ var TileGrid = React.createClass({
   render: function() {
     var {meetings, detailMeetingId, detail} = this.props;
     var rows = _.chunk(meetings, this.state.columns);
-
+    
     return (
       <div className="TileGrid">
         {rows.map((meetingsForRow, idx) => {

@@ -13,12 +13,8 @@ var BroadcastButton = React.createClass({
   },
 
   handleClick: function() {
-    var webRTCActions = this.context.flux.getActions('webRTC');
-    var meetingActions = this.context.flux.getActions('meeting');
-    var {meetingId} = this.props;
-    
-    webRTCActions.connectAsHost(meetingId)
-      .then(() => meetingActions.broadcastStart(meetingId))
+    var broadcastActions = this.context.flux.getActions('broadcast');
+    broadcastActions.start(this.props.meetingId)
       .then(() => this.props.onBroadcastStart());
   },
 

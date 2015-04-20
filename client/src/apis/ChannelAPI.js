@@ -33,8 +33,10 @@ class ChannelAPI {
 
   handleMessage(message) {
     var msg = JSON.parse(message.data);
-    var webRTCActions = this.registry.getActions('webRTC');
+    
+    var broadcastActions = this.registry.getActions('broadcast');
     var meetingActions = this.registry.getActions('meeting');
+    var webRTCActions = this.registry.getActions('webRTC');
 
     console.log('ChannelAPI: message: ',  msg);
     
@@ -44,15 +46,13 @@ class ChannelAPI {
         meetingActions.receive(msg.meeting);
         break;
       case 'broadcastStart':
-        meetingActions.receiveBroadcastStart(msg.meetingId);
-        webRTCActions.connectAsAttendee(msg.meetingId);
+        broadcastActions.receiveStart(msg.broadcast);
         break;
-      case 'broadcastWebRTCMessage':
-        webRTCActions.receiveMessage(msg.meetingId, JSON.parse(msg.message));
-        break;
-      case 'broadcastEnd': 
-        meetingActions.receiveBroadcastEnd(msg.meetingId);
-        webRTCActions.disconnect();
+      case 'webRTCMessage':
+        webRTCActions.receiveMessage(
+          msg.sender,
+          JSON.parse(msg.message)
+        );
         break;
     }
   }

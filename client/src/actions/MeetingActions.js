@@ -10,58 +10,76 @@ class MeetingActions extends Actions {
     this.api = api;
   }
 
-  fetch(meetingId) {
+  fetch(id) {
     var meetingStore = this.registry.getStore('meeting');
-    var meeting = meetingStore.getById(meetingId);
+    var meeting = meetingStore.getById(id);
     if (meeting) {
       return Promise.resolve(meeting);
     }
 
-    return this.api.meetingFetch(meetingId);
+    return this.api.meetingFetch(id);
   }
 
   create(meeting) {
-    var currentUserStore = this.registry.getStore('currentUser');
-
     return this.api.meetingCreate(meeting);
   }
 
-  update(meetingId, meeting) {
-    return this.api.meetingUpdate(meetingId, meeting);
+  update(id, meeting) {
+    return this.api.meetingUpdate(id, meeting);
   }
 
-  subscribe(meetingId) {
-    return this.api.meetingSubscribe(meetingId);
+  subscribe(id) {
+    return this.api.meetingSubscribe(id);
   }
 
-  open(meetingId) {
-    return this.api.meetingOpen(meetingId);
+  open(id) {
+    var broadcastActions = this.registry.getActions('broadcast');
+    var meetingActions = this.registry.getActions('meeting');
+    var webRTCActions = this.registry.getActions('webRTC');
+    var broadcastStore = this.registry.getStore('broadcast');
+    var meetingStore = this.registry.getStore('meeting');
+    
+    return Promise.all([
+      meetingActions.fetch(id),
+      broadcastActions.fetch(id),
+      this.api.meetingOpen(id)
+    ]).then(() => {
+      var meeting = meetingStore.getById(id);
+      var meetingRelation = meetingStore.getCurrentUserRelationById(id);
+
+      if (meeting.status === 'broadcasting') {
+        var broadcast = broadcastStore.getById(id);
+
+        if (meetingRelation.isHost) {
+          webRTCActions.prepareAsHost(id)
+            .then(() => broadcastActions.start(id))
+        } else {
+          webRTCActions.connectAsAttendee(broadcast.hostConnectedUser);
+        }
+      }
+    });
   }
 
-  close(meetingId) {
-    return this.api.meetingClose(meetingId);
-  }
+  close(id) {
+    var broadcastActions = this.registry.getActions('broadcast');
+    var webRTCActions = this.registry.getActions('webRTC');
+    var meetingStore = this.registry.getStore('meeting');
 
-  broadcastStart(meetingId) {
-    return this.api.broadcastStart(meetingId)
-      .then(() => meetingId);
-  }
+    webRTCActions.disconnect();
 
-  broadcastEnd(meetingId) {
-    return this.api.broadcastEnd(meetingId)
-      .then(() => meetingId);
+    return this.api.meetingClose(id)
+      .then(() => {
+        var meeting = meetingStore.getById(id);
+        var meetingRelation = meetingStore.getCurrentUserRelationById(id);
+
+        if (meeting.status === 'broadcasting' && meetingRelation.isHost) {
+          return broadcastActions.end(id);
+        }
+      });
   }
 
   receive(meeting) {
     return meeting;
-  }
-
-  receiveBroadcastStart(meetingId) {
-    return meetingId;
-  }
-
-  receiveBroadcastEnd(meetingId) {
-    return meetingId;
   }
 }
 
