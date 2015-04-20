@@ -30,7 +30,7 @@ var DuringMeeting = React.createClass({
         <div className="DuringMeeting-header">
           <div className="container">
             <div className="DuringMeeting-header-buttons">
-              <AgendaButton meetingKey={meeting.key}/>
+              <AgendaButton meetingId={meeting.id}/>
             </div>
           </div>
         </div>

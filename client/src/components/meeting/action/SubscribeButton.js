@@ -11,7 +11,7 @@ var SubscribeButton = React.createClass({
   },
 
   propTypes: {
-    meetingKey: React.PropTypes.string.isRequired,
+    meetingId: React.PropTypes.number.isRequired,
     isAttendee: React.PropTypes.bool.isRequired
   },
 
@@ -21,7 +21,7 @@ var SubscribeButton = React.createClass({
       'In order to subscribe and notify you, we\'ll need you to log in.'
     ).then(() => {
       this.context.flux.getActions('meeting')
-        .join(this.props.meetingKey);
+        .join(this.props.meetingId);
     });
   },
 

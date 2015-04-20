@@ -8,7 +8,7 @@
 
 .DuringMeeting-video {
   width: 100%;
-  flex: 1;
+  height: auto;
 }
 
 .DuringMeeting-header {

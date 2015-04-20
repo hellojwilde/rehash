@@ -10,14 +10,14 @@ var EditMeetingModal = React.createClass({
   },
 
   propTypes: {
-    meetingKey: React.PropTypes.string.isRequired,
+    meetingId: React.PropTypes.string.isRequired,
     onComplete: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
   },
 
   getInitialState: function() {
     var meetingStore = this.context.flux.getStore('meeting');
-    var meeting = meetingStore.getByKey(this.props.meetingKey);
+    var meeting = meetingStore.getById(this.props.meetingId);
 
     return {
       initialValue: _.pick(meeting, ['title', 'description', 'start']),
@@ -26,9 +26,9 @@ var EditMeetingModal = React.createClass({
 
   handleComplete: function(value) {
     var meetingActions = this.context.flux.getActions('meeting');
-    var {meetingKey} = this.props;
+    var {meetingId} = this.props;
 
-    meetingActions.update(meetingKey, value)
+    meetingActions.update(meetingId, value)
       .then((result) => this.props.onComplete(result));
   },
 

@@ -25,14 +25,14 @@ var TileGrid = React.createClass({
 
   propTypes: {
     meetings: React.PropTypes.arrayOf(meetingPropType),
-    detailMeetingKey: React.PropTypes.string,
+    detailMeetingId: React.PropTypes.number,
     detail: React.PropTypes.element
   },
 
   getDefaultProps: function() {
     return {
       meetings: [],
-      detailMeetingKey: null,
+      detailMeetingId: null,
       detail: null
     };
   },
@@ -75,15 +75,15 @@ var TileGrid = React.createClass({
   },
 
   render: function() {
-    var {meetings, detailMeetingKey, detail} = this.props;
+    var {meetings, detailMeetingId, detail} = this.props;
     var rows = _.chunk(meetings, this.state.columns);
-
+    
     return (
       <div className="TileGrid">
         {rows.map((meetingsForRow, idx) => {
           var rowDetailIndex = _.findIndex(
             meetingsForRow, 
-            _.matchesProperty('key', detailMeetingKey)
+            _.matchesProperty('id', +detailMeetingId)
           );
 
           return (
@@ -92,7 +92,7 @@ var TileGrid = React.createClass({
                 <div className="row">
                   {meetingsForRow.map((meeting, idx) => (
                     <div key={idx} className="col-md-4 col-sm-6">
-                      <Tile {...meeting} meetingKey={meeting.key} />
+                      <Tile {...meeting} meetingId={meeting.id} />
                     </div>
                   ))}
                 </div>

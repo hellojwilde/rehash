@@ -1,19 +1,28 @@
-var React = require('react');
 var DocumentTitle = require('react-document-title');
-var Meeting = require('components/meeting/Meeting')
 var FluxComponent = require('flummox/component');
+var Meeting = require('components/meeting/Meeting')
+var React = require('react');
 
 var MeetingHandler = React.createClass({
 
   statics: {
     ensureDataAvailable: function(state, registry) {
-      var {meetingKey} = state.params;
-      return registry.getActions('meeting').fetch(meetingKey);
+      var {meetingId} = state.params;
+      var meetingActions = registry.getActions('meeting');
+      return meetingActions.open(meetingId);
     },
 
     willTransitionFrom: function(transition, element) {
-      element && element.context && (element.context.flux.getActions('webRTC')
-        .disconnect());
+      if (
+        element && 
+        element.context && 
+        element.context.flux &&
+        element.context.router
+      ) {
+        var {meetingId} = element.context.router.getCurrentParams();
+        var meetingActions = element.context.flux.getActions('meeting');
+        meetingActions.close(meetingId);
+      }
     }
   },
 
@@ -23,15 +32,15 @@ var MeetingHandler = React.createClass({
   },
 
   render: function() {
-    var {meetingKey} = this.context.router.getCurrentParams();
+    var {meetingId} = this.context.router.getCurrentParams();
 
     return (
       <FluxComponent
-        key={meetingKey}
+        key={meetingId}
         connectToStores={['meeting', 'webRTC']}
         stateGetter={([meetingStore, webRTCStore]) => ({
-          meeting: meetingStore.getByKey(meetingKey),
-          meetingRelation: meetingStore.getCurrentUserRelationByKey(meetingKey),
+          meeting: meetingStore.getById(meetingId),
+          meetingRelation: meetingStore.getCurrentUserRelationById(meetingId),
           webRTC: webRTCStore.state
         })}
         render={(state) => (

@@ -26,7 +26,7 @@ var HostActionBlock = React.createClass({
 
   render: function() {
     var isShowingPreview = !!this.props.webRTC.localStream;
-    var meetingKey = this.props.meeting.key;
+    var meetingId = this.props.meeting.id;
     var {onBroadcastStart} = this.props;
 
     return (
@@ -37,8 +37,8 @@ var HostActionBlock = React.createClass({
         isShowingPreview={isShowingPreview}
         onPreviewClose={this.handlePreviewClose}>
         {isShowingPreview 
-          ? <BroadcastButton {...{meetingKey, onBroadcastStart}}/>
-          : <PrepareBroadcastButton meetingKey={meetingKey}/>}
+          ? <BroadcastButton {...{meetingId, onBroadcastStart}}/>
+          : <PrepareBroadcastButton/>}
       </ActionBlock>
     );
   }

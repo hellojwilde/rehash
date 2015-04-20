@@ -22,7 +22,7 @@ var ExploreHandler = React.createClass({
   },
 
   render: function() {
-    var {meetingKey} = this.context.router.getCurrentParams();
+    var {meetingId} = this.context.router.getCurrentParams();
 
     return (
       <div className="ExploreHandler">
@@ -41,8 +41,8 @@ var ExploreHandler = React.createClass({
                 <TileGrid 
                   {...state}
                   ref="grid"
-                  detailMeetingKey={meetingKey}
-                  detail={<RouteHandler meetingKey={meetingKey}/>}
+                  detailMeetingId={+meetingId}
+                  detail={<RouteHandler/>}
                 />
               )}
             />

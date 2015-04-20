@@ -53,7 +53,7 @@ function getSdpLinesWithoutCN(sdpLines, mLineIndex) {
   return sdpLines;
 }
 
-function getWithStereoIfPossible(stp) {
+function getWithStereoIfPossible(sdp) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
@@ -111,7 +111,7 @@ function getPreferredAudioCodec(sdp, codec) {
   for (var i = 0; i < sdpLines.length; i++) {
     if (sdpLines[i].search(name + '/' + rate) !== -1) {
       var regexp = new RegExp(':(\\d+) ' + name + '\\/' + rate, 'i');
-      var payload = this.extractSdp(sdpLines[i], regexp);
+      var payload = getSdp(sdpLines[i], regexp);
       if (payload)
         sdpLines[mLineIndex] = getDefaultCodec(sdpLines[mLineIndex], payload);
       break;
@@ -119,8 +119,7 @@ function getPreferredAudioCodec(sdp, codec) {
   }
 
   // Remove CN in m line and sdp.
-  sdpLines = this.removeCN(sdpLines, mLineIndex);
-
+  sdpLines = getSdpLinesWithoutCN(sdpLines, mLineIndex);
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
