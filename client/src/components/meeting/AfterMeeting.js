@@ -1,10 +1,14 @@
 var React = require('react');
 
+require('./AfterMeeting.css');
+
 var AfterMeeting = React.createClass({
 
   render: function() {
     return (
-      <div />
+      <div className="AfterMeeting">
+        Event Ended
+      </div>
     );
   }
 
