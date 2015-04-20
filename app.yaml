@@ -13,7 +13,9 @@ handlers:
   secure: always
 
 skip_files:
-- ^client.*$
+- ^client
+- ^.git
+- .DS_Store
 
 inbound_services:
 - channel_presence

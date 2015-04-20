@@ -10,8 +10,16 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import sys
-sys.path.insert(0, 'libs')
-sys.path.insert(0, 'libs/tweepy')
+
+sys.path.insert(0, 'libs/six.zip')
+sys.path.insert(0, 'libs/dateutil.zip')
+sys.path.insert(0, 'libs/urllib3.zip')
+sys.path.insert(0, 'libs/requests.zip')
+sys.path.insert(0, 'libs/oauthlib.zip')
+sys.path.insert(0, 'libs/requests_oauthlib.zip')
+sys.path.insert(0, 'libs/tweepy.zip')
+sys.path.insert(0, 'libs/gaesessions.zip')
+
 import cgi
 import logging
 import os
