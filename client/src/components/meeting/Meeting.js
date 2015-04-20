@@ -18,10 +18,7 @@ var Meeting = React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    console.log(nextProps.meeting.status);
-
-    if (this.props.meeting.status !== nextProps.meeting.status &&
-        nextProps.meeting.status === 'ended') {
+    if (nextProps.meeting.status !== 'broadcasting') {
       this.setState({
         view: this.getMeetingView(nextProps.meeting.status)
       });
