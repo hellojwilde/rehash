@@ -14,9 +14,9 @@ mozRTCSessionDescription, webkitRTCPeerConnection */
 'use strict';
 
 var RTCPeerConnection = null;
+var RTCIceCandidate = null;
+var RTCSessionDescription = null;
 var getUserMedia = null;
-var attachMediaStream = null;
-var reattachMediaStream = null;
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
 
@@ -56,10 +56,10 @@ if (navigator.mozGetUserMedia) {
   };
 
   // The RTCSessionDescription object.
-  window.RTCSessionDescription = mozRTCSessionDescription;
+  RTCSessionDescription = mozRTCSessionDescription;
 
   // The RTCIceCandidate object.
-  window.RTCIceCandidate = mozRTCIceCandidate;
+  RTCIceCandidate = mozRTCIceCandidate;
 
   // getUserMedia shim (only difference is the prefix).
   // Code from Adam Barth.
@@ -125,18 +125,6 @@ if (navigator.mozGetUserMedia) {
     }
     return iceServers;
   };
-
-  // Attach a media stream to an element.
-  attachMediaStream = function(element, stream) {
-    console.log('Attaching media stream');
-    element.mozSrcObject = stream;
-  };
-
-  reattachMediaStream = function(to, from) {
-    console.log('Reattaching media stream');
-    to.mozSrcObject = from.mozSrcObject;
-  };
-
 } else if (navigator.webkitGetUserMedia) {
   console.log('This appears to be Chrome');
 
@@ -184,30 +172,33 @@ if (navigator.mozGetUserMedia) {
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
   };
 
+  RTCIceCandidate = window.RTCIceCandidate;
+  RTCSessionDescription = window.RTCSessionDescription;
+
   // Get UserMedia (only difference is the prefix).
   // Code from Adam Barth.
   getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
   navigator.getUserMedia = getUserMedia;
-
-  // Attach a media stream to an element.
-  attachMediaStream = function(element, stream) {
-    if (typeof element.srcObject !== 'undefined') {
-      element.srcObject = stream;
-    } else if (typeof element.mozSrcObject !== 'undefined') {
-      element.mozSrcObject = stream;
-    } else if (typeof element.src !== 'undefined') {
-      element.src = URL.createObjectURL(stream);
-    } else {
-      console.log('Error attaching stream to element.');
-    }
-  };
-
-  reattachMediaStream = function(to, from) {
-    to.src = from.src;
-  };
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
+
+// Attach a media stream to an element.
+function attachMediaStream(element, stream) {
+  if (typeof element.srcObject !== 'undefined') {
+    element.srcObject = stream;
+  } else if (typeof element.mozSrcObject !== 'undefined') {
+    element.mozSrcObject = stream;
+  } else if (typeof element.src !== 'undefined') {
+    element.src = URL.createObjectURL(stream);
+  } else {
+    console.log('Error attaching stream to element.');
+  }
+};
+
+function reattachMediaStream(to, from) {
+  to.src = from.src;
+};
 
 // Returns the result of getUserMedia as a Promise.
 function requestUserMedia(constraints) {
@@ -287,6 +278,9 @@ function uploadRecording(blob) {
 
 
 module.exports = {
+  RTCPeerConnection,
+  RTCIceCandidate,
+  RTCSessionDescription,
   getUserMedia,
   requestUserMedia,
   attachMediaStream,

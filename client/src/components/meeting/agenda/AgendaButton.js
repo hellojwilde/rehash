@@ -8,7 +8,7 @@ var AgendaButton = React.createClass({
   },
 
   propTypes: {
-    meetingId: React.PropTypes.string.isRequired
+    meetingId: React.PropTypes.number.isRequired
   },
 
   handleClick: function() {

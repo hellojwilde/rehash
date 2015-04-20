@@ -42,6 +42,16 @@ class MeetingActions extends Actions {
     return this.api.meetingClose(meetingId);
   }
 
+  broadcastStart(meetingId) {
+    return this.api.broadcastStart(meetingId)
+      .then(() => meetingId);
+  }
+
+  broadcastEnd(meetingId) {
+    return this.api.broadcastEnd(meetingId)
+      .then(() => meetingId);
+  }
+
   receive(meeting) {
     return meeting;
   }

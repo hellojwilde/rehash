@@ -26,10 +26,10 @@ var Meeting = React.createClass({
       case 'ended':
         return AfterMeeting;
     }
-  }
+  },
 
-  handleRequestViewChange: function(newView) {
-    this.setState({view: newView});
+  handleRequestViewChange: function(view) {
+    this.setState({view});
   },
 
   render: function() {

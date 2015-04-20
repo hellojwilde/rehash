@@ -48,7 +48,7 @@ class ChannelAPI {
         webRTCActions.connectAsAttendee(msg.meetingId);
         break;
       case 'broadcastWebRTCMessage':
-        webRTCActions.receiveMessage(msg.meetingId, msg.message);
+        webRTCActions.receiveMessage(msg.meetingId, JSON.parse(msg.message));
         break;
       case 'broadcastEnd': 
         meetingActions.receiveBroadcastEnd(msg.meetingId);

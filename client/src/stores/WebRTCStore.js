@@ -22,14 +22,11 @@ class WebRTCStore extends Store {
       ['fetchTurn', this.handleFetchTurn],
       ['prepareAsHost', this.handlePrepareAsHost],
       ['connectAsHost', [this.handleConnectBegin]],
-      ['connectAsAudience', [this.handleConnectBegin]],
+      ['connectAsAttendee', [this.handleConnectBegin]],
       ['disconnect', this.handleDisconnect],
 
       // Internal actions regarding signaling and RTCPeerConnection.
       ['_createPeer', this.handleCreatePeer],
-      ['_createPeerLocalStream', this.handleCreatePeerLocalStream],
-      ['_createPeerOffer', this.handleCreatePeerLocalDescription],
-      ['_createPeerAnswer', this.handleCreatePeerLocalDescription],
       ['_receivePeerIceCandidate', this.handleReceivePeerIceCandidate],
       ['_receivePeerRemoteDescription', this.handleReceivePeerRemoteDescription],
       ['_receivePeerRemoteStream', this.handleReceivePeerRemoteStream]
@@ -37,7 +34,7 @@ class WebRTCStore extends Store {
 
     webRTCActionBindings.forEach(([action, handler]) => {
       if (_.isArray(handler)) {
-        this.registerAsync(webRTCActionIds[action], ...handler);
+        this.registerAsync(webRTCActionIds[action], handler[0]);
       } else {
         this.register(webRTCActionIds[action], handler);
       }
@@ -66,6 +63,7 @@ class WebRTCStore extends Store {
   }
 
   getPreferredAudioSendCodec(sdp) {
+    var {audioSendCodec} = this.state;
     if (audioSendCodec == '') {
       console.log('No preference on audio send codec.');
       return sdp;
@@ -75,6 +73,7 @@ class WebRTCStore extends Store {
   }
 
   getPreferredAudioReceiveCodec(sdp) {
+    var {audioReceiveCodec} = this.state;
     if (audioReceiveCodec == '') {
       console.log('No preference on audio receive codec.');
       return sdp;
@@ -127,14 +126,6 @@ class WebRTCStore extends Store {
 
   handleCreatePeer(pc) {
     this.setState({pc: pc})
-  }
-
-  handleCreatePeerLocalStream(stream) {
-    this.state.pc.addStream(stream);
-  }
-
-  handleCreatePeerLocalDescription(sessionDescription) {
-    this.state.pc.setLocalDescription(sessionDescription);
   }
 
   handleReceivePeerIceCandidate(candidate) {

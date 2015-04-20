@@ -62,7 +62,7 @@ var BeforeMeeting = React.createClass({
                   <div>
                     <ScheduleLabel 
                       start={meeting.start} 
-                      isBroadcasting={meeting.isBroadcasting}
+                      status={meeting.status}
                     />
 
                     <h2 className="BeforeMeeting-description-title">{meeting.title}</h2>

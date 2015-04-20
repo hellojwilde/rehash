@@ -9,15 +9,25 @@ var MeetingHandler = React.createClass({
     ensureDataAvailable: function(state, registry) {
       var {meetingId} = state.params;
       var meetingActions = registry.getActions('meeting');
-
-      // TODO (jwilde): autoconnect as needed if the meeting is already 
-      // broadcasting. (Current behavior is to only try to connect if the user 
-      // is already connected when the broadcast notification comes out).
+      var meetingStore = registry.getStore('meeting');
+      var webRTCActions = registry.getActions('webRTC');
 
       return Promise.all([
         meetingActions.fetch(meetingId), 
         meetingActions.open(meetingId)
-      ]);
+      ]).then(() => {
+        var meeting = meetingStore.getById(meetingId);
+        var relation = meetingStore.getCurrentUserRelationById(meetingId);
+
+        if (meeting.status === 'broadcasting') {
+          if (relation.isHost) {
+            webRTCActions.prepareAsHost(meetingId)
+              .then(() => webRTCActions.connectAsHost(meetingId))
+          } else {
+            webRTCActions.connectAsAttendee(meetingId);
+          }
+        }
+      });
     },
 
     willTransitionFrom: function(transition, element) {
@@ -31,9 +41,8 @@ var MeetingHandler = React.createClass({
         var webRTCActions = element.context.flux.getActions('webRTC');
         var meetingActions = element.context.flux.getActions('meeting');
 
-        // TODO (jwilde): see if we can merge thse somehow at the store level.
-
         meetingActions.close(meetingId);
+        meetingActions.broadcastEnd(meetingId);
         webRTCActions.disconnect();
       }
     }

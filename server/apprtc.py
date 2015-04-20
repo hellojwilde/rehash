@@ -38,8 +38,9 @@ jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader(os.path.dirname(__file__))
 )
 
+
 @db.transactional
-def connect_user(user=None):
+def channel_connect_user(user=None):
   ### add user to ConnectedUserModel:
   connected_user = ConnectedUserModel()
   connected_user.user = user.key if user is not None else None
@@ -51,23 +52,25 @@ def connect_user(user=None):
   return key.urlsafe()
 
 
-def disconnect_user():
+def channel_disconnect_user():
   ### remove user from ConnectedUserModel:
   session = get_current_session()
-  ndb.Key(urlsafe=session['connected_user_key']).delete()
+  if session.get('connected_user_key'):
+    ndb.Key(urlsafe=session['connected_user_key']).delete()
+
+
+def channel_message(connected_user_key, message):
+  session = get_current_session()
+  if connected_user_key != session['connected_user_key']:
+    channel.send_message(
+      connected_user_key, 
+      json.dumps(message, cls=APIJSONEncoder)
+    )
 
 
 def channel_messageAll(message):
-  ### message all connected users 
-  session = get_current_session()
-
   for connected_user in ConnectedUserModel.query():
-    connected_user_key = connected_user.key.urlsafe()
-    if connected_user_key != session['connected_user_key']:
-      channel.send_message(
-        connected_user_key, 
-        json.dumps(message, cls=APIJSONEncoder)
-      )
+    channel_message(connected_user.key.urlsafe(), message)
 
 
 def channel_messageByUserInMeeting(user_key, meeting_key, message):
@@ -77,35 +80,32 @@ def channel_messageByUserInMeeting(user_key, meeting_key, message):
   )
 
   for connected_user in connected_user_query:
-    channel.send_message(
-      connected_user.key.urlsafe(), 
-      json.dumps(message, cls=APIJSONEncoder)
-    )
+    channel_message(connected_user.key.urlsafe(), message)
 
 
 def channel_messageByMeeting(meeting_key, message):
-  ### message all connected users with a specified active meeting
-  session = get_current_session()
   connected_user_query = ConnectedUserModel.query(
     ConnectedUserModel.activeMeeting == meeting_key
   )
 
   for connected_user in connected_user_query:
-    connected_user_key = connected_user.key.urlsafe()
-    if connected_user_key != session['connected_user_key']:
-      channel.send_message(
-        connected_user_key,
-        json.dumps(message, cls=APIJSONEncoder)
-      )
+    channel_message(connected_user.key.urlsafe(), message)
 
-def fetch_connected_user_for_session(session=None):
+
+def get_connected_user_key_for_session(session=None):
   if session is None:
     session = get_current_session()
 
+  key = None
   if session.get('connected_user_key'):
-    connected_user = ndb.Key(urlsafe=session['connected_user_key']).get()
+    key = ndb.Key(urlsafe=session['connected_user_key'])
 
-  return connected_user
+  return key
+
+
+def fetch_connected_user_for_session(session=None):
+  connected_user_key = get_connected_user_key_for_session()
+  return connected_user_key.get() if connected_user_key is not None else None
 
 
 def get_user_key_for_session(session=None):
@@ -137,7 +137,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   )
 
   user = fetch_user_for_session(session)
-  connected_user_id = connect_user(user)
+  connected_user_id = channel_connect_user(user)
 
   initial_store_data.update({
     'webRTC': get_webrtc_config(self, connected_user_id),
@@ -167,7 +167,7 @@ class ConnectPage(webapp2.RequestHandler):
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
-    disconnect_user();
+    channel_disconnect_user();
 
 
 class MainPage(webapp2.RequestHandler):
@@ -389,17 +389,16 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def meeting_open(self, request, response):
+    user = fetch_user_for_session()
     meeting = MeetingModel.get_by_id(int(request.get('id')))
 
-    if meeting.status == 'broadcasting':
-      meeting.attendees.append(user)
+    if meeting.status == 'broadcasting' and user is not None:
+      meeting.attendees.append(user.key)
       meeting.put()
 
     connected_user = fetch_connected_user_for_session()
     connected_user.activeMeeting = meeting.key
     connected_user.put();
-
-    user = fetch_user_for_session()
 
     if user is not None:
       channel_messageByMeeting(meeting.key, {
@@ -415,11 +414,12 @@ class APIHandler(webapp2.RequestHandler):
     connected_user.put();
 
     user_key = get_user_key_for_session()
+    meeting_key = ndb.Key(MeetingModel, request.get('id'))
 
     if user_key is not None:
-      channel_messageByMeeting(meeting.key, {
+      channel_messageByMeeting(meeting_key, {
         'type': 'meetingClose',
-        'meetingId': meeting.key.id(),
+        'meetingId': meeting_key.id(),
         'userId': user_key.id()
       })
 
@@ -448,14 +448,15 @@ class APIHandler(webapp2.RequestHandler):
 
     message = {
       'type': 'broadcastWebRTCMessage',
+      'from': get_connected_user_key_for_session(),
       'meetingId': request.get('meetingId'),
       'message': request.get('message')
     }
 
     if user_key == meeting.host:
-      channel_messageByUserInMeeting(user_key, meeting.key, message)
-    else:
       channel_messageByMeeting(meeting.key, message)
+    else:
+      channel_messageByUserInMeeting(meeting.host, meeting.key, message)
 
   @classmethod
   def broadcast_end(self, request, response):

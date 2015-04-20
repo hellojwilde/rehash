@@ -149,7 +149,7 @@ var ExampleAPI = {
       format: 'json',
       meetingId: meetingId,
       request: 'broadcastSendWebRTCMessage',
-      message: message
+      message: JSON.stringify(message)
     });
   },
 

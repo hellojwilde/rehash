@@ -27,6 +27,9 @@ class MeetingStore extends Store {
     this.register(meetingActionIds.create, this.handleReceiveMeeting);
     this.register(meetingActionIds.update, this.handleReceiveMeeting);
 
+    this.register(meetingActionIds.broadcastStart, this.handleReceiveMeetingBroadcastStart);
+    this.register(meetingActionIds.broadcastEnd, this.handleReceiveMeetingBroadcastEnd);
+
     this.register(meetingActionIds.receive, this.handleReceiveMeeting);
     this.register(meetingActionIds.receiveBroadcastStart, this.handleReceiveMeetingBroadcastStart);
     this.register(meetingActionIds.receiveBroadcastEnd, this.handleReceiveMeetingBroadcastEnd);
@@ -73,13 +76,13 @@ class MeetingStore extends Store {
   }
 
   handleReceiveMeetingBroadcastStart(meetingId) {
-    thie.setState({
+    this.setState({
       [meetingId]: _.assign(this.state[meetingId], {status: 'broadcasting'})
     });
   }
 
   handleReceiveMeetingBroadcastEnd(meetingId) {
-    thie.setState({
+    this.setState({
       [meetingId]: _.assign(this.state[meetingId], {status: 'ended'})
     });
   }
