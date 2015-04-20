@@ -41,48 +41,25 @@ jinja_environment = jinja2.Environment(
 
 @db.transactional
 def channel_connect_user(user=None):
-  session = get_current_session()
-
-  if session.get('connected_user_key') is None:
-    connected_user = ConnectedUserModel()
-    connected_user.user = user.key if user is not None else None
-    key = connected_user.put()
-
-    session['connected_user_key'] = key.urlsafe()
+  connected_user = ConnectedUserModel()
+  connected_user.user = user.key if user is not None else None
+  key = connected_user.put()
   
-  return session['connected_user_key']
+  return key.urlsafe()
 
-
-def channel_disconnect_user():
-  ### remove user from ConnectedUserModel:
-  session = get_current_session()
-  if session.get('connected_user_key'):
-    ndb.Key(urlsafe=session['connected_user_key']).delete()
+@db.transactional
+def channel_disconnect_user(connected_user_key):
+  ndb.Key(urlsafe=connected_user_key).delete()
 
 
 def channel_message(connected_user_key, message):
-  session = get_current_session()
-  if connected_user_key != session['connected_user_key']:
-    channel.send_message(
-      connected_user_key, 
-      json.dumps(message, cls=APIJSONEncoder)
-    )
-    print 'sent to user'
-    print connected_user_key
-    print session['connected_user_key']
+  channel.send_message(
+    connected_user_key, 
+    json.dumps(message, cls=APIJSONEncoder)
+  )
 
 def channel_messageAll(message):
   for connected_user in ConnectedUserModel.query():
-    channel_message(connected_user.key.urlsafe(), message)
-
-
-def channel_messageByUserInMeeting(user_key, meeting_key, message):
-  connected_user_query = ConnectedUserModel.query(
-    ConnectedUserModel.user == user_key,
-    ConnectedUserModel.activeMeeting == meeting_key
-  )
-
-  for connected_user in connected_user_query:
     channel_message(connected_user.key.urlsafe(), message)
 
 
@@ -93,22 +70,6 @@ def channel_messageByMeeting(meeting_key, message):
 
   for connected_user in connected_user_query:
     channel_message(connected_user.key.urlsafe(), message)
-
-
-def get_connected_user_key_for_session(session=None):
-  if session is None:
-    session = get_current_session()
-
-  key = None
-  if session.get('connected_user_key'):
-    key = ndb.Key(urlsafe=session['connected_user_key'])
-
-  return key
-
-
-def fetch_connected_user_for_session(session=None):
-  connected_user_key = get_connected_user_key_for_session()
-  return connected_user_key.get() if connected_user_key is not None else None
 
 
 def get_user_key_for_session(session=None):
@@ -140,15 +101,14 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   )
 
   user = fetch_user_for_session(session)
-  connected_user_id = channel_connect_user(user)
-
-  print connected_user_id
+  connected_user_key = channel_connect_user(user)
 
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self, connected_user_id),
+    'webRTC': get_webrtc_config(self, connected_user_key),
     'currentUser': {
       'user': user,
-      'channelToken': channel.create_channel(connected_user_id, token_timeout)
+      'connectedUserId': connected_user_key,
+      'channelToken': channel.create_channel(connected_user_key, token_timeout)
     }
   })
 
@@ -172,7 +132,8 @@ class ConnectPage(webapp2.RequestHandler):
 ### why does it jump to disconnect the host? 
 class DisconnectPage(webapp2.RequestHandler):
   def post(self):
-    channel_disconnect_user();
+    connected_user_key = self.request.get('from')
+    channel_disconnect_user(connected_user_key);
 
 
 class MainPage(webapp2.RequestHandler):
@@ -348,7 +309,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting = MeetingModel()
     meeting.title = request.get('title')
     meeting.description = request.get('description')
-    meeting.start = dateutil.parser.parse(request.get('start'))
+    meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.topics = copy.deepcopy(request.get('topics'))
     meeting.host = fetch_user_for_session().key
     key = meeting.put()
@@ -404,7 +365,7 @@ class APIHandler(webapp2.RequestHandler):
       meeting.attendees.append(user.key)
       meeting.put()
 
-    connected_user = fetch_connected_user_for_session()
+    connected_user = ndb.Key(urlsafe=request.get('connectedUserId')).get()
     connected_user.activeMeeting = meeting.key
     connected_user.put();
 
@@ -417,7 +378,7 @@ class APIHandler(webapp2.RequestHandler):
 
   @classmethod
   def meeting_close(self, request, response):
-    connected_user = fetch_connected_user_for_session()
+    connected_user = ndb.Key(urlsafe=request.get('connectedUserId')).get()
     connected_user.activeMeeting = None
     connected_user.put();
 
@@ -457,7 +418,7 @@ class APIHandler(webapp2.RequestHandler):
       meeting.status = 'broadcasting'
       meeting.put()
 
-    broadcast.hostConnectedUser = get_connected_user_key_for_session()
+    broadcast.hostConnectedUser = ndb.Key(urlsafe=request.get('connectedUserId'))
     broadcast.put()
 
     channel_messageAll({
@@ -490,7 +451,7 @@ class APIHandler(webapp2.RequestHandler):
 
     message = {
       'type': 'webRTCMessage',
-      'sender': get_connected_user_key_for_session(),
+      'sender': request.get('connectedUserId'),
       'message': request.get('message')
     }
 
@@ -608,12 +569,15 @@ class LogoutHandler(webapp2.RequestHandler):
 
 class UploadRecording(webapp2.RequestHandler):
   def post(self):
+    pass
     ### shall save to meeting blob
-    session = get_current_session()
-    connected_user_key = session.get('connected_user_key')
-    meeting_key = connected_user_key.get().activeMeeting
-    recording = BroadcastRecordingModel(parent = meeting_key)
-    recording.put()
+    # Note(jwilde): This really needs to take in an explicit parameter for 
+    # the meeting to upload this to. :/    
+    # session = get_current_session()
+    # connected_user_key = session.get('connected_user_key')
+    # meeting_key = connected_user_key.get().activeMeeting
+    # recording = BroadcastRecordingModel(parent = meeting_key)
+    # recording.put()
     # meeting.recording.append(recording)
     # meeting.put()
     # parent, Model

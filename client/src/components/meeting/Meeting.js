@@ -13,12 +13,23 @@ var Meeting = React.createClass({
 
   getInitialState: function() {
     return {
-      view: this.getInitialMeetingView()
+      view: this.getMeetingView(this.props.meeting.status)
     };
   },
 
-  getInitialMeetingView: function() {
-    switch (this.props.meeting.status) {
+  componentWillReceiveProps: function(nextProps) {
+    console.log(nextProps.meeting.status);
+
+    if (this.props.meeting.status !== nextProps.meeting.status &&
+        nextProps.meeting.status === 'ended') {
+      this.setState({
+        view: this.getMeetingView(nextProps.meeting.status)
+      });
+    }
+  },
+
+  getMeetingView: function(status) {
+    switch (status) {
       case 'scheduled':
         return BeforeMeeting;
       case 'broadcasting':

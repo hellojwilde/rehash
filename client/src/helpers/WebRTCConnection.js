@@ -59,6 +59,10 @@ class WebRTCConnection extends EventEmitter {
     }
   }
 
+  disconnect() {
+    this.peer.close();
+  }
+
   _createPeerConnection() {
     var webRTCStore = this.registry.getStore('webRTC');
     var {pcConfig, pcConstraints} = webRTCStore.state;
@@ -86,18 +90,21 @@ class WebRTCConnection extends EventEmitter {
 
     this.peer.createAnswer(
       this._setLocalAndSendSessionDescription.bind(this),
-      (e) => reject(e), 
+      (e) => console.error(e), 
       SDP_CONSTRAINTS
     );
   }
 
   _setLocalAndSendSessionDescription(sessionDescription) {
+    var currentUserStore = this.registry.getStore('currentUser');
     var webRTCStore = this.registry.getStore('webRTC');
+
     sessionDescription.sdp = 
       webRTCStore.getPreferredAudioReceiveCodec(sessionDescription.sdp);
 
     this.peer.setLocalDescription(sessionDescription)
     this.api.webRTCSendMessage(
+      currentUserStore.state.connectedUserId,
       this.otherPeer, 
       sessionDescription
     );
@@ -106,9 +113,12 @@ class WebRTCConnection extends EventEmitter {
   _sendIceCandidate(candidate) {
     if (!candidate) {
       return;
-    } 
+    }
+
+    var currentUserStore = this.registry.getStore('currentUser');
 
     this.api.webRTCSendMessage(
+      currentUserStore.state.connectedUserId,
       this.otherPeer,
       {
         type: 'candidate',

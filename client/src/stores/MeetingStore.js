@@ -33,6 +33,7 @@ class MeetingStore extends Store {
     this.register(broadcastActionIds.start, this.handleReceiveBroadcastStart);
     this.register(broadcastActionIds.receiveStart, this.handleReceiveBroadcastStart);
     this.register(broadcastActionIds.end, this.handleReceiveBroadcastEnd);
+    this.register(broadcastActionIds.receiveEnd, this.handleReceiveBroadcastEnd);
 
     this.registry = registry;
     this.state = {};
