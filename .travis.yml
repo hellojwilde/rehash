@@ -9,9 +9,7 @@ install:
 script: cd client/ && npm run-script build && cd ..
 
 after_success:
-- if [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
+  - if [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
   - unzip google_appengine_1.9.17.zip
   - python google_appengine/appcfg.py --oauth2_refresh_token=$DEPLOY_REFRESH_TOKEN update .
-- else 
-  - echo "Build is pull request $TRAVIS_PULL_REQUEST: skipping deploy"
-- fi
+  - fi
