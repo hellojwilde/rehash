@@ -1,6 +1,13 @@
 language: python
 python:
-  - "2.7"
+- '2.7'
 install:
-  - "npm install -g webpack"
-script: "cd client/ && npm run-script build && cd .."
+- npm install -g webpack
+script: cd client/ && npm run-script build && cd ..
+deploy:
+  provider: gae
+  edge: true
+  on:
+    branch: master
+  oauth_refresh_token:
+    secure: cRRrmLGVsajcv0MrDtKHMNsr6vJM4eOE6OwVjpefoBaHQUBBBC0VraC97BgTOtgdDQUHNdv1Lu4JJVYs2oV38dB9crfOh48PbBeSZIDlOtReoBRNmUwtupYrtzuPCeRxxlLrApftwHa+8vQI7fDCAC78W0oaAPMQPUocO715yoQ=
