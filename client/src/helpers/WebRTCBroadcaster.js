@@ -10,13 +10,6 @@ class WebRTCBroadcaster {
     this.connections = {};
   }
 
-  disconnect() {
-    _.forEach(
-      this.connections, 
-      (transmitter) => transmitter.disconnect
-    );
-  }
-
   receiveMessage(sender, message) {
     switch (message.type) {
       case 'offer-request':
@@ -26,6 +19,13 @@ class WebRTCBroadcaster {
         this.connections[sender].receiveMessage(message);
         break;
     }
+  }
+
+  disconnect() {
+    _.forEach(
+      this.connections, 
+      (transmitter) => transmitter.disconnect()
+    );
   }
 
   _createConnection(otherPeer) {

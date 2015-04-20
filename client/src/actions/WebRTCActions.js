@@ -65,8 +65,7 @@ class WebRTCActions extends Actions {
   }
 
   connectAsAttendee(hostConnectedUserKey) {
-    console.log('connasattendee')
-
+    var currentUserStore = this.registry.getStore('currentUser');
     var webRTCActions = this.registry.getActions('webRTC');
 
     return webRTCActions.fetchTurn()
@@ -82,6 +81,7 @@ class WebRTCActions extends Actions {
         // finishes binding this to the store, but that's super unlikely.
   
         this.api.webRTCSendMessage(
+          currentUserStore.state.connectedUserId,
           hostConnectedUserKey, 
           {type: 'offer-request'}
         );
@@ -112,7 +112,7 @@ class WebRTCActions extends Actions {
   }
 
   disconnect() {
-    return;
+    return true;
   }
 }
 

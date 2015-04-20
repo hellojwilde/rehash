@@ -48,6 +48,9 @@ class ChannelAPI {
       case 'broadcastStart':
         broadcastActions.receiveStart(msg.broadcast);
         break;
+      case 'broadcastEnd':
+        broadcastActions.receiveEnd(msg.meetingId);
+        break;
       case 'webRTCMessage':
         webRTCActions.receiveMessage(
           msg.sender,
