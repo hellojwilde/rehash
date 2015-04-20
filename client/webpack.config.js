@@ -11,8 +11,8 @@ module.exports = {
     root: __dirname + '/src'
   },
   output: {
-    path: __dirname + '/dist',
-    publicPath: 'http://localhost:3001/dist/',
+    path: __dirname + '/../static/bundle',
+    publicPath: 'http://localhost:3001/static/bundle/',
     filename: 'bundle.js'
   },
   module: {
