@@ -194,10 +194,7 @@ class MeetingModel(ndb.Model):
     choices=['scheduled', 'broadcasting', 'ended'], 
     default='scheduled'
   )
-<<<<<<< HEAD
 
-=======
->>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
 
 class BroadcastModel(ndb.Model):
   hostConnectedUser = ndb.KeyProperty()
@@ -212,37 +209,28 @@ class BroadcastRecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
   # add additional information as needed here 
 
-<<<<<<< HEAD
 
 class TopicModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
-=======
-class AgendaModel(ndb.Model):
-  # topics contains a list of {id: tId, content: '', questions: [qId, ]}
-  topics = ndb.JsonProperty()
-
-class TopicsModel(ndb.Model):
->>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
   content = ndb.StringProperty()
+
 
 class QuestionModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
+
 
 class ConnectedUserModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   isConnected = ndb.BooleanProperty(default=False)
   activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
-<<<<<<< HEAD
 
 class ConnectedUserMessageModel(ndb.Model):
   to = ndb.KeyProperty(kind=ConnectedUserModel)
   content = ndb.TextProperty()
 
 
-=======
->>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
