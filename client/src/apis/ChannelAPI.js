@@ -12,7 +12,10 @@ class ChannelAPI {
         return;
       }
 
-      console.log('ChannelAPI: have a channel token!');
+      console.log(
+        'ChannelAPI: have a channel token!', 
+        currentUserStore.state.channelToken
+      );
 
       channel = new goog.appengine.Channel(
         currentUserStore.state.channelToken

@@ -28,4 +28,4 @@ build/Release
 *.pyc
 
 # Just no
-client/dist
+static/bundle

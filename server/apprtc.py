@@ -11,7 +11,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 
 import sys
 sys.path.insert(0, 'libs')
-sys.path.insert(0, 'libs/tweepy')
+
 import cgi
 import logging
 import os
@@ -544,9 +544,8 @@ class LoginHandler(webapp2.RequestHandler):
         redirect_url = str(auth.get_authorization_url())
         session['twitter_request_token'] = auth.request_token
         self.redirect(redirect_url)
-      except tweepy.TweepError:
-        logging.info('Error! Failed to get request token. ')
-        self.redirect('/')
+      except tweepy.TweepError, e:
+        logging.info('Error! Failed to get request token. ' + str(e))
     else:
       self.redirect(session['redirect'])
       
@@ -559,9 +558,9 @@ class LogoutHandler(webapp2.RequestHandler):
 
 class Upload(webapp2.RequestHandler):
   def post(self):
+
     connectedUser = ndb.Key(urlsafe=request.get('connectedUserId')).get()
     meeting = connectedUser.activeMeeting.get()
-
     if self.request.get('type') == 'upload':
       recording_key = RecordingModel(parent = meeting.key)
       recording_key.get().recording = self.request.get('data')
@@ -569,6 +568,7 @@ class Upload(webapp2.RequestHandler):
     elif self.request.get('type') == 'firstframe':
       meeting.firstframe = self.request.get('data')  
       meeting.put()
+
 
 class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):

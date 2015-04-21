@@ -1,28 +1,22 @@
-application: rehash
+application: rehash-tv
 version: 6
 runtime: python27
 threadsafe: true
 api_version: 1
 
 handlers:
-- url: /html
-  static_dir: html
-
-- url: /images
-  static_dir: client/images
-
-- url: /js
-  static_dir: client/js
-
-- url: /dist
-  static_dir: client/dist
-
-- url: /css
-  static_dir: client/css
+- url: /static
+  static_dir: static
 
 - url: /.*
   script: server.apprtc.app
   secure: always
+
+skip_files:
+- ^client
+- ^.git
+- .DS_Store
+- ^google_appengine
 
 inbound_services:
 - channel_presence
