@@ -15,18 +15,20 @@ var AgendaModal = React.createClass({
   },
 
   render: function() {
+    var {meetingId} = this.props;
+
     return (
       <DocumentTitle title="Agenda - Rehash">
         <Modal>
           <ModalHeader onCancel={this.props.onCancel}>Agenda</ModalHeader>
           <ModalBody>
             <FluxComponent 
-              connectToStores={['meeting']}
-              stateGetter={([meetingStore]) => ({
-                topics: [],
-                isHost: meetingStore.getCurrentUserRelationById(
-                  this.props.meetingId
-                ).isHost
+              connectToStores={['meeting', 'topic']}
+              stateGetter={([meetingStore, topicStore]) => ({
+                topics: topicStore.getByMeetingId(meetingId),
+                meetingId: meetingId,
+                meetingRelation: 
+                  meetingStore.getCurrentUserRelationById(meetingId)
               })}>
               <AgendaList/>
             </FluxComponent>
