@@ -194,7 +194,10 @@ class MeetingModel(ndb.Model):
     choices=['scheduled', 'broadcasting', 'ended'], 
     default='scheduled'
   )
+<<<<<<< HEAD
 
+=======
+>>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
 
 class BroadcastModel(ndb.Model):
   hostConnectedUser = ndb.KeyProperty()
@@ -205,33 +208,41 @@ class BroadcastLogModel(ndb.Model):
   method = ndb.StringProperty()
   data = ndb.StringProperty()
 
-
 class BroadcastRecordingModel(ndb.Model):
   recording = ndb.BlobProperty(indexed=False)
   # add additional information as needed here 
 
+<<<<<<< HEAD
 
 class TopicModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
-  content = ndb.StringProperty()
+=======
+class AgendaModel(ndb.Model):
+  # topics contains a list of {id: tId, content: '', questions: [qId, ]}
+  topics = ndb.JsonProperty()
 
+class TopicsModel(ndb.Model):
+>>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
+  content = ndb.StringProperty()
 
 class QuestionModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
-
 
 class ConnectedUserModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   isConnected = ndb.BooleanProperty(default=False)
   activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
+<<<<<<< HEAD
 
 class ConnectedUserMessageModel(ndb.Model):
   to = ndb.KeyProperty(kind=ConnectedUserModel)
   content = ndb.TextProperty()
 
 
+=======
+>>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
@@ -577,8 +588,7 @@ class LoginHandler(webapp2.RequestHandler):
         logging.info('Error! Failed to get request token. ' + str(e))
     else:
       self.redirect(session['redirect'])
-
-
+      
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
     session = get_current_session()
@@ -588,25 +598,22 @@ class LogoutHandler(webapp2.RequestHandler):
 
 class Upload(webapp2.RequestHandler):
   def post(self):
-    pass
-    ### shall save to meeting blob
-    session = get_current_session()
-    connect_user_key = session.get('connect_user_key')
-    meeting_key = connect_user_key.get().activeMeeting
+
+    connectedUser = ndb.Key(urlsafe=request.get('connectedUserId')).get()
+    meeting = connectedUser.activeMeeting.get()
     if self.request.get('type') == 'upload':
-      recording_key = RecordingModel(parent = meeting_key)
+      recording_key = RecordingModel(parent = meeting.key)
       recording_key.get().recording = self.request.get('data')
       recording_key.get().put()
     elif self.request.get('type') == 'firstframe':
-      meeting_key.get().firstframe = self.request.get('data')  
-      meeting_key.get().put()
+      meeting.firstframe = self.request.get('data')  
+      meeting.put()
 
 
 class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
     self.response.set_status(404)
-
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),

@@ -24,8 +24,9 @@ function sendAjaxRequest(reqData) {
   });
 }
 
-var ExampleAPI = {
 
+
+var ExampleAPI = {
   /**
    * Given a user id, this fetches a user object. 
    * Useful for profile popups and pages.
@@ -207,6 +208,89 @@ var ExampleAPI = {
       connectedUserId: connectedUserId,
       message: JSON.stringify(message)
     });
+<<<<<<< HEAD
+=======
+  },
+
+  uploadSendMessage: function(formData) {
+    return $.ajax({
+          type: 'POST',
+          url: '/upload',
+          data: formData,
+          processData: false,
+          contentType: false
+      }).done(function(data) {
+        console.log('Firstframe files successfully uploaded');
+        // may want ot suspend user action during video upload
+      }).fail(function(e){
+        console.log('Firstframe files fail to upload');
+      });
+  },
+  //
+  //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
+  //
+
+  /**
+   * @param  {int} meetingId   
+   *         {object} topics   Array of topics
+   * @return {Promise}         Resolves to the id that the topics are added to
+   */
+  agendaAdd: function(meetingId, topics){
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'agendaAdd',
+      meetingId: meetingId, 
+      topics: topics
+    });
+  },
+
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of topics 
+   */
+  agendaFetch: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'agendafetch',
+      meetingId: meetingId
+    });
+  },
+
+  /**
+   * @param  {int} meetingId   
+   *         {object} question Includes string of question and timestamp
+   * @return {Promise}         Resolves to the dict containing question id (int or string?)
+   */
+  questionAdd: function(meetingId, question){
+    var reqData = {
+      format: 'json',
+      request: 'questionAdd',
+      meetingId: meetingId, 
+      question: question
+    };
+    return sendAjaxRequest(reqData)
+      .then((result) => {
+        result.id = Number(result.id);
+        return result;
+      });
+  },
+
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of questions on a meeting
+   */
+  questionFetch: function(meetingId) {
+    var reqData = {
+      format: 'json',
+      request: 'questionfetch',
+      meetingId: meetingId
+    }
+    var result = sendAjaxRequest(reqData);
+    result.topics = AGENDAS[0].topics;
+    result['meetingId'] = Number(result['meetingId']);
+    console.log(result);
+    return Promise.resolve(result);
+>>>>>>> 20dfc53cee92b99aec69c2d83c8cc8a1084dcda9
   }
 };
 
