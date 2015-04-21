@@ -30,8 +30,8 @@ class FluxRegistry extends Flummox {
     this.createActions('user', UserActions, this, ExampleAPI);
     this.createActions('webRTC', WebRTCActions, this, ExampleAPI);
 
-    //this.createStore('topic', TopicStore, this);
-    //this.createStore('question', QuestionStore, this);
+    this.createStore('topic', TopicStore, this);
+    this.createStore('question', QuestionStore, this);
     this.createStore('broadcast', BroadcastStore, this);
     this.createStore('currentMeeting', CurrentMeetingStore, this);
     this.createStore('currentUser', CurrentUserStore, this);

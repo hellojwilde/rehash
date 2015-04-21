@@ -10,6 +10,12 @@ var Broadcast = React.createClass({
     webRTC: React.PropTypes.object.isRequired,
   },
 
+  getInitialState: function() {
+    return {
+      isConnectionLost: false
+    };
+  },
+
   componentDidMount: function() {
     this.attachWebRTCStream();
   },
@@ -24,10 +30,11 @@ var Broadcast = React.createClass({
   attachWebRTCStream: function() {
     var {meetingRelation, webRTC} = this.props;
     var videoNode = this.refs['broadcast'].getDOMNode();
-    attachMediaStream(
-      videoNode, 
-      meetingRelation.isHost ? webRTC.localStream : webRTC.remoteStream
-    );
+    var stream = meetingRelation.isHost 
+      ? webRTC.localStream 
+      : webRTC.remoteStream;
+
+    attachMediaStream(videoNode, stream);
   },
 
   render: function() {

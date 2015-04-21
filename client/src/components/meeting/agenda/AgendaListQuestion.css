@@ -1,0 +1,10 @@
+.AgendaListQuestion {
+  display: flex;
+}
+
+.AgendaListQuestion-content {
+  margin-left: 10px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}

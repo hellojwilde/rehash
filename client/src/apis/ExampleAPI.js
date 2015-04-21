@@ -162,7 +162,7 @@ var ExampleAPI = {
   agendaAddTopic: function(connectedUserId, meetingId, content){
     return sendAjaxRequest({
       format: 'json',
-      request: 'agendaAddTopic',
+      request: 'agendaTopicAdd',
       meetingId: meetingId, 
       connectedUserId: connectedUserId,
       content: content
@@ -172,7 +172,7 @@ var ExampleAPI = {
   agendaAddQuestion: function(connectedUserId, meetingId, topicId, content) {
     return sendAjaxRequest({
       format: 'json',
-      request: 'agendaAddQuestion',
+      request: 'agendaQuestionAdd',
       meetingId: meetingId, 
       topicId: topicId,
       connectedUserId: connectedUserId,

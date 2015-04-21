@@ -24,7 +24,7 @@ class AgendaActions extends Actions {
 
   addQuestion(meetingId, topicId, content) {
     var currentUserStore = this.registry.getStore('currentUser');
-    
+
     return this.api.agendaAddQuestion(
       currentUserStore.state.connectedUserId,
       meetingId,
@@ -38,7 +38,7 @@ class AgendaActions extends Actions {
   }
 
   receiveAddQuestion(question) {
-    return topic;
+    return question;
   }
 }
 

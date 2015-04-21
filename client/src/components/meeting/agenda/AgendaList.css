@@ -13,7 +13,20 @@
   margin: 0;
 }
 
-.AgendaList--empty .glyphicon {
+.AgendaList--empty-glyphicon {
   font-size: 50px;
   margin-bottom: 30px;
+}
+
+.AgendaList--empty .AgendaList--empty-composer {
+  margin: 30px 0;
+}
+
+.AgendaList {
+  overflow: auto;
+  max-height: 100%;
+}
+
+.AgendaList-composer {
+  text-align: center;
 }

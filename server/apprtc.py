@@ -450,8 +450,9 @@ class APIHandler(webapp2.RequestHandler):
   @classmethod
   def agenda_question_add(self, request, response):
     meeting_key = ndb.Key(MeetingModel, int(request.get('meetingId')))
+    topic_key = ndb.Key(MeetingModel, int(request.get('topicId')), parent=meeting_key)
 
-    question = QuestionModel(parent=meeting_key)
+    question = QuestionModel(parent=topic_key)
     question.user = get_user_key_for_session()
     question.content = request.get('content')
     question.put()

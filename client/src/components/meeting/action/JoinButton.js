@@ -7,7 +7,7 @@ var JoinButton = React.createClass({
     return (
       <IconButton
         {...this.props}
-        className="btn-success"
+        className="btn-success btn-lg btn-block"
         icon="plus">
         Join
       </IconButton>

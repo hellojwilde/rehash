@@ -22,6 +22,7 @@ var BeforeMeeting = React.createClass({
     meeting: meetingPropType.isRequired,
     meetingRelation: meetingRelationPropType.isRequired,
     webRTC: React.PropTypes.object.isRequired,
+    topics: React.PropTypes.array.isRequired,
     onRequestViewChange: React.PropTypes.func.isRequired
   },
 
@@ -38,7 +39,7 @@ var BeforeMeeting = React.createClass({
   },
 
   render: function() {
-    var {meeting, meetingRelation} = this.props;
+    var {meeting, meetingRelation, topics} = this.props;
 
     return (
       <div className="BeforeMeeting">
@@ -46,7 +47,11 @@ var BeforeMeeting = React.createClass({
           <div className="container">
             <div className="row">
               <div className="col-sm-6 col-md-8 BeforeMeeting-agenda">
-                <AgendaList isHost={meetingRelation.isHost} />
+                <AgendaList 
+                  topics={topics}
+                  meetingRelation={meetingRelation}
+                  meetingId={meeting.id}
+                />
               </div>
               <div className="col-sm-6 col-md-4 BeforeMeeting-description">
                 {meetingRelation.isHost && (
