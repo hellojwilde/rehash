@@ -49,6 +49,8 @@ class WebRTCActions extends Actions {
     var webRTCStore = this.registry.getStore('webRTC');
     var {localStream} = webRTCStore.state;
 
+    console.log('connectAsHost')
+
     invariant(
       localStream && !localStream.ended,
       'WebRTCActions: no localStream found; did you call prepareAsHost first?'
@@ -67,6 +69,8 @@ class WebRTCActions extends Actions {
   connectAsAttendee(hostConnectedUserKey) {
     var currentUserStore = this.registry.getStore('currentUser');
     var webRTCActions = this.registry.getActions('webRTC');
+
+    console.log('connectAsAttendee')
 
     return webRTCActions.fetchTurn()
       .then(() => {

@@ -139,6 +139,42 @@ var ExampleAPI = {
     });
   },
 
+  /**
+   * @param  {int} meetingId   
+   * @return {Promise}         Resolves to the array of topics 
+   */
+  agendaFetch: function(meetingId) {
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'agendafetch',
+      meetingId: meetingId
+    });
+  },
+
+  /**
+   * @param  {int} meetingId   
+   *         {object} topics   Array of topics
+   * @return {Promise}         Resolves to the id that the topic was added as
+   */
+  agendaAddTopic: function(meetingId, content){
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'agendaAddTopic',
+      meetingId: meetingId, 
+      content: content
+    });
+  },
+
+  agendaAddQuestion: function(meetingId, topicId, content) {
+    return sendAjaxRequest({
+      format: 'json',
+      request: 'agendaAddQuestion',
+      meetingId: meetingId, 
+      topicId: topicId,
+      content: content
+    });
+  },
+
   broadcastFetch: function(meetingId) {
     return sendAjaxRequest({
       format: 'json',
@@ -191,77 +227,7 @@ var ExampleAPI = {
       }).fail(function(e){
         console.log('Firstframe files fail to upload');
       });
-  },
-  //
-  //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
-  //
-
-  /**
-   * @param  {int} meetingId   
-   *         {object} topics   Array of topics
-   * @return {Promise}         Resolves to the id that the topics are added to
-   */
-  agendaAdd: function(meetingId, topics){
-    return sendAjaxRequest({
-      format: 'json',
-      request: 'agendaAdd',
-      meetingId: meetingId, 
-      topics: topics
-    });
-  },
-
-  /**
-   * @param  {int} meetingId   
-   * @return {Promise}         Resolves to the array of topics 
-   */
-  agendaFetch: function(meetingId) {
-    return sendAjaxRequest({
-      format: 'json',
-      request: 'agendafetch',
-      meetingId: meetingId
-    });
-  },
-
-  /**
-   * @param  {int} meetingId   
-   *         {object} question Includes string of question and timestamp
-   * @return {Promise}         Resolves to the dict containing question id (int or string?)
-   */
-  questionAdd: function(meetingId, question){
-    var reqData = {
-      format: 'json',
-      request: 'questionAdd',
-      meetingId: meetingId, 
-      question: question
-    };
-    return sendAjaxRequest(reqData)
-      .then((result) => {
-        result.id = Number(result.id);
-        return result;
-      });
-  },
-
-  /**
-   * @param  {int} meetingId   
-   * @return {Promise}         Resolves to the array of questions on a meeting
-   */
-  questionFetch: function(meetingId) {
-    var reqData = {
-      format: 'json',
-      request: 'questionfetch',
-      meetingId: meetingId
-    }
-    var result = sendAjaxRequest(reqData);
-    result.topics = AGENDAS[0].topics;
-    result['meetingId'] = Number(result['meetingId']);
-    console.log(result);
-    return Promise.resolve(result);
   }
 };
 
 module.exports = ExampleAPI;
-
-
-
-
-

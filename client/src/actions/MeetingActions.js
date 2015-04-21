@@ -33,6 +33,7 @@ class MeetingActions extends Actions {
   }
 
   open(id) {
+    var agendaActions = this.registry.getActions('agenda');
     var broadcastActions = this.registry.getActions('broadcast');
     var meetingActions = this.registry.getActions('meeting');
     var webRTCActions = this.registry.getActions('webRTC');
@@ -43,22 +44,24 @@ class MeetingActions extends Actions {
     
     return Promise.all([
       meetingActions.fetch(id),
-      broadcastActions.fetch(id),
+      agendaActions.fetch(id),
       this.api.meetingOpen(currentUserStore.state.connectedUserId, id)
     ]).then(() => {
       var meeting = meetingStore.getById(id);
       var meetingRelation = meetingStore.getCurrentUserRelationById(id);
 
-      if (meeting.status === 'broadcasting') {
-        var broadcast = broadcastStore.getById(id);
+      if (meeting.status !== 'broadcasting') {
+        return;
+      }
 
+      return broadcastActions.fetch(id).then((broadcast) => {
         if (meetingRelation.isHost) {
-          webRTCActions.prepareAsHost(id)
+          return webRTCActions.prepareAsHost(id)
             .then(() => broadcastActions.start(id))
         } else {
-          webRTCActions.connectAsAttendee(broadcast.hostConnectedUser);
+          return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser);
         }
-      }
+      });
     });
   }
 

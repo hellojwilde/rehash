@@ -19,6 +19,7 @@ class WebRTCConnection extends EventEmitter {
     this.registry = registry;
     this.api = api;
     this.otherPeer = otherPeer;
+    this.iceCandidates = [];
 
     this._createPeerConnection();
   }
@@ -71,7 +72,6 @@ class WebRTCConnection extends EventEmitter {
     this.peer.onicecandidate = 
       ({candidate}) => this._sendIceCandidate(candidate);
     this.peer.onaddstream = ({stream}) => {
-      console.log('dsfasdf');
       this.emit('addStream', stream)
     };
 
