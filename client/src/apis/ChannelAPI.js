@@ -42,6 +42,7 @@ class ChannelAPI {
   handleMessage(message) {
     var msg = JSON.parse(message.data);
     
+    var agendaActions = this.registry.getActions('agenda');
     var broadcastActions = this.registry.getActions('broadcast');
     var meetingActions = this.registry.getActions('meeting');
     var webRTCActions = this.registry.getActions('webRTC');

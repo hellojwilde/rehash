@@ -29,9 +29,10 @@ class BroadcastActions extends Actions {
   }
 
   receiveStart(broadcast) {
-    var webRTCActions = this.registry.getActions('webRTC');
-    return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
-      .then(() => broadcast);
+    // var webRTCActions = this.registry.getActions('webRTC');
+    // return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
+    //   .then(() => broadcast);
+    return broadcast
   }
 
   receiveEnd(meetingId) {
