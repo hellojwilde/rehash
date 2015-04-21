@@ -51,6 +51,14 @@ class BroadcastActions extends Actions {
       });
   }
 
+  selectCard(meetingId, topicId, questionId) {
+    return this.api.selectCard(
+      currentUserStore.state.connectedUserId,
+      topicId,
+      questionId
+    ).then(() => {meetingId, topicId, questionId});
+  }
+
   end(meetingId) {
     var currentUserStore = this.registry.getStore('currentUser');
 
@@ -68,6 +76,10 @@ class BroadcastActions extends Actions {
       return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
         .then(() => broadcast);
     }
+    return broadcast;
+  }
+
+  receiveSelectCard(broadcast) {
     return broadcast;
   }
 

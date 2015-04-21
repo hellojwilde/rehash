@@ -63,6 +63,9 @@ class ChannelAPI {
       case 'broadcastStart':
         broadcastActions.receiveStart(msg.broadcast);
         break;
+      case 'broadcastSelectCard':
+        broadcastActions.receiveSelectCard(msg.topicId, msg.questionId);
+        break;
       case 'broadcastEnd':
         broadcastActions.receiveEnd(msg.meetingId);
         break;

@@ -200,21 +200,6 @@ class MeetingModel(ndb.Model):
     default='scheduled'
   )
 
-
-class BroadcastModel(ndb.Model):
-  hostConnectedUser = ndb.KeyProperty()
-
-
-class BroadcastLogModel(ndb.Model):
-  datetime = ndb.DateTimeProperty(auto_now_add=True)
-  method = ndb.StringProperty()
-  data = ndb.StringProperty()
-
-class BroadcastRecordingModel(ndb.Model):
-  recording = ndb.BlobProperty(indexed=False)
-  # add additional information as needed here 
-
-
 class TopicModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
@@ -223,6 +208,23 @@ class TopicModel(ndb.Model):
 class QuestionModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
+
+
+class BroadcastModel(ndb.Model):
+  hostConnectedUser = ndb.KeyProperty()
+  topic = ndb.KeyProperty(kind=TopicModel)
+  question = ndb.KeyProperty(kind=QuestionModel)
+
+
+class BroadcastLogModel(ndb.Model):
+  datetime = ndb.DateTimeProperty(auto_now_add=True)
+  method = ndb.StringProperty()
+  data = ndb.StringProperty()
+
+
+class BroadcastRecordingModel(ndb.Model):
+  recording = ndb.BlobProperty(indexed=False)
+  # add additional information as needed here 
 
 
 class ConnectedUserModel(ndb.Model):
