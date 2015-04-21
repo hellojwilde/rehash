@@ -174,13 +174,17 @@ var ExampleAPI = {
     });
   },
 
-  uploadSendMessage: function(formData) {
+  uploadSendMessage: function(meetingId, data) {
+    var formData = new FormData();
+    formData.append('img', data);
+    formData.append('meetingId', meetingId);
+    alert('meetingId')
     return $.ajax({
           type: 'POST',
           url: '/upload',
-          data: formData,
-          processData: false,
-          contentType: false
+          data: formData//,
+          // processData: false,
+          // contentType: false
       }).done(function(data) {
         console.log('Firstframe files successfully uploaded');
         // may want ot suspend user action during video upload

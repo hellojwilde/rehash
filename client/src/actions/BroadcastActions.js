@@ -2,7 +2,7 @@ var {Actions} = require('flummox');
 var {attachMediaStream} = require('helpers/WebRTCAdapter');
 var ExampleAPI = require('apis/ExampleAPI');
 
-function getFirstFrame() {
+function getFirstFrame(localStream) {
   var videoNode = document.createElement('video');
   videoNode.videowidth = 720;
   videoNode.videoheight = 480;
@@ -18,7 +18,7 @@ function getFirstFrame() {
 
   context.fillRect(0, 0, width, height);
   context.drawImage(videoNode, 0, 0, width, height);  
-  return convas.toDataURL('image/png');
+  return canvas.toDataURL('image/png');
 }
 
 class BroadcastActions extends Actions {
@@ -36,7 +36,7 @@ class BroadcastActions extends Actions {
   start(meetingId) {
     var webRTCActions = this.registry.getActions('webRTC');
     var webRTCStore = this.registry.getStore('webRTC');
-    var localStream = webRTCStore.state.localStream; 
+    var {localStream} = webRTCStore.state; 
     var currentUserStore = this.registry.getStore('currentUser');
 
     return webRTCActions.connectAsHost()
@@ -45,7 +45,7 @@ class BroadcastActions extends Actions {
           this.api.broadcastStart(
                   currentUserStore.state.connectedUserId, 
                   meetingId), 
-          ExampleAPI.uploadSendMessage(getFirstFrame())
+          ExampleAPI.uploadSendMessage(meetingId, getFirstFrame(localStream))
         ]);
       });
   }

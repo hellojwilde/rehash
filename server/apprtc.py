@@ -558,14 +558,18 @@ class LogoutHandler(webapp2.RequestHandler):
 
 class Upload(webapp2.RequestHandler):
   def post(self):
-
-    connectedUser = ndb.Key(urlsafe=request.get('connectedUserId')).get()
-    meeting = connectedUser.activeMeeting.get()
+    # session = get_current_session()
+    # logging.info(self.request.get('connectedUserId'))
+    # connectedUser = ndb.Key(urlsafe=self.request.get('connectedUserId')).get()
+    #logging.info(self.request.get('test'))
+    logging.info('here is the meeting id!' + self.request.get('meetingId'))
+    meeting = MeetingModel.get_by_id(int(self.request.get('meetingId')))
     if self.request.get('type') == 'upload':
       recording_key = RecordingModel(parent = meeting.key)
       recording_key.get().recording = self.request.get('data')
       recording_key.get().put()
     elif self.request.get('type') == 'firstframe':
+      logging.info("********firstframe uploaded")
       meeting.firstframe = self.request.get('data')  
       meeting.put()
 
