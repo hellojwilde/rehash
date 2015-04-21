@@ -1,3 +1,4 @@
+const CHANNEL_DELAY = 1500;
 
 class ChannelAPI {
   constructor(registry) {
@@ -14,24 +15,23 @@ class ChannelAPI {
 
       console.log(
         'ChannelAPI: have a channel token!', 
-        currentUserStore.state.channelToken,
-      );
-
-      channel = new goog.appengine.Channel(
         currentUserStore.state.channelToken
       );
 
-      console.log(
-        'create channel',
-        channel
-      );
+      // XXX For some reason the channel API doesn't work if we call it right 
+      // after load here, and not with a setTimeout delay. Who knows why?
+      setTimeout(() => {
+        channel = new goog.appengine.Channel(
+          currentUserStore.state.channelToken
+        );
 
-      channel.open({
-        onopen: this.handleOpened,
-        onmessage: this.handleMessage.bind(this),
-        onerror: this.handleError,
-        onclose: this.handleClosed
-      });
+        channel.open({
+          onopen: this.handleOpened,
+          onmessage: this.handleMessage.bind(this),
+          onerror: this.handleError,
+          onclose: this.handleClosed
+        });
+      }, CHANNEL_DELAY);
     });
   }
 
