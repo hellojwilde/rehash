@@ -6,7 +6,7 @@ python:
 install:
 - npm install -g webpack
 
-script: cd client/ && npm run-script build && cd ..
+script: cd client/ && npm install . && npm run-script build && cd ..
 
 after_success:
 - if [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
