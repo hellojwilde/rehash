@@ -44,8 +44,8 @@ class BroadcastActions extends Actions {
         return Promise.all([
           this.api.broadcastStart(
                   currentUserStore.state.connectedUserId, 
-                  meetingId)//, 
-          // ExampleAPI.uploadSendMessage(getFirstFrame())
+                  meetingId), 
+          ExampleAPI.uploadSendMessage(getFirstFrame())
         ]);
       });
   }

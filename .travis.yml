@@ -11,5 +11,6 @@ script: cd client/ && npm run-script build && cd ..
 after_success:
 - if [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
 - unzip -qq google_appengine_1.9.19.zip
+- python config_generate.py --consumer_key=$CONSUMER_KEY --consumer_secret=$CONSUMER_SECRET --callback_url=$CALLBACK_URL
 - python google_appengine/appcfg.py --oauth2_refresh_token=$DEPLOY_REFRESH_TOKEN update .
 - fi
