@@ -10,15 +10,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import sys
-
-sys.path.insert(0, 'libs/six.zip')
-sys.path.insert(0, 'libs/dateutil.zip')
-sys.path.insert(0, 'libs/urllib3.zip')
-sys.path.insert(0, 'libs/requests.zip')
-sys.path.insert(0, 'libs/oauthlib.zip')
-sys.path.insert(0, 'libs/requests_oauthlib.zip')
-sys.path.insert(0, 'libs/tweepy.zip')
-sys.path.insert(0, 'libs/gaesessions.zip')
+sys.path.insert(0, 'libs')
 
 import cgi
 import logging
@@ -561,9 +553,8 @@ class LoginHandler(webapp2.RequestHandler):
         redirect_url = str(auth.get_authorization_url())
         session['twitter_request_token'] = auth.request_token
         self.redirect(redirect_url)
-      except tweepy.TweepError:
-        logging.info('Error! Failed to get request token. ')
-        self.redirect('/')
+      except tweepy.TweepError, e:
+        logging.info('Error! Failed to get request token. ' + str(e))
     else:
       self.redirect(session['redirect'])
 

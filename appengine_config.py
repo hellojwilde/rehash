@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, 'libs/gaesessions.zip')
+sys.path.insert(0, 'libs')
 
 from gaesessions import SessionMiddleware
 
