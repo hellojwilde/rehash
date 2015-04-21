@@ -30,3 +30,4 @@ build/Release
 # Just no
 static/bundle
 node_modules
+config.py

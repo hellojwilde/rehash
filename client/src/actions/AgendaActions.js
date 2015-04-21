@@ -13,11 +13,24 @@ class AgendaActions extends Actions {
   }
 
   addTopic(meetingId, content) {
-    return this.api.agendaAddTopic(meetingId, content);
+    var currentUserStore = this.registry.getStore('currentUser');
+
+    return this.api.agendaAddTopic(
+      currentUserStore.state.connectedUserId,
+      meetingId,
+      content
+    );
   }
 
   addQuestion(meetingId, topicId, content) {
-    return this.api.agendaAddQuestion(meetingId, topicId, content);
+    var currentUserStore = this.registry.getStore('currentUser');
+    
+    return this.api.agendaAddQuestion(
+      currentUserStore.state.connectedUserId,
+      meetingId,
+      topicId,
+      content
+    );
   }
 
   receiveAddTopic(topic) {

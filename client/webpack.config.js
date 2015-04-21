@@ -3,7 +3,7 @@ var webpack = require('webpack');
 module.exports = {
   devtool: 'inline-source-map',
   entry: [
-    'webpack-dev-server/client?https://localhost:3001',
+    'webpack-dev-server/client?http://localhost:3001',
     'webpack/hot/only-dev-server',
     './src/index.js'
   ],
@@ -12,7 +12,7 @@ module.exports = {
   },
   output: {
     path: __dirname + '/../static/bundle',
-    publicPath: 'https://localhost:3001/static/bundle/',
+    publicPath: 'http://localhost:3001/static/bundle/',
     filename: 'bundle.js'
   },
   module: {

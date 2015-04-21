@@ -15,6 +15,7 @@ class CurrentUserStore extends Store {
     this.registry = registry;
     this.state = {
       channelToken: null,
+      connectedUserId: null,
       user: null
     };
   }

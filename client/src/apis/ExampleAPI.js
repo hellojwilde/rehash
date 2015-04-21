@@ -89,22 +89,24 @@ var ExampleAPI = {
    * @return {Promise}         Resolves to an object of shape {id: KEY} 
    *                           that the meeting was saved as.
    */
-  meetingCreate: function(meeting) {
+  meetingCreate: function(connectedUserId, meeting) {
     // for datetime structure, think about saving on gae as string
     // dates are all saved as strings
     return sendAjaxRequest({
       format: 'json',
       request: 'meetingCreate',
+      connectedUserId: connectedUserId,
       title: meeting.title, 
       description: meeting.description,
       start: moment.utc(meeting.start).toISOString()
     });
   },
 
-  meetingUpdate: function(meetingId, meeting) {
+  meetingUpdate: function(connectedUserId, meetingId, meeting) {
     return sendAjaxRequest({
       format: 'json',
       request: 'meetingUpdate',
+      connectedUserId: connectedUserId,
       id: meetingId,
       title: meeting.title,
       description: meeting.description,
@@ -113,10 +115,11 @@ var ExampleAPI = {
   },
 
   // Need to make sure the user has signed in before this is called
-  meetingSubscribe: function(meetingId) {
+  meetingSubscribe: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       format: 'json',
       id: meetingId, 
+      connectedUserId: connectedUserId,
       request: 'meetingsubscribe'
     });
   },
@@ -156,21 +159,23 @@ var ExampleAPI = {
    *         {object} topics   Array of topics
    * @return {Promise}         Resolves to the id that the topic was added as
    */
-  agendaAddTopic: function(meetingId, content){
+  agendaAddTopic: function(connectedUserId, meetingId, content){
     return sendAjaxRequest({
       format: 'json',
       request: 'agendaAddTopic',
       meetingId: meetingId, 
+      connectedUserId: connectedUserId,
       content: content
     });
   },
 
-  agendaAddQuestion: function(meetingId, topicId, content) {
+  agendaAddQuestion: function(connectedUserId, meetingId, topicId, content) {
     return sendAjaxRequest({
       format: 'json',
       request: 'agendaAddQuestion',
       meetingId: meetingId, 
       topicId: topicId,
+      connectedUserId: connectedUserId,
       content: content
     });
   },
@@ -192,10 +197,11 @@ var ExampleAPI = {
     });
   },
 
-  broadcastEnd: function(meetingId) {
+  broadcastEnd: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       format: 'json',
       meetingId: meetingId,
+      connectedUserId: connectedUserId,
       request: 'broadcastEnd'
     });
   },

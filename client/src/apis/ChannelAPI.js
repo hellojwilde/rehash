@@ -1,4 +1,4 @@
-const CHANNEL_DELAY = 1500;
+const CHANNEL_DELAY = 4000;
 
 class ChannelAPI {
   constructor(registry) {
@@ -53,6 +53,12 @@ class ChannelAPI {
       case 'meetingCreate':
       case 'meetingUpdate':
         meetingActions.receive(msg.meeting);
+        break;
+      case 'agendaTopicAdd':
+        agendaActions.receiveAddTopic(msg.meeting);
+        break;
+      case 'agendaQuestionAdd':
+        agendaActions.receiveAddQuestion(msg.meeting);
         break;
       case 'broadcastStart':
         broadcastActions.receiveStart(msg.broadcast);

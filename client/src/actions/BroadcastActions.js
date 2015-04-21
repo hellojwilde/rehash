@@ -43,23 +43,32 @@ class BroadcastActions extends Actions {
       .then(() => {
         return Promise.all([
           this.api.broadcastStart(
-                  currentUserStore.state.connectedUserId, 
-                  meetingId), 
-          ExampleAPI.uploadSendMessage(meetingId, getFirstFrame(localStream))
-        ]);
+            currentUserStore.state.connectedUserId, 
+            meetingId
+          )//,
+          //ExampleAPI.uploadSendMessage(getFirstFrame(localStream))
+        ]).then(([broadcast]) => broadcast);
       });
   }
 
   end(meetingId) {
-    return this.api.broadcastEnd(meetingId)
-      .then(() => meetingId);
+    var currentUserStore = this.registry.getStore('currentUser');
+
+    return this.api.broadcastEnd(
+      currentUserStore.state.connectedUserId,
+      meetingId
+    ).then(() => meetingId);
   }
 
   receiveStart(broadcast) {
-    // var webRTCActions = this.registry.getActions('webRTC');
-    // return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
-    //   .then(() => broadcast);
-    return broadcast
+    var currentMeetingStore = this.registry.getStore('currentMeeting');
+    var webRTCActions = this.registry.getActions('webRTC');
+
+    if (+currentMeetingStore.state.meetingId == broadcast.id) {
+      return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser)
+        .then(() => broadcast);
+    }
+    return broadcast;
   }
 
   receiveEnd(meetingId) {
