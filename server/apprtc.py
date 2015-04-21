@@ -435,6 +435,13 @@ class APIHandler(webapp2.RequestHandler):
     topic.user = get_user_key_for_session()
     topic.content = request.get('content')
     topic.put()
+
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+    channel_messageByMeeting(connected_user_key, meeting_key, {
+      'type': 'agendaTopicAdd',
+      'meetingId': meeting_key.id(),
+      'topic': topic
+    })
     
     return topic
 
@@ -446,6 +453,13 @@ class APIHandler(webapp2.RequestHandler):
     question.user = get_user_key_for_session()
     question.content = request.get('content')
     question.put()
+
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+    channel_messageByMeeting(connected_user_key, meeting_key, {
+      'type': 'agendaQuestionAdd',
+      'meetingId': meeting_key.id(),
+      'question': question
+    })
 
     return question
 
@@ -522,7 +536,7 @@ class TwitterAuthorized(webapp2.RequestHandler):
 
     logging.info('consumer_key ' + OAUTH_CONFIG['tw']['consumer_key'])
     logging.info('consumer_secret ' + OAUTH_CONFIG['tw']['consumer_secret'])
-    
+
     auth = tweepy.OAuthHandler(
       OAUTH_CONFIG['tw']['consumer_key'], 
       OAUTH_CONFIG['tw']['consumer_secret']
