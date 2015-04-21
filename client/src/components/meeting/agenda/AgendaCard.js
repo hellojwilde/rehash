@@ -4,7 +4,9 @@ var AgendaCard = React.createClass({
 
   render: function() {
     return (
-      <div />
+      <div className="AgendaCard">
+
+      </div>
     );
   }
 

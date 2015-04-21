@@ -54,6 +54,12 @@ class ChannelAPI {
       case 'meetingUpdate':
         meetingActions.receive(msg.meeting);
         break;
+      case 'agendaTopicAdd':
+        agendaActions.receiveAddTopic(msg.meeting);
+        break;
+      case 'agendaQuestionAdd':
+        agendaActions.receiveAddQuestion(msg.meeting);
+        break;
       case 'broadcastStart':
         broadcastActions.receiveStart(msg.broadcast);
         break;
