@@ -19,7 +19,8 @@ class WebRTCConnection extends EventEmitter {
     this.registry = registry;
     this.api = api;
     this.otherPeer = otherPeer;
-    this.iceCandidates = [];
+    this.messages = [];
+    this.seenSessionMessage = false;
 
     this._createPeerConnection();
   }
@@ -46,6 +47,37 @@ class WebRTCConnection extends EventEmitter {
   }
 
   receiveMessage(message) {
+    // XXX The WebRTC subsystem of most modern browsers doesn't support adding
+    // the candidates before adding the initial offer or answer; otherwise
+    // ICE fails and it's not pretty. So we have to queue messages until we get
+    // the initial answer.
+  
+    if (!this.seenSessionMessage) {
+      if (message.type === 'offer' || message.type === 'answer') {
+        this.messages.unshift(message);
+        this.seenSessionMessage = true;
+        this._processReceivedMessages();
+      } else {
+        this.messages.push(message);
+      }
+    } else {
+      this._processReceivedMessage(message);
+    }
+  }
+
+  disconnect() {
+    this.peer.close();
+  }
+
+  _processReceivedMessages() {
+    while (this.messages.length > 0) {
+      this._processReceivedMessage(this.messages.shift());
+    }
+  }
+
+  _processReceivedMessage(message) {
+    console.log('processing', message);
+
     switch(message.type) {
       case 'offer':
         this._receiveSessionDescription(message);
@@ -58,10 +90,6 @@ class WebRTCConnection extends EventEmitter {
         this._receiveIceCandidate(message);
         break;
     }
-  }
-
-  disconnect() {
-    this.peer.close();
   }
 
   _createPeerConnection() {
