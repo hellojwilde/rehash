@@ -56,7 +56,7 @@ def channel_connect_user(connected_user_key):
 
   for message in ConnectedUserMessageModel.query(ancestor=connected_user.key):
     channel.send_message(connected_user_key, message.content)
-    print 'resending message ' + message.content
+    logging.info('resending message ' + message.content)
     message.key.delete()
 
 
@@ -66,7 +66,7 @@ def channel_disconnect_user(connected_user_key):
 
 
 def channel_message(sender_connected_user_key, connected_user, content):
-  if sender_connected_user_key == connected_user.key:
+  if connected_user is None or sender_connected_user_key == connected_user.key:
     return
 
   content_json = json.dumps(content, cls=APIJSONEncoder)
@@ -76,11 +76,11 @@ def channel_message(sender_connected_user_key, connected_user, content):
     message.content = content_json
     message.put()
 
-    print 'saving message: ' + content_json
+    logging.info('saving message: ' + content_json)
     return
 
   channel.send_message(connected_user.key.urlsafe(), content_json)
-  print 'sending message: ' + content_json
+  logging.info('sending message: ' + content_json)
 
 def channel_messageAll(sender_connected_user_key, message):
   for connected_user in ConnectedUserModel.query():
@@ -528,9 +528,9 @@ class TwitterAuthorized(webapp2.RequestHandler):
     ### request access token 
     try:
       auth.get_access_token(verifier)
-      print 'Success! '
+      logging.info('Get access token: Success! ')
     except tweepy.TweepError:
-      print 'Error! Failed to get access token.'
+      logging.error('Error! Failed to get access token.')
       self.redirect('/user/login?redirect=' + session['redirect'])
       return
 
