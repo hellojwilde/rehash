@@ -24,8 +24,9 @@ function sendAjaxRequest(reqData) {
   });
 }
 
-var ExampleAPI = {
 
+
+var ExampleAPI = {
   /**
    * Given a user id, this fetches a user object. 
    * Useful for profile popups and pages.
@@ -173,6 +174,20 @@ var ExampleAPI = {
     });
   },
 
+  uploadSendMessage: function(formData) {
+    return $.ajax({
+          type: 'POST',
+          url: '/upload',
+          data: formData,
+          processData: false,
+          contentType: false
+      }).done(function(data) {
+        console.log('Firstframe files successfully uploaded');
+        // may want ot suspend user action during video upload
+      }).fail(function(e){
+        console.log('Firstframe files fail to upload');
+      });
+  },
   //
   //  Suggested methods which may aid front end work; NOT YET IMPLEMENTED ON FRONT END
   //

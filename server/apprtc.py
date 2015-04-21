@@ -549,8 +549,7 @@ class LoginHandler(webapp2.RequestHandler):
         self.redirect('/')
     else:
       self.redirect(session['redirect'])
-
-
+      
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
     session = get_current_session()
@@ -571,13 +570,10 @@ class Upload(webapp2.RequestHandler):
       meeting.firstframe = self.request.get('data')  
       meeting.put()
 
-
-
 class RouteErrorHandler(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
     self.response.set_status(404)
-
 
 app = webapp2.WSGIApplication([
     (r'/', MainPage),
