@@ -21,15 +21,31 @@ class MeetingActions extends Actions {
   }
 
   create(meeting) {
-    return this.api.meetingCreate(meeting);
+    var currentUserStore = this.registry.getStore('currentUser');
+
+    return this.api.meetingCreate(
+      currentUserStore.state.connectedUserId, 
+      meeting
+    );
   }
 
   update(id, meeting) {
-    return this.api.meetingUpdate(id, meeting);
+    var currentUserStore = this.registry.getStore('currentUser');
+
+    return this.api.meetingUpdate(
+      currentUserStore.state.connectedUserId,
+      id,
+      meeting
+    );
   }
 
   subscribe(id) {
-    return this.api.meetingSubscribe(id);
+    var currentUserStore = this.registry.getStore('currentUser');
+
+    return this.api.meetingSubscribe(
+      currentUserStore.state.connectedUserId,
+      id
+    );
   }
 
   open(id) {
@@ -56,10 +72,10 @@ class MeetingActions extends Actions {
 
       return broadcastActions.fetch(id).then((broadcast) => {
         if (meetingRelation.isHost) {
-          return webRTCActions.prepareAsHost(id)
+          webRTCActions.prepareAsHost(id)
             .then(() => broadcastActions.start(id))
         } else {
-          return webRTCActions.connectAsAttendee(broadcast.hostConnectedUser);
+          webRTCActions.connectAsAttendee(broadcast.hostConnectedUser);
         }
       });
     });

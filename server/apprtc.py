@@ -42,7 +42,7 @@ jinja_environment = jinja2.Environment(
 @db.transactional
 def channel_create_user(user=None):
   connected_user = ConnectedUserModel()
-  connected_user.isConnected = True
+  connected_user.isConnected = False
   connected_user.user = user.key if user is not None else None
   key = connected_user.put()
   
@@ -54,41 +54,46 @@ def channel_connect_user(connected_user_key):
   connected_user.isConnected = True
   connected_user.put()
 
-  for message in ConnectedUserMessageModel.query(
-    ConnectedUserMessageModel.to == connected_user.key
-  ):
+  for message in ConnectedUserMessageModel.query(ancestor=connected_user.key):
     channel.send_message(connected_user_key, message.content)
+    print 'resending message ' + message.content
     message.key.delete()
+
 
 @db.transactional
 def channel_disconnect_user(connected_user_key):
   ndb.Key(urlsafe=connected_user_key).delete()
 
 
-def channel_message(connected_user, content):
+def channel_message(sender_connected_user_key, connected_user, content):
+  if sender_connected_user_key == connected_user.key:
+    return
+
   content_json = json.dumps(content, cls=APIJSONEncoder)
 
-  if connected_user.isConnected != True:
-    message = ConnectedUserMessageModel()
-    message.to = connected_user.key
+  if connected_user.isConnected == False:
+    message = ConnectedUserMessageModel(parent=connected_user.key)
     message.content = content_json
     message.put()
+
+    print 'saving message: ' + content_json
     return
 
   channel.send_message(connected_user.key.urlsafe(), content_json)
+  print 'sending message: ' + content_json
 
-def channel_messageAll(message):
+def channel_messageAll(sender_connected_user_key, message):
   for connected_user in ConnectedUserModel.query():
-    channel_message(connected_user, message)
+    channel_message(sender_connected_user_key, connected_user, message)
 
 
-def channel_messageByMeeting(meeting_key, message):
+def channel_messageByMeeting(sender_connected_user_key, meeting_key, message):
   connected_user_query = ConnectedUserModel.query(
     ConnectedUserModel.activeMeeting == meeting_key
   )
 
   for connected_user in connected_user_query:
-    channel_message(connected_user, message)
+    channel_message(sender_connected_user_key, connected_user, message)
 
 
 def get_user_key_for_session(session=None):
@@ -329,14 +334,12 @@ class APIHandler(webapp2.RequestHandler):
     meeting.host = fetch_user_for_session().key
     key = meeting.put()
 
-    agenda = AgendaModel(id=key.id(), parent=key)
-    agenda.topics = []
-    agenda.put()
-
     broadcast = BroadcastModel(id=key.id(), parent=key)
     broadcast.put()
 
-    channel_messageAll({
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+
+    channel_messageAll(connected_user_key, {
       'type': 'meetingCreate',
       'meeting': meeting
     })
@@ -352,7 +355,9 @@ class APIHandler(webapp2.RequestHandler):
     meeting.start = dateutil.parser.parse(request.get('start'), ignoretz=True)
     meeting.put()
 
-    channel_messageAll({
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+
+    channel_messageAll(connected_user_key, {
       'type': 'meetingUpdate',
       'meeting': meeting
     })
@@ -368,7 +373,9 @@ class APIHandler(webapp2.RequestHandler):
       meeting.subscribers.append(user.key)
       meeting.put()
 
-    channel_messageByMeeting(meeting.key, {
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+
+    channel_messageByMeeting(connected_user_key, meeting.key, {
       'type': 'meetingSubscribe',
       'meetingId': meeting.key.id(),
       'user': user
@@ -388,7 +395,7 @@ class APIHandler(webapp2.RequestHandler):
     connected_user.put();
 
     if user is not None:
-      channel_messageByMeeting(meeting.key, {
+      channel_messageByMeeting(connected_user.key, meeting.key, {
         'type': 'meetingOpen',
         'meetingId': meeting.key.id(),
         'user': user
@@ -404,7 +411,7 @@ class APIHandler(webapp2.RequestHandler):
     meeting_key = ndb.Key(MeetingModel, int(request.get('id')))
 
     if user_key is not None:
-      channel_messageByMeeting(meeting_key, {
+      channel_messageByMeeting(connected_user.key, meeting_key, {
         'type': 'meetingClose',
         'meetingId': meeting_key.id(),
         'userId': user_key.id()
@@ -461,10 +468,12 @@ class APIHandler(webapp2.RequestHandler):
       meeting.status = 'broadcasting'
       meeting.put()
 
-    broadcast.hostConnectedUser = ndb.Key(urlsafe=request.get('connectedUserId'))
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+
+    broadcast.hostConnectedUser = connected_user_key
     broadcast.put()
 
-    channel_messageAll({
+    channel_messageAll(connected_user_key, {
       'type': 'broadcastStart',
       'meetingId': meeting_id,
       'broadcast': broadcast
@@ -483,7 +492,9 @@ class APIHandler(webapp2.RequestHandler):
     meeting.status = 'ended'
     meeting.put()
 
-    channel_messageAll({
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
+
+    channel_messageAll(connected_user_key, {
       'type': 'broadcastEnd',
       'meetingId': meeting_id
     })
@@ -491,6 +502,7 @@ class APIHandler(webapp2.RequestHandler):
   @classmethod
   def webrtc_send_message(self, request, response):
     to_connected_user_key = ndb.Key(urlsafe=request.get('to'))
+    connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
 
     message = {
       'type': 'webRTCMessage',
@@ -499,7 +511,7 @@ class APIHandler(webapp2.RequestHandler):
     }
 
     if to_connected_user_key is not None:
-      channel_message(to_connected_user_key.get(), message)
+      channel_message(connected_user_key, to_connected_user_key.get(), message)
 
 ### after login case
 class TwitterAuthorized(webapp2.RequestHandler):

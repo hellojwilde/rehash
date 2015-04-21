@@ -4,6 +4,7 @@ var BroadcastActions = require('actions/BroadcastActions');
 var BroadcastStore = require('stores/BroadcastStore');
 var ChannelAPI = require('apis/ChannelAPI');
 var CurrentUserStore = require('stores/CurrentUserStore');
+var CurrentMeetingStore = require('stores/CurrentMeetingStore');
 var ExampleAPI = require('apis/ExampleAPI');
 var ExploreActions = require('actions/ExploreActions');
 var MeetingActions = require('actions/MeetingActions');
@@ -30,6 +31,7 @@ class FluxRegistry extends Flummox {
 
     this.createStore('agenda', AgendaStore, this);
     this.createStore('broadcast', BroadcastStore, this);
+    this.createStore('currentMeeting', CurrentMeetingStore, this);
     this.createStore('currentUser', CurrentUserStore, this);
     this.createStore('meeting', MeetingStore, this);
     this.createStore('modal', ModalStore, this);
