@@ -1,4 +1,4 @@
-OAUTH_CONFIG = {         	'tw': { 
+OAUTH_CONFIG = { 'tw': { 
              'consumer_key': a, 
              'consumer_secret': b, 
              'request_token_url': 'https://twitter.com/oauth/request_token', 

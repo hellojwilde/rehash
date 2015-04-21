@@ -3,15 +3,11 @@
 import sys, getopt
 
 argdict = {}
-first = 0
-for arg in sys.argv:
-  if first == 0:
-    first = 1
-  else:
-    pair=arg.split("=", 2)
-    argdict[pair[0]] = pair[1]
-
-print argdict
+iterargv = iter(sys.argv)
+next(iterargv)
+for arg in iterargv:
+  pair=arg.split("=", 2)
+  argdict[pair[0]] = pair[1]
 
 fo = open('config.py', 'w')
 
