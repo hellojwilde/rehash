@@ -534,9 +534,6 @@ class TwitterAuthorized(webapp2.RequestHandler):
     ### also need to handle the case where request token is no longer valid
     session = get_current_session()
 
-    logging.info('consumer_key ' + OAUTH_CONFIG['tw']['consumer_key'])
-    logging.info('consumer_secret ' + OAUTH_CONFIG['tw']['consumer_secret'])
-
     auth = tweepy.OAuthHandler(
       OAUTH_CONFIG['tw']['consumer_key'], 
       OAUTH_CONFIG['tw']['consumer_secret']
@@ -592,6 +589,10 @@ class LoginHandler(webapp2.RequestHandler):
       self.redirect('/WillBeHandledByRouteErrorHandler')
 
     if session.get('auth') == None:
+      logging.info('consumer_key ' + OAUTH_CONFIG['tw']['consumer_key'])
+      logging.info('consumer_secret ' + OAUTH_CONFIG['tw']['consumer_secret'])
+      logging.info('callback_url ' + OAUTH_CONFIG['tw']['callback_url'])
+
       ### get request token and save in session
       auth = tweepy.OAuthHandler(
         OAUTH_CONFIG['tw']['consumer_key'], 
