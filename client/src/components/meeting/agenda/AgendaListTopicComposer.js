@@ -32,6 +32,11 @@ var AgendaListTopicComposer = React.createClass({
       .then(() => this.setState({isShowingCard: false}))
   },
 
+  handleTextareaRef: function(textarea) {
+    if (textarea) {
+      setTimeout(() => textarea.getDOMNode().focus(), 500);
+    }
+  },
 
   render: function() {
     var child = null;
@@ -49,6 +54,7 @@ var AgendaListTopicComposer = React.createClass({
     } else {
       child = (
         <AgendaCardComposer 
+          textareaRef={this.handleTextareaRef}
           key="composer"
           placeholder="Type a topic..." 
           onComplete={this.handleComplete}
