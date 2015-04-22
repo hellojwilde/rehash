@@ -1,4 +1,4 @@
-const CHANNEL_DELAY = 1000;
+const CHANNEL_DELAY = 1500;
 
 class ChannelAPI {
   constructor(registry) {
