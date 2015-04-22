@@ -22,17 +22,25 @@ class ChannelAPI {
 
       // XXX For some reason the channel API doesn't work if we call it right 
       // after load here, and not with a setTimeout delay. Who knows why?
-      setTimeout(() => {
+      var connect = () => {
+        this.initialNow = +Date.now();
+
         channelToken = currentChannelToken;
         channel = new goog.appengine.Channel(channelToken);
         channel.open({
-          onopen: () => console.log('ChannelAPI: opened.'),
+          onopen: this.handleOpened.bind(this),
           onerror: () => console.log('ChannelAPI: opened.'),
           onmessage: this.handleMessage.bind(this),
           onclose: this.handleClosed.bind(this)
         });
-      }, CHANNEL_DELAY);
+      };
+
+      setTimeout(connect, CHANNEL_DELAY);
     });
+  }
+
+  handleOpened() {
+    console.log('ChannelAPI: opened after ', +Date.now() - this.initialNow);
   }
 
   handleMessage(message) {
