@@ -21,8 +21,10 @@ var Broadcast = React.createClass({
   },
 
   componentDidUpdate: function(prevProps, prevState) {
-    if (prevProps.webRTC.localStream !== this.props.webRTC.localStream ||
-        prevProps.webRTC.remoteStream !== this.props.webRTC.remoteStream) {
+    if ((prevProps.webRTC.localStream !== this.props.webRTC.localStream ||
+         prevProps.webRTC.remoteStream !== this.props.webRTC.remoteStream) &&
+        this.props.webRTC.localStream !== null &&
+        this.props.webRTC.remoteStream) {
       this.attachWebRTCStream();
     }
   },
