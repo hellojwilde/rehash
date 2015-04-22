@@ -41,13 +41,17 @@ jinja_environment = jinja2.Environment(
 
 
 @db.transactional
-def channel_create_user(user_key=None):
+def channel_create_user(token_timeout, user_key=None):
   connected_user = ConnectedUserModel()
   connected_user.isConnected = False
+  connected_user.timeout = token_timeout
   connected_user.user = user_key
   key = connected_user.put()
   
-  return key.urlsafe()
+  return {
+    'connectedUserId': key.urlsafe(),
+    'channelToken': channel.create_channel(key.urlsafe(), token_timeout)
+  }
 
 @db.transactional
 def channel_connect_user(connected_user_key):
@@ -55,7 +59,9 @@ def channel_connect_user(connected_user_key):
   connected_user.isConnected = True
   connected_user.put()
 
-  for message in ConnectedUserMessageModel.query(ancestor=connected_user.key):
+  for message in ConnectedUserMessageModel.query(
+    ConnectedUserMessageModel.to == connected_user.key
+  ):
     channel.send_message(connected_user_key, message.content)
     logging.info('resending message ' + message.content)
     message.key.delete()
@@ -73,15 +79,15 @@ def channel_message(sender_connected_user_key, connected_user, content):
   content_json = json.dumps(content, cls=APIJSONEncoder)
 
   if connected_user.isConnected == False:
-    message = ConnectedUserMessageModel(parent=connected_user.key)
-    message.content = content_json
-    message.put()
-
     logging.info('saving message: ' + content_json)
-    return
+    message = ConnectedUserMessageModel()
+    message.to = connected_user.key
+    message.content = content_json
+    return message.put_async()
 
   channel.send_message(connected_user.key.urlsafe(), content_json)
   logging.info('sending message: ' + content_json)
+
 
 def channel_messageAll(sender_connected_user_key, message):
   for connected_user in ConnectedUserModel.query():
@@ -126,15 +132,14 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   )
 
   user = fetch_user_for_session(session)
-  connected_user_key = channel_create_user(user.key if user is not None else None)
+  user_key = user.key if user is not None else None
+
+  current_user = {'user': user}
+  current_user.update(channel_create_user(token_timeout, user_key))
 
   initial_store_data.update({
-    'webRTC': get_webrtc_config(self, connected_user_key),
-    'currentUser': {
-      'user': user,
-      'connectedUserId': connected_user_key,
-      'channelToken': channel.create_channel(connected_user_key, token_timeout)
-    }
+    'webRTC': get_webrtc_config(self),
+    'currentUser': current_user
   })
 
   initial_store_data.update(extra_initial_store_data)
@@ -210,6 +215,8 @@ class BroadcastRecordingModel(ndb.Model):
 
 class ConnectedUserModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
+  timeout = ndb.IntegerProperty()
+  created = ndb.DateTimeProperty(auto_now_add=True)
   isConnected = ndb.BooleanProperty(default=False)
   activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
@@ -277,18 +284,14 @@ class API:
   @staticmethod
   def connected_user_fetch(request):
     user_key = get_user_key_for_session()
-    connected_user_key = channel_create_user(user_key)
     token_timeout = request.get_range(
       'tt',
       min_value = 3,
       max_value = 1440,
       default = 30
     )
-    
-    return {
-      'connectedUserId': connected_user_key,
-      'channelToken': channel.create_channel(connected_user_key, token_timeout)
-    }
+
+    return channel_create_user(user_key, token_timeout)
 
   @staticmethod
   def user_fetch(request):
@@ -650,7 +653,7 @@ class LoginHandler(webapp2.RequestHandler):
     if ':' in session['redirect']:
       self.redirect('/WillBeHandledByRouteErrorHandler')
 
-    if session.get('auth') == None:
+    if get_user_key_for_session(session):
       logging.info('consumer_key ' + OAUTH_CONFIG['tw']['consumer_key'])
       logging.info('consumer_secret ' + OAUTH_CONFIG['tw']['consumer_secret'])
       logging.info('callback_url ' + OAUTH_CONFIG['tw']['callback_url'])

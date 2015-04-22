@@ -73,7 +73,7 @@ def make_offer_constraints():
   constraints = { 'mandatory': {}, 'optional': [] }
   return constraints
 
-def get_webrtc_config(self, user_id):
+def get_webrtc_config(self):
   ### stun server
   user_agent = self.request.headers['User-Agent']
   stun_server = self.request.get('ss')
@@ -104,13 +104,8 @@ def get_webrtc_config(self, user_id):
     # Set dtls to false as DTLS does not work for loopback.
     dtls = 'false'
 
-  if turn_server == 'false':
-    turn_server = None
-    turn_url = ''
-  else:
-    turn_url = 'https://computeengineondemand.appspot.com/'
-    turn_url = turn_url + 'turn?username=' + user_id + '&key=4080218913'
-
+  turn_server = None
+  turn_url = ''
   pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
   offer_constraints = make_offer_constraints()
