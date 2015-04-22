@@ -56,15 +56,16 @@ var AgendaCardComposer = React.createClass({
               />
             </ValidatedGroup>
           </Validated>
-        </div>
-        <div className="panel-footer AgendaCardComposer-footer">
-          <button 
-            type="button"
-            disabled={!areAllResultsValid(this.state.validationResults)} 
-            className="btn btn-default btn-sm btn-primary" 
-            onClick={this.handleClick}>
-            Save
-          </button>
+
+          <div className="AgendaCardComposer-send">
+            <button 
+              type="button"
+              disabled={!areAllResultsValid(this.state.validationResults)} 
+              className="btn btn-default btn-sm btn-primary" 
+              onClick={this.handleClick}>
+              Create
+            </button>
+          </div>
         </div>
       </div>
     );
