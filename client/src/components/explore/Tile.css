@@ -5,6 +5,11 @@
   border-radius: 6px;
 }
 
+.Tile--hasPicture {
+  background-size: cover;
+  background-position: center center;
+}
+
 .Tile-schedule {
   position: absolute;
   top: 15px;

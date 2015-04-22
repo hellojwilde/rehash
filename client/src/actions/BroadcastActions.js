@@ -1,32 +1,13 @@
 var {Actions} = require('flummox');
-var {attachMediaStream} = require('helpers/WebRTCAdapter');
-var ExampleAPI = require('apis/ExampleAPI');
-
-function getFirstFrame(localStream) {
-  var videoNode = document.createElement('video');
-  videoNode.videowidth = 720;
-  videoNode.videoheight = 480;
-  videoNode.autoPlay = true;
-  attachMediaStream(videoNode, localStream);
-
-  var width = videoNode.videowidth;
-  var height = videoNode.videoheight;
-  var canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  var context = canvas.getContext('2d');
-
-  context.fillRect(0, 0, width, height);
-  context.drawImage(videoNode, 0, 0, width, height);  
-  return canvas.toDataURL('image/png');
-}
+var getFirstFrame = require('helpers/getFirstFrame');
 
 class BroadcastActions extends Actions {
-  constructor(registry, api) {
+  constructor(registry, api, uploadApi) {
     super();
 
     this.registry = registry;
     this.api = api;
+    this.uploadApi = uploadApi;
   }
 
   fetch(meetingId) {
@@ -45,8 +26,15 @@ class BroadcastActions extends Actions {
           this.api.broadcastStart(
             currentUserStore.state.connectedUserId, 
             meetingId
-          )//,
-          //ExampleAPI.uploadSendMessage(getFirstFrame(localStream))
+          ),
+          getFirstFrame(localStream)
+            .then((frame) => (
+              this.uploadApi.uploadFirstFrame(
+                currentUserStore.state.connectedUserId,
+                meetingId, 
+                frame
+              )
+            ))
         ]).then(([broadcast]) => broadcast);
       });
   }

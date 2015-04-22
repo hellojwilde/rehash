@@ -10,7 +10,9 @@ var meetingPropType = React.PropTypes.shape({
   start: React.PropTypes.object.isRequired,
   subscribers: React.PropTypes.arrayOf(userPropType).isRequired,
   attendees: React.PropTypes.arrayOf(userPropType).isRequired,
-  status: meetingStatusPropType.isRequired
+  status: meetingStatusPropType.isRequired,
+  pictureUrl: React.PropTypes.string,
+  broadcastPictureUrl: React.PropTypes.string
 });
 
 module.exports = meetingPropType;

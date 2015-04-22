@@ -24,7 +24,7 @@ function sendAjaxRequest(reqData) {
   });
 }
 
-var ExampleAPI = {
+var API = {
   connectedUserFetch: function(connectedUserId) {
     return sendAjaxRequest({
       request: 'connectedUserFetch'
@@ -198,26 +198,7 @@ var ExampleAPI = {
       connectedUserId: connectedUserId,
       message: JSON.stringify(message)
     });
-  },
-
-  uploadSendMessage: function(meetingId, data) {
-    var formData = new FormData();
-    formData.append('img', data);
-    formData.append('meetingId', meetingId);
-    alert('meetingId')
-    return $.ajax({
-          type: 'POST',
-          url: '/upload',
-          data: formData//,
-          // processData: false,
-          // contentType: false
-      }).done(function(data) {
-        console.log('Firstframe files successfully uploaded');
-        // may want ot suspend user action during video upload
-      }).fail(function(e){
-        console.log('Firstframe files fail to upload');
-      });
   }
 };
 
-module.exports = ExampleAPI;
+module.exports = API;

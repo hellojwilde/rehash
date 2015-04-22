@@ -194,11 +194,15 @@ function attachMediaStream(element, stream) {
   } else {
     console.log('Error attaching stream to element.');
   }
-};
+}
 
 function reattachMediaStream(to, from) {
   to.src = from.src;
-};
+}
+
+function detachMediaStream(element) {
+  element.src = '';
+}
 
 // Returns the result of getUserMedia as a Promise.
 function requestUserMedia(constraints) {
@@ -286,6 +290,7 @@ module.exports = {
   requestUserMedia,
   attachMediaStream,
   reattachMediaStream,
+  detachMediaStream,
   webrtcDetectedBrowser,
   webrtcDetectedVersion,
   startRecording,

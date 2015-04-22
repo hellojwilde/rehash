@@ -33,6 +33,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 from gaesessions import get_current_session
 from webrtc_config import get_webrtc_config
+from data_uri import DataURI
 
 jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader(os.path.dirname(__file__))
@@ -147,29 +148,6 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   self.response.out.write(template.render(template_values))
 
 
-class ConnectPage(webapp2.RequestHandler):
-  def post(self):
-    connected_user_key = self.request.get('from')
-    channel_connect_user(connected_user_key)
-
-
-class DisconnectPage(webapp2.RequestHandler):
-  def post(self):
-    connected_user_key = self.request.get('from')
-    channel_disconnect_user(connected_user_key);
-
-
-class MainPage(webapp2.RequestHandler):
-  def get(self):
-    fetch_initial_store_data_and_render(self)
-
-
-### Handle the case where clients request to join existing room
-class MeetingPage(webapp2.RequestHandler):
-  def get(self, room_key):
-    fetch_initial_store_data_and_render(self)
-
-
 ### Collection of dataModels
 # Log all transactions that calls any of APIHandler methods
 # Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
@@ -194,7 +172,10 @@ class MeetingModel(ndb.Model):
   host = ndb.KeyProperty(kind=UserModel)
   subscribers = ndb.KeyProperty(kind=UserModel, repeated=True)
   attendees = ndb.KeyProperty(kind=UserModel, repeated=True)
-  cardPicture = ndb.BlobProperty()
+  picture = ndb.BlobProperty(default=None)
+  pictureMimeType = ndb.StringProperty()
+  broadcastPicture = ndb.BlobProperty(default=None)
+  broadcastPictureMimeType = ndb.StringProperty()
   status = ndb.StringProperty(
     choices=['scheduled', 'broadcasting', 'ended'], 
     default='scheduled'
@@ -249,6 +230,20 @@ class APIJSONEncoder(json.JSONEncoder):
       model_dict['host'] = obj.host.get()
       model_dict['attendees'] = [user.get() for user in obj.attendees]
       model_dict['subscribers'] = [user.get() for user in obj.subscribers]
+
+      if obj.picture is not None:
+        model_dict['pictureUrl'] = \
+          '/api/meeting/' + str(obj.key.id()) + '/picture'
+
+      if obj.broadcastPicture is not None:
+        model_dict['broadcastPictureUrl'] = \
+          '/api/meeting/' + str(obj.key.id()) + '/broadcastPicture'
+
+      del model_dict['picture']
+      del model_dict['pictureMimeType']
+      del model_dict['broadcastPicture']
+      del model_dict['broadcastPictureMimeType']
+
       return model_dict
 
     if isinstance(obj, TopicModel):
@@ -278,37 +273,9 @@ class APIJSONEncoder(json.JSONEncoder):
     return json.JSONEncoder.default(self, obj)
 
 
-class APIHandler(webapp2.RequestHandler):
-  def post(self):
-    name = self.request.get('request')
-    logging.info('API Handler: ' + name)
-
-    handlers = {
-      'connecteduserfetch': self.connected_user_fetch,
-      'userfetch': self.user_fetch,
-      'meetingfetch': self.meeting_fetch,
-      'meetingcreate': self.meeting_create,
-      'meetingupdate': self.meeting_update,
-      'meetingsubscribe': self.meeting_subscribe,
-      'meetingopen': self.meeting_open,
-      'meetingclose': self.meeting_close,
-      'agendafetch': self.agenda_fetch,
-      'agendatopicadd': self.agenda_topic_add,
-      'agendaquestionadd': self.agenda_question_add,
-      'broadcastfetch': self.broadcast_fetch,
-      'broadcaststart': self.broadcast_start,
-      'broadcastend': self.broadcast_end,
-      'webrtcsendmessage': self.webrtc_send_message,
-      'explorefetch': self.explore_fetch
-    }
-
-    handler = handlers[name.lower()]
-    response = handler(self.request, self.response)
-
-    self.response.out.write(json.dumps(response, cls=APIJSONEncoder))
-
-  @classmethod
-  def connected_user_fetch(self, request, response):
+class API:
+  @staticmethod
+  def connected_user_fetch(request):
     user_key = get_user_key_for_session()
     connected_user_key = channel_create_user(user_key)
     token_timeout = request.get_range(
@@ -323,24 +290,24 @@ class APIHandler(webapp2.RequestHandler):
       'channelToken': channel.create_channel(connected_user_key, token_timeout)
     }
 
-  @classmethod
-  def user_fetch(self, request, response):
+  @staticmethod
+  def user_fetch(request):
     return UserModel.get_by_id(request.get('userId'))
 
-  @classmethod
-  def explore_fetch(self, request, response):
+  @staticmethod
+  def explore_fetch(request):
     meetings = []
     query = MeetingModel.query()
     for meeting in query.fetch(30):
       meetings.append(meeting)
     return meetings
 
-  @classmethod
-  def meeting_fetch(self, request, response):
+  @staticmethod
+  def meeting_fetch(request):
     return MeetingModel.get_by_id(int(request.get('id')))
 
-  @classmethod
-  def meeting_create(self, request, response):
+  @staticmethod
+  def meeting_create(request):
     meeting = MeetingModel()
     meeting.title = request.get('title')
     meeting.description = request.get('description')
@@ -362,8 +329,8 @@ class APIHandler(webapp2.RequestHandler):
     return meeting
 
   # Modifies data, LOG and BROADCAST
-  @classmethod
-  def meeting_update(self, request, response):
+  @staticmethod
+  def meeting_update(request):
     meeting = MeetingModel.get_by_id(int(request.get('id')))
     meeting.title = request.get('title')
     meeting.description = request.get('description')
@@ -379,8 +346,8 @@ class APIHandler(webapp2.RequestHandler):
 
     return meeting
 
-  @classmethod
-  def meeting_subscribe(self, request, response):
+  @staticmethod
+  def meeting_subscribe(request):
     meeting = MeetingModel.get_by_id(int(request.get('id')))
     user = fetch_user_for_session()
 
@@ -396,8 +363,8 @@ class APIHandler(webapp2.RequestHandler):
       'user': user
     })
 
-  @classmethod
-  def meeting_open(self, request, response):
+  @staticmethod
+  def meeting_open(request):
     user = fetch_user_for_session()
     meeting = MeetingModel.get_by_id(int(request.get('id')))
 
@@ -416,8 +383,8 @@ class APIHandler(webapp2.RequestHandler):
         'user': user
       })
 
-  @classmethod
-  def meeting_close(self, request, response):
+  @staticmethod
+  def meeting_close(request):
     connected_user = ndb.Key(urlsafe=request.get('connectedUserId')).get()
     connected_user.activeMeeting = None
     connected_user.put();
@@ -432,8 +399,8 @@ class APIHandler(webapp2.RequestHandler):
         'userId': user_key.id()
       })
 
-  @classmethod
-  def agenda_fetch(self, request, response):
+  @staticmethod
+  def agenda_fetch(request):
     meeting_key = ndb.Key(MeetingModel, int(request.get('meetingId')))
 
     return {
@@ -442,8 +409,8 @@ class APIHandler(webapp2.RequestHandler):
       'questions': QuestionModel.query(ancestor=meeting_key).fetch()
     }
 
-  @classmethod
-  def agenda_topic_add(self, request, response):
+  @staticmethod
+  def agenda_topic_add(request):
     meeting_key = ndb.Key(MeetingModel, int(request.get('meetingId')))
 
     topic = TopicModel(parent=meeting_key)
@@ -460,8 +427,8 @@ class APIHandler(webapp2.RequestHandler):
     
     return topic
 
-  @classmethod
-  def agenda_question_add(self, request, response):
+  @staticmethod
+  def agenda_question_add(request):
     meeting_key = ndb.Key(MeetingModel, int(request.get('meetingId')))
     topic_key = ndb.Key(MeetingModel, int(request.get('topicId')), parent=meeting_key)
 
@@ -479,15 +446,15 @@ class APIHandler(webapp2.RequestHandler):
 
     return question
 
-  @classmethod
-  def broadcast_fetch(self, request, response):
+  @staticmethod
+  def broadcast_fetch(request):
     meeting_id = int(request.get('meetingId'))
     meeting_key = ndb.Key(MeetingModel, meeting_id)
 
     return BroadcastModel.get_by_id(meeting_id, parent=meeting_key)
 
-  @classmethod
-  def broadcast_start(self, request, response):
+  @staticmethod
+  def broadcast_start(request):
     meeting_id = int(request.get('meetingId'))
     meeting = MeetingModel.get_by_id(meeting_id)
     broadcast = BroadcastModel.get_by_id(meeting_id, parent=meeting.key)
@@ -512,8 +479,8 @@ class APIHandler(webapp2.RequestHandler):
 
     return broadcast
 
-  @classmethod
-  def broadcast_end(self, request, response):
+  @staticmethod
+  def broadcast_end(request):
     meeting_id = int(request.get('meetingId'))
     meeting = MeetingModel.get_by_id(meeting_id)
 
@@ -530,8 +497,8 @@ class APIHandler(webapp2.RequestHandler):
       'meetingId': meeting_id
     })
 
-  @classmethod
-  def webrtc_send_message(self, request, response):
+  @staticmethod
+  def webrtc_send_message(request):
     to_connected_user_key = ndb.Key(urlsafe=request.get('to'))
     connected_user_key = ndb.Key(urlsafe=request.get('connectedUserId'))
 
@@ -543,6 +510,85 @@ class APIHandler(webapp2.RequestHandler):
 
     if to_connected_user_key is not None:
       channel_message(connected_user_key, to_connected_user_key.get(), message)
+
+
+class APIHandler(webapp2.RequestHandler):
+  def post(self):
+    name = self.request.get('request')
+    logging.info('API Handler: ' + name)
+
+    handlers = {
+      'connecteduserfetch': API.connected_user_fetch,
+      'userfetch': API.user_fetch,
+      'meetingfetch': API.meeting_fetch,
+      'meetingcreate': API.meeting_create,
+      'meetingupdate': API.meeting_update,
+      'meetingsubscribe': API.meeting_subscribe,
+      'meetingopen': API.meeting_open,
+      'meetingclose': API.meeting_close,
+      'agendafetch': API.agenda_fetch,
+      'agendatopicadd': API.agenda_topic_add,
+      'agendaquestionadd': API.agenda_question_add,
+      'broadcastfetch': API.broadcast_fetch,
+      'broadcaststart': API.broadcast_start,
+      'broadcastend': API.broadcast_end,
+      'webrtcsendmessage': API.webrtc_send_message,
+      'explorefetch': API.explore_fetch
+    }
+
+    handler = handlers[name.lower()]
+    response = handler(self.request)
+
+    self.response.out.write(json.dumps(response, cls=APIJSONEncoder))
+
+
+class UploadAPIHandler(webapp2.RequestHandler):
+  def post(self):
+    # session = get_current_session()
+    # logging.info(self.request.get('connectedUserId'))
+    # connectedUser = ndb.Key(urlsafe=self.request.get('connectedUserId')).get()
+    #logging.info(self.request.get('test'))
+    logging.info('here is the meeting id!' + self.request.get('meetingId'))
+
+    upload_type = self.request.get('type')
+    meeting = MeetingModel.get_by_id(int(self.request.get('meetingId')))
+    connected_user_key = ndb.Key(urlsafe=self.request.get('connectedUserId'))
+
+    if upload_type == 'upload':
+      recording_key = RecordingModel(parent = meeting.key)
+      recording_key.get().recording = self.request.get('data')
+      recording_key.get().put()
+    elif upload_type == 'firstframe':
+      uri = DataURI(self.request.get('img'))
+      meeting.broadcastPicture = uri.data
+      meeting.broadcastPictureMimeType = uri.mimetype
+      meeting.put()
+      
+      channel_messageAll(connected_user_key, {
+        'type': 'meetingUpdate',
+        'meeting': meeting
+      })
+
+
+class BroadcastPictureAPIHandler(webapp2.RequestHandler):
+  def get(self, meeting_id):
+    meeting = MeetingModel.get_by_id(int(meeting_id))
+
+    if meeting:
+      self.response.headers['Content-Type'] = str(meeting.broadcastPictureMimeType)
+      self.response.out.write(meeting.broadcastPicture)
+
+
+class ExploreHandler(webapp2.RequestHandler):
+  def get(self):
+    fetch_initial_store_data_and_render(self)
+
+
+### Handle the case where clients request to join existing room
+class MeetingHandler(webapp2.RequestHandler):
+  def get(self, meeting_id):
+    fetch_initial_store_data_and_render(self)
+
 
 ### after login case
 class TwitterAuthorized(webapp2.RequestHandler):
@@ -624,7 +670,8 @@ class LoginHandler(webapp2.RequestHandler):
         logging.info('Error! Failed to get request token. ' + str(e))
     else:
       self.redirect(session['redirect'])
-      
+
+
 class LogoutHandler(webapp2.RequestHandler):
   def get(self):
     session = get_current_session()
@@ -632,22 +679,17 @@ class LogoutHandler(webapp2.RequestHandler):
     ### will redefine the redirect route, 
     self.redirect(OAUTH_CONFIG['internal']['logout_redirect_url'])
 
-class Upload(webapp2.RequestHandler):
+
+class ConnectHandler(webapp2.RequestHandler):
   def post(self):
-    # session = get_current_session()
-    # logging.info(self.request.get('connectedUserId'))
-    # connectedUser = ndb.Key(urlsafe=self.request.get('connectedUserId')).get()
-    #logging.info(self.request.get('test'))
-    logging.info('here is the meeting id!' + self.request.get('meetingId'))
-    meeting = MeetingModel.get_by_id(int(self.request.get('meetingId')))
-    if self.request.get('type') == 'upload':
-      recording_key = RecordingModel(parent = meeting.key)
-      recording_key.get().recording = self.request.get('data')
-      recording_key.get().put()
-    elif self.request.get('type') == 'firstframe':
-      logging.info("********firstframe uploaded")
-      meeting.firstframe = self.request.get('data')  
-      meeting.put()
+    connected_user_key = self.request.get('from')
+    channel_connect_user(connected_user_key)
+
+
+class DisconnectHandler(webapp2.RequestHandler):
+  def post(self):
+    connected_user_key = self.request.get('from')
+    channel_disconnect_user(connected_user_key)
 
 
 class RouteErrorHandler(webapp2.RequestHandler):
@@ -655,17 +697,19 @@ class RouteErrorHandler(webapp2.RequestHandler):
     self.response.out.write('INVALID URL. Redirect URL may have been modified')
     self.response.set_status(404)
 
+
 app = webapp2.WSGIApplication([
-    (r'/', MainPage),
-    (r'/meeting/([^/]+)', MeetingPage),
-    (r'/explore/meeting/([^/]+)', MeetingPage),
-    (r'/api', APIHandler),
-    (r'/user/login', LoginHandler),
-    (r'/user/logout', LogoutHandler),
-    (r'/twitterauthorized', TwitterAuthorized),
-    (r'/upload', Upload),
-    ('/_ah/channel/connected/', ConnectPage),
-    ('/_ah/channel/disconnected/', DisconnectPage),
+    ('/', ExploreHandler),
+    (r'/meeting/([^/]+)', MeetingHandler),
+    (r'/explore/meeting/([^/]+)', MeetingHandler),
+    ('/api', APIHandler),
+    ('/api/upload', UploadAPIHandler),
+    (r'/api/meeting/([^/]+)/broadcastPicture', BroadcastPictureAPIHandler),
+    ('/user/login', LoginHandler),
+    ('/user/logout', LogoutHandler),
+    ('/twitterauthorized', TwitterAuthorized),
+    ('/_ah/channel/connected/', ConnectHandler),
+    ('/_ah/channel/disconnected/', DisconnectHandler),
     ### all other unmapped url shall be directed to error page 
     (r'.+', RouteErrorHandler)
   ], debug=True)

@@ -22,9 +22,7 @@ var Broadcast = React.createClass({
 
   componentDidUpdate: function(prevProps, prevState) {
     if ((prevProps.webRTC.localStream !== this.props.webRTC.localStream ||
-         prevProps.webRTC.remoteStream !== this.props.webRTC.remoteStream) &&
-        this.props.webRTC.localStream !== null &&
-        this.props.webRTC.remoteStream) {
+         prevProps.webRTC.remoteStream !== this.props.webRTC.remoteStream)) {
       this.attachWebRTCStream();
     }
   },
@@ -36,7 +34,9 @@ var Broadcast = React.createClass({
       ? webRTC.localStream 
       : webRTC.remoteStream;
 
-    attachMediaStream(videoNode, stream);
+    if (stream !== null) {
+      attachMediaStream(videoNode, stream);
+    }
   },
 
   render: function() {

@@ -3,9 +3,12 @@ var LinkNoClobber = require('components/common/LinkNoClobber');
 var ScheduleLabel = require('components/common/ScheduleLabel');
 
 var meetingStatusPropType = require('types/meetingStatusPropType');
+var joinClasses = require('react/lib/joinClasses');
 
 require('3rdparty/bootstrap/css/bootstrap.css');
 require('./Tile.css');
+
+const DEFAULT_PICTURE_URL = require('./cartographer/cartographer.png');
 
 var Tile = React.createClass({
 
@@ -15,14 +18,26 @@ var Tile = React.createClass({
     start: React.PropTypes.object.isRequired,
     status: meetingStatusPropType.isRequired,
     description: React.PropTypes.string,
-    backgroundImageUrl: React.PropTypes.string
+    broadcastPictureUrl: React.PropTypes.string,
+    pictureUrl: React.PropTypes.string
   },
 
   getDefaultProps: function() {
     return {
-      description: '',
-      backgroundImageUrl: require('./cartographer/cartographer.png')
+      description: ''
     };
+  },
+
+  getBackgroundImage: function() {
+    return (
+      this.props.broadcastPictureUrl ||
+      this.props.pictureUrl ||
+      DEFAULT_PICTURE_URL
+    );
+  },
+
+  getHasProvidedBackgroundImage: function() {
+    return !!(this.props.broadcastPictureUrl || this.props.pictureUrl);
   },
 
   render: function() {
@@ -31,15 +46,17 @@ var Tile = React.createClass({
       title, 
       description, 
       start, 
-      status,
-      backgroundImageUrl
+      status
     } = this.props;
 
     return (
       <LinkNoClobber to="explore_meeting" params={{meetingId: meetingId}}>
         <div 
-          className='Tile' 
-          style={{backgroundImage: `url(${backgroundImageUrl})`}}>
+          className={joinClasses(
+            'Tile', 
+            this.getHasProvidedBackgroundImage() && 'Tile--hasPicture'
+          )} 
+          style={{backgroundImage: `url(${this.getBackgroundImage()})`}}>
           <ScheduleLabel className="Tile-schedule" {...{start, status}}/>
           <div className="Tile-main">
             <h3 className="Tile-main-title">{title}</h3>
