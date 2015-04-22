@@ -24,9 +24,13 @@ function sendAjaxRequest(reqData) {
   });
 }
 
-
-
 var ExampleAPI = {
+  connectedUserFetch: function(connectedUserId) {
+    return sendAjaxRequest({
+      request: 'connectedUserFetch'
+    });
+  },
+
   /**
    * Given a user id, this fetches a user object. 
    * Useful for profile popups and pages.
@@ -35,12 +39,10 @@ var ExampleAPI = {
    * @return {Promise}       Resolves to the user object.
    */
   userFetch: function(userId) {
-    var reqData = {
-      format: 'json',
-      userId: userId,
-      request: 'userFetch'
-    };
-    return sendAjaxRequest(reqData);
+    return sendAjaxRequest({
+      request: 'userFetch',
+      userId: userId
+    });
   },
 
   /**
@@ -50,12 +52,9 @@ var ExampleAPI = {
    * @return {Promise} Resolves to an array of meeting objects.
    */
   exploreFetch: function() {
-    var reqData = {
-      format: 'json',
+    return sendAjaxRequest({
       request: 'exploreFetch'
-    };
-
-    return sendAjaxRequest(reqData)
+    });
   },
 
   /**
@@ -67,13 +66,10 @@ var ExampleAPI = {
    * @return {Promise}           Resolves to a meeting object.
    */
   meetingFetch: function(meetingId) {
-    var reqData = {
-      format: 'json',
-      id: meetingId, 
-      request: 'meetingFetch'
-    };
-    
-    return sendAjaxRequest(reqData);
+    return sendAjaxRequest({
+      request: 'meetingFetch',
+      id: meetingId
+    });
   },
 
   /**
@@ -93,7 +89,6 @@ var ExampleAPI = {
     // for datetime structure, think about saving on gae as string
     // dates are all saved as strings
     return sendAjaxRequest({
-      format: 'json',
       request: 'meetingCreate',
       connectedUserId: connectedUserId,
       title: meeting.title, 
@@ -104,7 +99,6 @@ var ExampleAPI = {
 
   meetingUpdate: function(connectedUserId, meetingId, meeting) {
     return sendAjaxRequest({
-      format: 'json',
       request: 'meetingUpdate',
       connectedUserId: connectedUserId,
       id: meetingId,
@@ -117,7 +111,6 @@ var ExampleAPI = {
   // Need to make sure the user has signed in before this is called
   meetingSubscribe: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
-      format: 'json',
       id: meetingId, 
       connectedUserId: connectedUserId,
       request: 'meetingsubscribe'
@@ -126,7 +119,6 @@ var ExampleAPI = {
 
   meetingOpen: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
-      format: 'json',
       id: meetingId,
       connectedUserId: connectedUserId,
       request: 'meetingopen'
@@ -135,10 +127,9 @@ var ExampleAPI = {
 
   meetingClose: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
-      format: 'json',
+      request: 'meetingclose',
       id: meetingId,
-      connectedUserId: connectedUserId,
-      request: 'meetingclose'
+      connectedUserId: connectedUserId
     });
   },
 
@@ -148,7 +139,6 @@ var ExampleAPI = {
    */
   agendaFetch: function(meetingId) {
     return sendAjaxRequest({
-      format: 'json',
       request: 'agendafetch',
       meetingId: meetingId
     });
@@ -161,7 +151,6 @@ var ExampleAPI = {
    */
   agendaAddTopic: function(connectedUserId, meetingId, content){
     return sendAjaxRequest({
-      format: 'json',
       request: 'agendaTopicAdd',
       meetingId: meetingId, 
       connectedUserId: connectedUserId,
@@ -171,7 +160,6 @@ var ExampleAPI = {
 
   agendaAddQuestion: function(connectedUserId, meetingId, topicId, content) {
     return sendAjaxRequest({
-      format: 'json',
       request: 'agendaQuestionAdd',
       meetingId: meetingId, 
       topicId: topicId,
@@ -182,35 +170,31 @@ var ExampleAPI = {
 
   broadcastFetch: function(meetingId) {
     return sendAjaxRequest({
-      format: 'json',
-      meetingId: meetingId,
-      request: 'broadcastFetch'
+      request: 'broadcastFetch',
+      meetingId: meetingId
     });
   },
 
   broadcastStart: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
-      format: 'json',
+      request: 'broadcastStart',
       meetingId: meetingId,
-      connectedUserId: connectedUserId,
-      request: 'broadcastStart'
+      connectedUserId: connectedUserId
     });
   },
 
   broadcastEnd: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
-      format: 'json',
+      request: 'broadcastEnd',
       meetingId: meetingId,
       connectedUserId: connectedUserId,
-      request: 'broadcastEnd'
     });
   },
 
   webRTCSendMessage: function(connectedUserId, to, message) {
     return sendAjaxRequest({
-      format: 'json',
-      to: to,
       request: 'webRTCSendMessage',
+      to: to,
       connectedUserId: connectedUserId,
       message: JSON.stringify(message)
     });

@@ -40,10 +40,10 @@ jinja_environment = jinja2.Environment(
 
 
 @db.transactional
-def channel_create_user(user=None):
+def channel_create_user(user_key=None):
   connected_user = ConnectedUserModel()
   connected_user.isConnected = False
-  connected_user.user = user.key if user is not None else None
+  connected_user.user = user_key
   key = connected_user.put()
   
   return key.urlsafe()
@@ -125,7 +125,7 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   )
 
   user = fetch_user_for_session(session)
-  connected_user_key = channel_create_user(user)
+  connected_user_key = channel_create_user(user.key if user is not None else None)
 
   initial_store_data.update({
     'webRTC': get_webrtc_config(self, connected_user_key),
@@ -284,6 +284,7 @@ class APIHandler(webapp2.RequestHandler):
     logging.info('API Handler: ' + name)
 
     handlers = {
+      'connecteduserfetch': self.connected_user_fetch,
       'userfetch': self.user_fetch,
       'meetingfetch': self.meeting_fetch,
       'meetingcreate': self.meeting_create,
@@ -307,12 +308,24 @@ class APIHandler(webapp2.RequestHandler):
     self.response.out.write(json.dumps(response, cls=APIJSONEncoder))
 
   @classmethod
+  def connected_user_fetch(self, request, response):
+    user_key = get_user_key_for_session()
+    connected_user_key = channel_create_user(user_key)
+    token_timeout = request.get_range(
+      'tt',
+      min_value = 3,
+      max_value = 1440,
+      default = 30
+    )
+    
+    return {
+      'connectedUserId': connected_user_key,
+      'channelToken': channel.create_channel(connected_user_key, token_timeout)
+    }
+
+  @classmethod
   def user_fetch(self, request, response):
-    user = UserModel.get_by_id(request.get('userId'))
-    if user: 
-      return user
-    else: 
-      return {'error': 'NotFound'}
+    return UserModel.get_by_id(request.get('userId'))
 
   @classmethod
   def explore_fetch(self, request, response):

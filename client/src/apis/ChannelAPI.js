@@ -2,41 +2,37 @@ const CHANNEL_DELAY = 1000;
 
 class ChannelAPI {
   constructor(registry) {
+    var currentUserStore = registry.getStore('currentUser');
+    var channel = null;
+    var channelToken = null;
+
     this.registry = registry;
 
-    var currentUserStore = this.registry.getStore('currentUser');
-    var channel = null;
-
     currentUserStore.on('change', () => {
-      if (currentUserStore.state.channelToken === null ||
-          channel !== null) {
+      var currentChannelToken = currentUserStore.state.channelToken;
+      if (currentChannelToken === null || 
+          currentChannelToken === channelToken) {
         return;
       }
 
       console.log(
         'ChannelAPI: have a channel token!', 
-        currentUserStore.state.channelToken
+        currentChannelToken
       );
 
       // XXX For some reason the channel API doesn't work if we call it right 
       // after load here, and not with a setTimeout delay. Who knows why?
       setTimeout(() => {
-        channel = new goog.appengine.Channel(
-          currentUserStore.state.channelToken
-        );
-
+        channelToken = currentChannelToken;
+        channel = new goog.appengine.Channel(channelToken);
         channel.open({
-          onopen: this.handleOpened,
+          onopen: () => console.log('ChannelAPI: opened.'),
+          onerror: () => console.log('ChannelAPI: opened.'),
           onmessage: this.handleMessage.bind(this),
-          onerror: this.handleError,
-          onclose: this.handleClosed
+          onclose: this.handleClosed.bind(this)
         });
       }, CHANNEL_DELAY);
     });
-  }
-
-  handleOpened() {
-    console.log('ChannelAPI: opened.');
   }
 
   handleMessage(message) {
@@ -78,12 +74,10 @@ class ChannelAPI {
     }
   }
 
-  handleError() {
-    console.log('ChannelAPI: error.');
-  }
-
   handleClosed() {
-    console.log('ChannelAPI: closed.');
+    console.log('ChannelAPI: closed. Reconnecting.');
+
+    this.registry.getActions('currentUser').connectedUserFetch();
   }
 }
 

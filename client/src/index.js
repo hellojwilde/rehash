@@ -7,7 +7,6 @@ var Routes = require('./Routes');
 var ensureDataAvailable = require('./helpers/ensureDataAvailable');
 
 var registry = new FluxRegistry();
-
 registry.deserialize(window.initialStoreData);
 
 Router.run(Routes, Router.HistoryLocation, function(Handler, state) {
