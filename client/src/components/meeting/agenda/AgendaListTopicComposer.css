@@ -1,0 +1,17 @@
+.AgendaListTopicComposer {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.AgendaListTopicComposer--transition-enter {
+  transition: transform 0.2s, opacity 0.2s;
+  transform: scale(0.2);
+  opacity: 0.4;
+  transform-origin: top center;
+}
+
+.AgendaListTopicComposer--transition-enter-active {
+  transform: scale(1);
+  opacity: 1;
+}
