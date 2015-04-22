@@ -19,7 +19,7 @@ function sendAjaxRequest(reqData) {
       success: function(data) {
         resolve(data);
       },
-      error: handleAjaxError
+      error: (emessage) => handleAjaxError(emessage, reject)
     });
   });
 }
