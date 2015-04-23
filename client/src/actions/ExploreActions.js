@@ -9,6 +9,11 @@ class ExploreActions extends Actions {
   }
 
   fetch() {
+    var exploreStore = this.registry.getStore('explore');
+    if (!exploreStore.isExpired()) {
+      return Promise.resolve(null);
+    }
+
     return this.api.exploreFetch();
   }
 }

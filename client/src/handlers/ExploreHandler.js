@@ -33,13 +33,10 @@ var ExploreHandler = React.createClass({
               render={({user}) => <Header currentUser={user}/>}
             />
             <FluxComponent
-              connectToStores={['meeting']}
-              stateGetter={([meetingStore]) => ({
-                meetings: meetingStore.getAll()
-              })}
+              connectToStores={['explore']}
               render={(state) => (
                 <TileGrid 
-                  {...state}
+                  meetings={state.meetings}
                   ref="grid"
                   detailMeetingId={+meetingId}
                   detail={<RouteHandler/>}

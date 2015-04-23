@@ -54,7 +54,10 @@ var API = {
   exploreFetch: function() {
     return sendAjaxRequest({
       request: 'exploreFetch'
-    });
+    }).then((meetings) => meetings.map((meeting) => {
+      meeting.start = moment.utc(meeting.start);
+      return meeting;
+    }));
   },
 
   /**
@@ -69,6 +72,9 @@ var API = {
     return sendAjaxRequest({
       request: 'meetingFetch',
       id: meetingId
+    }).then((meeting) => {
+      meeting.start = moment.utc(meeting.start);
+      return meeting;
     });
   },
 

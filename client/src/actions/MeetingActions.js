@@ -14,7 +14,7 @@ class MeetingActions extends Actions {
     var meetingStore = this.registry.getStore('meeting');
     var meeting = meetingStore.getById(id);
     if (meeting) {
-      return Promise.resolve(meeting);
+      return Promise.resolve(null);
     }
 
     return this.api.meetingFetch(id);
@@ -60,8 +60,7 @@ class MeetingActions extends Actions {
     
     return Promise.all([
       meetingActions.fetch(id),
-      agendaActions.fetch(id),
-      this.api.meetingOpen(currentUserStore.state.connectedUserId, id)
+      agendaActions.fetch(id)
     ]).then(() => {
       var meeting = meetingStore.getById(id);
       var meetingRelation = meetingStore.getCurrentUserRelationById(id);
@@ -69,6 +68,8 @@ class MeetingActions extends Actions {
       if (meeting.status !== 'broadcasting') {
         return;
       }
+
+      this.api.meetingOpen(currentUserStore.state.connectedUserId, id)
 
       return broadcastActions.fetch(id).then((broadcast) => {
         if (meetingRelation.isHost) {

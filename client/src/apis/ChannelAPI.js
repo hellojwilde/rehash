@@ -56,7 +56,9 @@ class ChannelAPI {
     switch (msg.type) {
       case 'meetingCreate':
       case 'meetingUpdate':
-        meetingActions.receive(msg.meeting);
+        var meeting = msg.meeting;
+        meeting.start = moment.utc(meeting.start);
+        meetingActions.receive(meeting);
         break;
       case 'agendaTopicAdd':
         agendaActions.receiveAddTopic(msg.topic);

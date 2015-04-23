@@ -23,24 +23,20 @@ class MeetingStore extends Store {
     var meetingActionIds = registry.getActionIds('meeting');
     var broadcastActionIds = registry.getActionIds('broadcast');
     
-    this.register(exploreActionIds.fetch, this.handleReceiveMeetings);
+    this.register(exploreActionIds.fetch, this.handleExploreFetch);
 
-    this.register(meetingActionIds.fetch, this.handleReceiveMeeting);
-    this.register(meetingActionIds.create, this.handleReceiveMeeting);
-    this.register(meetingActionIds.update, this.handleReceiveMeeting);
-    this.register(meetingActionIds.receive, this.handleReceiveMeeting);
+    this.register(meetingActionIds.fetch, this.handleMeeting);
+    this.register(meetingActionIds.create, this.handleMeeting);
+    this.register(meetingActionIds.update, this.handleMeeting);
+    this.register(meetingActionIds.receive, this.handleMeeting);
 
-    this.register(broadcastActionIds.start, this.handleReceiveBroadcastStart);
-    this.register(broadcastActionIds.receiveStart, this.handleReceiveBroadcastStart);
-    this.register(broadcastActionIds.end, this.handleReceiveBroadcastEnd);
-    this.register(broadcastActionIds.receiveEnd, this.handleReceiveBroadcastEnd);
+    this.register(broadcastActionIds.start, this.handleBroadcastStart);
+    this.register(broadcastActionIds.receiveStart, this.handleBroadcastStart);
+    this.register(broadcastActionIds.end, this.handleBroadcastEnd);
+    this.register(broadcastActionIds.receiveEnd, this.handleBroadcastEnd);
 
     this.registry = registry;
     this.state = {};
-  }
-
-  getAll() {
-    return _.values(this.state);
   }
 
   getById(meetingId) {
@@ -64,19 +60,23 @@ class MeetingStore extends Store {
     };
   }
 
-  handleReceiveMeetings(meetings) {
-    this.setState(_.indexBy(meetings.map((meeting) => {
-      meeting.start = moment.utc(meeting.start);
-      return meeting;
-    }), 'id'));
+  handleExploreFetch(meetings) {
+    if (meetings === null) {
+      return;
+    }
+
+    this.setState(_.indexBy(meetings, 'id'));
   }
 
-  handleReceiveMeeting(meeting) {
-    meeting.start = moment.utc(meeting.start);
+  handleMeeting(meeting) {
+    if (meeting === null) {
+      return;
+    }
+
     this.setState({[meeting.id]: meeting});
   }
 
-  handleReceiveBroadcastStart(broadcast) {
+  handleBroadcastStart(broadcast) {
     var id = broadcast.id || broadcast;
 
     this.setState({
@@ -84,7 +84,7 @@ class MeetingStore extends Store {
     });
   }
 
-  handleReceiveBroadcastEnd(meetingId) {
+  handleBroadcastEnd(meetingId) {
     this.setState({
       [meetingId]: _.assign(this.state[meetingId], {status: 'ended'})
     });
