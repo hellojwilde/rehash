@@ -1,5 +1,6 @@
 # rehash
-(Please refere to https://travis-ci.org/hellojwilde/rehash for build status.)
+
+[![Build Status](https://travis-ci.org/hellojwilde/rehash.svg?branch=master)](https://travis-ci.org/hellojwilde/rehash)
 
 Simple broadcasting for online dialogues. In a nutshell, you:
 
