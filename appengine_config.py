@@ -1,3 +1,9 @@
+"""
+Automatically loaded when a new app instance starts. 
+Runs before WSGI applications specified in app.yaml are loaded.
+SeesionMiddleware is loaded. 
+"""
+
 import sys
 sys.path.insert(0, 'libs')
 

@@ -1,3 +1,8 @@
+/*
+API to establish Channel API and handle Channel messages
+*/
+
+
 const CHANNEL_DELAY = 1500;
 
 class ChannelAPI {

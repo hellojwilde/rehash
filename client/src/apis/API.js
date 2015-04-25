@@ -1,7 +1,11 @@
+/*
+API to submit and retrieve user/meeting/broadcast/agenda/question/topics to and from server
+*/
+
+
 var _ = require('lodash');
 var moment = require('moment');
 
-// Test implementation
 const BASE_URL = '/api';
 
 function handleAjaxError(emessage, callback){
@@ -25,6 +29,10 @@ function sendAjaxRequest(reqData) {
 }
 
 var API = {
+  /**
+   *  @param  {string}       userId  
+   *  @return {Promise}      Resolves to the user object.
+   */
   connectedUserFetch: function(connectedUserId) {
     return sendAjaxRequest({
       request: 'connectedUserFetch'
@@ -32,10 +40,7 @@ var API = {
   },
 
   /**
-   * Given a user id, this fetches a user object. 
-   * Useful for profile popups and pages.
-   * 
-   * @param  {string} userId Unlike meeting ids, the userId is a string.
+   * @param  {string}        userId Unlike meeting ids, the userId is a string.
    * @return {Promise}       Resolves to the user object.
    */
   userFetch: function(userId) {
@@ -46,9 +51,6 @@ var API = {
   },
 
   /**
-   * On the homepage (i.e. the explore UI), we have a set of upcoming meetings.
-   * This fetches the set of meetings to display for that.
-   * 
    * @return {Promise} Resolves to an array of meeting objects.
    */
   exploreFetch: function() {
@@ -61,12 +63,12 @@ var API = {
   },
 
   /**
+   * @param  {number} meetingId The id of the meeting to fetch.
+   * @return {Promise}           Resolves to a meeting object.
+   * 
    * If the user jumps to a standalone meeting page (e.g. from a tweet),
    * we won't have the meeting already cached from the explore page.
    * This fetches a single specific meeting to display in the app.
-   * 
-   * @param  {number} meetingId The id of the meeting to fetch.
-   * @return {Promise}           Resolves to a meeting object.
    */
   meetingFetch: function(meetingId) {
     return sendAjaxRequest({
@@ -79,21 +81,20 @@ var API = {
   },
 
   /**
+   * @param  {string} connectedUserId  userId for connected user
+   * @param  {object} meeting          A meeting object 
+   * @return {Promise}                 Resolves to an object of shape {id: KEY} 
+   *                                   that the meeting was saved as.
+   * 
    * When we create the meeting initially, we want to force the user to set
    * a title and start time, and encourage them to set description and cover
    * photo so that we have a nice-looking, sortable tile to display in the feed
    * immediately.
-   *
+   * 
    * This should set up a blank agenda, along with an attendee list containing 
    * the user that created the meeting.
-   * 
-   * @param  {object} meeting  A meeting object without an id.
-   * @return {Promise}         Resolves to an object of shape {id: KEY} 
-   *                           that the meeting was saved as.
    */
   meetingCreate: function(connectedUserId, meeting) {
-    // for datetime structure, think about saving on gae as string
-    // dates are all saved as strings
     return sendAjaxRequest({
       request: 'meetingCreate',
       connectedUserId: connectedUserId,
@@ -103,6 +104,13 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  userId for connected user
+   * @param  {string} meetingId  
+   * @param  {object} meeting          A meeting object without an id.
+   * @return {Promise}                 Resolves to an object of shape {id: KEY} 
+   *                                   that the meeting was saved as.
+   */ 
   meetingUpdate: function(connectedUserId, meetingId, meeting) {
     return sendAjaxRequest({
       request: 'meetingUpdate',
@@ -114,7 +122,11 @@ var API = {
     });
   },
 
-  // Need to make sure the user has signed in before this is called
+  /**
+   * @param  {string} connectedUserId  userId for connected user
+   * @param  {string} meetingId  
+   * @return {Promise}                 Empty Promise
+   */ 
   meetingSubscribe: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       id: meetingId, 
@@ -123,6 +135,11 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  userId for connected user
+   * @param  {string} meetingId  
+   * @return {Promise}                 Empty Promise
+   */ 
   meetingOpen: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       id: meetingId,
@@ -131,6 +148,11 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  userId for connected user
+   * @param  {string} meetingId  
+   * @return {Promise}                 Empty Promise
+   */ 
   meetingClose: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       request: 'meetingclose',
@@ -164,6 +186,13 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  
+   * @param  {string} meetingId  
+   * @param  {string} topicId
+   * @param  {string} content  
+   * @return {Promise}                 Resolve to question
+   */ 
   agendaAddQuestion: function(connectedUserId, meetingId, topicId, content) {
     return sendAjaxRequest({
       request: 'agendaQuestionAdd',
@@ -174,6 +203,10 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} meetingId  
+   * @return {Promise}                 Resolve to broadcast 
+   */ 
   broadcastFetch: function(meetingId) {
     return sendAjaxRequest({
       request: 'broadcastFetch',
@@ -181,6 +214,11 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  
+   * @param  {string} meetingId  
+   * @return {Promise}                 Empty Promise
+   */ 
   broadcastStart: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       request: 'broadcastStart',
@@ -189,6 +227,11 @@ var API = {
     });
   },
 
+  /**
+   * @param  {string} connectedUserId  
+   * @param  {string} meetingId  
+   * @return {Promise}                 Empty Promise
+   */ 
   broadcastEnd: function(connectedUserId, meetingId) {
     return sendAjaxRequest({
       request: 'broadcastEnd',

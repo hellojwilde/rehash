@@ -1,3 +1,9 @@
+"""
+Copyright 2011 Google Inc. All Rights Reserved.
+Adapted from source: https://code.google.com/p/webrtc/source/browse/trunk/samples/js/apprtc/apprtc.py
+
+API to get server side configurations for WebRTC connections
+"""
 import logging
 
 def get_default_stun_server(user_agent):

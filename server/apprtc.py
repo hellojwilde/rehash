@@ -2,16 +2,22 @@
 #
 # Copyright 2011 Google Inc. All Rights Reserved.
 
-### personal commentds by Maple7sha
 
-"""WebRTC Demo
+"""
+Adapted from source: https://code.google.com/p/webrtc/source/browse/trunk/samples/js/apprtc/apprtc.py
 
-This module demonstrates the WebRTC API by implementing a simple video chat app.
+Webapp2 server side script for Rehash.
+
+This module mainly handles client-side requests for:
+  * Get/post requests from clients
+  * Channel API
+  * Store/retrieve data from ndb data data models
+  * Twitter login/logout redirects
+  * Establish WebRTC connections
 """
 
 import sys
 sys.path.insert(0, 'libs')
-
 import cgi
 import logging
 import os
@@ -39,7 +45,11 @@ jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader(os.path.dirname(__file__))
 )
 
-
+"""
+Channel API related methods 
+Establish persistent connection between client and Google servers
+and allow messages from app to client to be sent without polling
+"""
 @db.transactional
 def channel_create_user(token_timeout, user_key=None):
   connected_user = ConnectedUserModel()
@@ -106,11 +116,9 @@ def channel_messageByMeeting(sender_connected_user_key, meeting_key, message):
 def get_user_key_for_session(session=None):
   if session is None:
     session = get_current_session()
-
   key = None
   if session.get('id'):
     key = ndb.Key(UserModel, session['id'])
-
   return key
 
 
@@ -118,7 +126,9 @@ def fetch_user_for_session(session=None):
   user_key = get_user_key_for_session(session)
   return user_key.get() if user_key is not None else None
 
-
+"""
+Gather data relevant to set up WebRTC/Channel API for first client request
+"""
 def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   session = get_current_session()
   initial_store_data = {}
@@ -153,13 +163,9 @@ def fetch_initial_store_data_and_render(self, extra_initial_store_data={}):
   self.response.out.write(template.render(template_values))
 
 
-### Collection of dataModels
-# Log all transactions that calls any of APIHandler methods
-# Only meetingjoin data has 'meetingId' and 'userId'; all other methods has 'id' refer to either meeting/user
-# For methods that involves a write, written data is stored as data
-# FOr methods that involves a fetch, response data is stored as data 
-### Maintain users currently connected for broadcasting 
-
+""" 
+Collection of dataModels
+""" 
 class UserModel(ndb.Model):
   id = ndb.StringProperty()
   photoUrl = ndb.StringProperty()
@@ -168,7 +174,6 @@ class UserModel(ndb.Model):
   screenName = ndb.StringProperty()
   location = ndb.StringProperty()
   bio = ndb.StringProperty()
-
 
 class MeetingModel(ndb.Model):
   title = ndb.StringProperty()
@@ -190,28 +195,22 @@ class TopicModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
 
-
 class QuestionModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
   content = ndb.StringProperty()
-
 
 class BroadcastModel(ndb.Model):
   hostConnectedUser = ndb.KeyProperty()
   topic = ndb.KeyProperty(kind=TopicModel)
   question = ndb.KeyProperty(kind=QuestionModel)
 
-
 class BroadcastLogModel(ndb.Model):
   datetime = ndb.DateTimeProperty(auto_now_add=True)
   method = ndb.StringProperty()
   data = ndb.StringProperty()
 
-
 class BroadcastRecordingModel(ndb.Model):
-  recording = ndb.BlobProperty(indexed=False)
-  # add additional information as needed here 
-
+  recording = ndb.BlobProperty(indexed=False) 
 
 class ConnectedUserModel(ndb.Model):
   user = ndb.KeyProperty(kind=UserModel)
@@ -220,12 +219,13 @@ class ConnectedUserModel(ndb.Model):
   isConnected = ndb.BooleanProperty(default=False)
   activeMeeting = ndb.KeyProperty(kind=MeetingModel)
 
-
 class ConnectedUserMessageModel(ndb.Model):
   to = ndb.KeyProperty(kind=ConnectedUserModel)
   content = ndb.TextProperty()
 
-
+# INPUT: ndb Model object 
+# OUTPUT: dictionary (JSON) of the object data, with references dereferrenced 
+#         and replaced with corresponding objects
 class APIJSONEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, datetime.datetime):
@@ -279,7 +279,9 @@ class APIJSONEncoder(json.JSONEncoder):
 
     return json.JSONEncoder.default(self, obj)
 
-
+"""
+API class with methods that handle corresponding client requests 
+"""
 class API:
   @staticmethod
   def connected_user_fetch(request):
@@ -547,12 +549,6 @@ class APIHandler(webapp2.RequestHandler):
 
 class UploadAPIHandler(webapp2.RequestHandler):
   def post(self):
-    # session = get_current_session()
-    # logging.info(self.request.get('connectedUserId'))
-    # connectedUser = ndb.Key(urlsafe=self.request.get('connectedUserId')).get()
-    #logging.info(self.request.get('test'))
-    logging.info('here is the meeting id!' + self.request.get('meetingId'))
-
     upload_type = self.request.get('type')
     meeting = MeetingModel.get_by_id(int(self.request.get('meetingId')))
     connected_user_key = ndb.Key(urlsafe=self.request.get('connectedUserId'))
@@ -586,14 +582,14 @@ class ExploreHandler(webapp2.RequestHandler):
   def get(self):
     fetch_initial_store_data_and_render(self)
 
-
-### Handle the case where clients request to join existing room
 class MeetingHandler(webapp2.RequestHandler):
   def get(self, meeting_id):
     fetch_initial_store_data_and_render(self)
 
 
-### after login case
+"""
+Handler called after users login with Twitter
+"""
 class TwitterAuthorized(webapp2.RequestHandler):
   def get(self):
     ### also need to handle the case where request token is no longer valid
@@ -645,11 +641,11 @@ class TwitterAuthorized(webapp2.RequestHandler):
 
 class LoginHandler(webapp2.RequestHandler):
   def get(self):
-    ### check if already have session 
+    # check if already have session 
     session = get_current_session()
     session['redirect'] = self.request.get('redirect')
 
-    ### prevent injected url redirect to other sites
+    # prevent injected url redirect to other sites
     if ':' in session['redirect']:
       self.redirect('/WillBeHandledByRouteErrorHandler')
 
@@ -658,7 +654,7 @@ class LoginHandler(webapp2.RequestHandler):
       logging.info('consumer_secret ' + OAUTH_CONFIG['tw']['consumer_secret'])
       logging.info('callback_url ' + OAUTH_CONFIG['tw']['callback_url'])
 
-      ### get request token and save in session
+      # get request token and save in session
       auth = tweepy.OAuthHandler(
         OAUTH_CONFIG['tw']['consumer_key'], 
         OAUTH_CONFIG['tw']['consumer_secret'], 

@@ -1,3 +1,7 @@
+/*
+API to handle upload of files, such as first frame of broadcast and recoreded video/audio
+*/
+
 var UploadAPI = {
   uploadFirstFrame: function(connectedUserId, meetingId, data) {
     var formData = new FormData();
